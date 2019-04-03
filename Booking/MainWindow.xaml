@@ -1,0 +1,34 @@
+﻿<Window x:Class="Booking.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Booking"
+        mc:Ignorable="d"
+        Title="KMP Booking" Height="450" Width="800">
+    <Grid>
+        <StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label>Client Name</Label>
+                <TextBox MinWidth="80" Name="ClientName">Cibo Cai</TextBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label>Client Phone Number</Label>
+                <TextBox MinWidth="120" Name="ClientNumber">0400693696</TextBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label>Booking Date</Label>
+                <DatePicker Name="BookingDate"></DatePicker>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label>Booking Time</Label>
+                <ComboBox Name="BookingTime" IsEditable="True">9:00</ComboBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label>Duration</Label>
+                <ComboBox Name="Duration" IsEditable="True">30</ComboBox>
+            </StackPanel>
+            <Button Click="BookClicked">Book in</Button>
+        </StackPanel>
+    </Grid>
+</Window>
