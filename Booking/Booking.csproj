@@ -94,5 +94,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BookingCore\BookingCore.csproj">
+      <Project>{ac409a2e-8551-47cc-ad08-4cae13c7ee1a}</Project>
+      <Name>BookingCore</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
