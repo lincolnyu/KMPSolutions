@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Booking"
         mc:Ignorable="d"
-        Title="KMP Booking" Height="450" Width="800">
+        Title="KMP Booking" Height="400" Width="600">
     <Grid>
         <StackPanel>
             <StackPanel Orientation="Horizontal">
@@ -18,11 +18,11 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Booking Date</Label>
-                <DatePicker Name="BookingDate"></DatePicker>
+                <DatePicker Name="BookingDate" SelectedDateChanged="BookingDateChanged"></DatePicker>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Booking Time</Label>
-                <ComboBox Name="BookingTime" IsEditable="True">
+                <ComboBox Name="BookingTime" IsEditable="True" SelectionChanged="BookingTimeSelectionChanged">
                     <ComboBox.SelectedIndex>2</ComboBox.SelectedIndex>
                     <ComboBox.Items>
                         <ComboBoxItem>8:00 AM</ComboBoxItem>
@@ -73,7 +73,36 @@
                     </ComboBox.Items>
                 </ComboBox>
             </StackPanel>
-            <Button Click="BookClicked">Book In</Button>
+            <StackPanel Orientation="Horizontal" IsEnabled="{Binding ElementName=SetSmsReminder, Path=IsChecked}">
+                <Label>SMS Date</Label>
+                <DatePicker Name="SmsDate" SelectedDateChanged="SmsDateChanged"></DatePicker>
+                <CheckBox Name="DayBefore" Checked="DayBeforeChecked" IsChecked="True">1 Day Before</CheckBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" IsEnabled="{Binding ElementName=SetSmsReminder, Path=IsChecked}">
+                <Label>SMS Time</Label>
+                <ComboBox Name="SmsTime" IsEditable="True" SelectionChanged="SmsTimeSelectionChanged">
+                    <ComboBox.SelectedIndex>11</ComboBox.SelectedIndex>
+                    <ComboBox.Items>
+                        <ComboBoxItem>8:00 AM</ComboBoxItem>
+                        <ComboBoxItem>9:00 AM</ComboBoxItem>
+                        <ComboBoxItem>10:00 AM</ComboBoxItem>
+                        <ComboBoxItem>11:00 AM</ComboBoxItem>
+                        <ComboBoxItem>12:00 PM</ComboBoxItem>
+                        <ComboBoxItem>1:00 PM</ComboBoxItem>
+                        <ComboBoxItem>2:00 PM</ComboBoxItem>
+                        <ComboBoxItem>3:00 PM</ComboBoxItem>
+                        <ComboBoxItem>4:00 PM</ComboBoxItem>
+                        <ComboBoxItem>5:00 PM</ComboBoxItem>
+                        <ComboBoxItem>6:00 PM</ComboBoxItem>
+                        <ComboBoxItem>7:00 PM</ComboBoxItem>
+                        <ComboBoxItem>8:00 PM</ComboBoxItem>
+                    </ComboBox.Items>
+                </ComboBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Button Click="BookClicked">Book the Appointment in Calendar</Button>
+                <CheckBox Name="SetSmsReminder" IsChecked="True">Also Create SMS Reminder in Calendar</CheckBox>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Window>

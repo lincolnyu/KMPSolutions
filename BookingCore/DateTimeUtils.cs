@@ -52,6 +52,71 @@ namespace BookingCore
             return rdt;
         }
 
+        public static int DayDiff(DateTime d1, DateTime d2)
+        {
+            var yr1 = d1.Year;
+            var yr2 = d2.Year;
+            var doy1 = d1.DayOfYear;
+            var doy2 = d2.DayOfYear;
+            if (yr1 == yr2)
+            {
+                return doy2 - doy1;
+            }
+            var yddiff = new DateTime(yr2, 1, 1) - new DateTime(yr1, 1, 1);
+            return yddiff.Days + doy2 - doy1;
+        }
+
+        public static (string, bool) GetDayDescription(DateTime cur, DateTime refd)
+        {
+            var dd = DayDiff(cur, refd);
+            bool hasdow = false;
+            string daydesc;
+            if (dd == 0)
+            {
+                daydesc = "today";
+            }
+            else if (dd > 0)
+            {
+                if (dd == 1)
+                {
+                    daydesc = "tomorrow";
+                }
+                else if (dd == 2)
+                {
+                    daydesc = "the day after tomorrow";
+                }
+                else if (dd < 7)
+                {
+                    daydesc = "coming " + cur.DayOfWeek.ToString();
+                    hasdow = true;
+                }
+                else
+                {
+                    daydesc = $"in {dd} days";
+                }
+            }
+            else
+            {
+                if (dd == -1)
+                {
+                    daydesc = "yesterday";
+                }
+                else if (dd == -2)
+                {
+                    daydesc = "the day before yesterday";
+                }
+                else
+                {
+                    daydesc = $"{-dd} days ago";
+                }
+            }
+            return (daydesc, hasdow);
+        }
+
+        public static DateTime CreateDateTime(DateTime date, DateTime time)
+            => new DateTime(date.Year, date.Month, date.Day,
+               time.Hour, time.Minute, time.Second);
+
         private static string PullDigits(string s)
         {
             var sb = new StringBuilder();
