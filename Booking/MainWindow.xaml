@@ -9,12 +9,21 @@
     <Grid>
         <StackPanel>
             <StackPanel Orientation="Horizontal">
+                <Label>Customer Data File Path</Label>
+                <TextBox MinWidth="200" Name="DataFilePath"></TextBox>
+                <Button Click="LoadDataClick">Load</Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label>Medicare Number</Label>
+                <ComboBox MinWidth="120" IsEditable="True" Name="ClientMedicare"></ComboBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
                 <Label>Client Name</Label>
-                <TextBox MinWidth="80" Name="ClientName">Cibo Cai</TextBox>
+                <ComboBox MinWidth="120" IsEditable="True" Name="ClientName"></ComboBox>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Client Phone Number</Label>
-                <TextBox MinWidth="120" Name="ClientNumber">0400693696</TextBox>
+                <TextBox MinWidth="120" Name="ClientNumber"></TextBox>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Booking Date</Label>

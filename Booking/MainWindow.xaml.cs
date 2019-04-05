@@ -1,4 +1,6 @@
-﻿using System;
+﻿using OfficeOpenXml;
+using System;
+using System.IO;
 using System.Threading;
 using System.Windows;
 using static BookingCore.BookingIcs;
@@ -236,6 +238,34 @@ namespace Booking
                 return ("Missing SMS reminder date", CheckResult.Error);
             }
             return ("", CheckResult.OK);
+        }
+
+        void LoadCustomerData(string filepath)
+        {
+            ClientName.Items.Clear();
+            ClientMedicare.Items.Clear();
+
+            var fi = new FileInfo(filepath);
+            using (var p = new ExcelPackage(fi))
+            {
+                var ws = p.Workbook.Worksheets["Details"];
+                for (var i = 2; i <= ws.Cells.Rows; i++)
+                {
+                    var medi = ws.Cells[i, 1];
+                    if (medi.Text.Trim().Length == 0) break;
+                    var firstName = ws.Cells[i, 2];
+                    var surname = ws.Cells[i, 3];
+                    var name = $"{surname.Text}, {firstName.Text}";
+
+                    ClientName.Items.Add(name);
+                    ClientMedicare.Items.Add(medi.Text);
+                }
+            }
+        }
+
+        private void LoadDataClick(object sender, RoutedEventArgs e)
+        {
+            LoadCustomerData(DataFilePath.Text);
         }
     }
 }
