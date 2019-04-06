@@ -2,10 +2,12 @@
 using OfficeOpenXml;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
+using System.Collections.Generic;
 using BookingCore;
 using static BookingCore.BookingIcs;
 using static BookingCore.DateTimeUtils;
@@ -21,6 +23,7 @@ namespace Booking
         {
             InitializeComponent();
             LoadSettings();
+            SetupUI();
         }
 
         TimeSpan DEFAULT_EVENT_DURATION = TimeSpan.FromMinutes(30);
@@ -245,12 +248,27 @@ namespace Booking
             return ("", CheckResult.OK);
         }
 
+        static void AddDistinctAlphabetic(ItemCollection items, string newItem)
+        {
+            var a = new string[items.Count];
+            for (var i = 0; i < items.Count; i++)
+            {
+                a[i] = items[i].ToString();
+            }
+            var at = Array.BinarySearch<string>(a, newItem);
+            if (at < 0)
+            {
+                items.Insert(-at - 1, newItem);
+            }
+        }
+
         bool LoadCustomerData(string filepath)
         {
             try
             {
                 if (!File.Exists(filepath))
                 {
+                    MessageBox.Show("Error: The data file does not exist.", Title);
                     return false;
                 }
 
@@ -262,6 +280,7 @@ namespace Booking
                     _clients.Clear();
                     ClientName.Items.Clear();
                     ClientMedicare.Items.Clear();
+                    ClientNumber.Items.Clear();
                     for (var i = 2; i <= ws.Cells.Rows; i++)
                     {
                         var medi = ws.Cells[i, 1];
@@ -271,9 +290,9 @@ namespace Booking
                         var name = FormCommaSeparateName(firstName.Text, surname.Text);
                         var phone = ws.Cells[i, 6];
 
-                        ClientName.Items.Add(name);
-                        ClientMedicare.Items.Add(medi.Text);
-                        ClientNumber.Items.Add(phone.Text);
+                        AddDistinctAlphabetic(ClientName.Items, name);
+                        AddDistinctAlphabetic(ClientMedicare.Items, medi.Text);
+                        AddDistinctAlphabetic(ClientNumber.Items, phone.Text);
 
                         var dob = ws.Cells[i, 5];
                         var gen = ws.Cells[i, 4];
@@ -295,8 +314,9 @@ namespace Booking
 
                 return true;
             }
-            catch(Exception)
+            catch(Exception e)
             {
+                MessageBox.Show($"Error: Failed to load the data file. Details:\n{e.Message}.", Title);
                 return false;
             }
         }
@@ -308,6 +328,10 @@ namespace Booking
             {
                 LoadCustomerData(DataFilePath.Text);
             }
+        }
+
+        void SetupUI()
+        {
         }
 
         private void LoadDataClick(object sender, RoutedEventArgs e)
@@ -357,22 +381,47 @@ namespace Booking
             }
         }
 
+        private IEnumerable<string> RecordsToStrings(IList<ClientRecord> clients)
+        {
+            foreach (var c in clients)
+            {
+                yield return $"{FormCommaSeparateName(c.FirstName, c.Surname)} (Medicare#{c.MedicareNumber}, Phone#{c.PhoneNumber})";
+            }
+        }
+
         private void SearchByName(string name, bool updateSourceField=false)
         {
             (var fn, var sn) = SplitCommaSeparatedName(name);
-            var client = _clients.FindByName(fn, sn);
-            if (client != null)
+            var clients = _clients.FindByName(fn, sn).OrderBy(x=>x.MedicareNumber).ToList();
+            if (clients.Count == 0)
             {
+                MessageBox.Show("Error: Client not found.", Title);
+            }
+            else
+            {
+                ClientRecord client = null;
+                if (clients.Count > 1)
+                {
+                    var dc = new DuplicateClients($"Multiple clients found with name {name}", RecordsToStrings(clients));
+                    if (dc.ShowDialog() == true)
+                    {
+                        client = clients[dc.SelectedIndex];
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    client = clients[0];
+                }
                 if (updateSourceField)
                 {
                     ClientName.Text = name;
                 }
                 ClientMedicare.Text = client.MedicareNumber;
                 ClientNumber.Text = client.PhoneNumber;
-            }
-            else
-            {
-                MessageBox.Show("Client not found.");
             }
         }
 
@@ -390,25 +439,42 @@ namespace Booking
             }
             else
             {
-                MessageBox.Show("Client not found.");
+                MessageBox.Show("Error: Client not found.", Title);
             }
         }
 
         private void SearchByPhone(string phone, bool updateSourceField = false)
         {
-            var client = _clients.FindByPhoneNumber(phone);
-            if (client != null)
+            var clients = _clients.FindByPhoneNumber(phone).OrderBy(x => x.MedicareNumber).ToList();
+            if (clients.Count == 0)
             {
+                MessageBox.Show("Error: Client not found.", Title);
+            }
+            else
+            {
+                ClientRecord client;
+                if (clients.Count > 1)
+                {
+                    var dc = new DuplicateClients($"Multiple clients found with phone number {phone}", RecordsToStrings(clients));
+                    if (dc.ShowDialog() == true)
+                    {
+                        client = clients[dc.SelectedIndex];
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    client = clients[0];
+                }
                 ClientMedicare.Text = client.MedicareNumber;
                 ClientName.Text = FormCommaSeparateName(client.FirstName, client.Surname);
                 if (updateSourceField)
                 {
                     ClientNumber.Text = phone;
                 }
-            }
-            else
-            {
-                MessageBox.Show("Client not found.");
             }
         }
 
