@@ -11,19 +11,26 @@
             <StackPanel Orientation="Horizontal">
                 <Label>Customer Data File Path</Label>
                 <TextBox MinWidth="200" Name="DataFilePath"></TextBox>
+                <Button Click="BrowseDataPathClick" MinWidth="30">...</Button>
                 <Button Click="LoadDataClick">Load</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Medicare Number</Label>
-                <ComboBox MinWidth="120" IsEditable="True" Name="ClientMedicare"></ComboBox>
+                <ComboBox MinWidth="120" IsEditable="True" Name="ClientMedicare"
+                          KeyDown="ClientMediKeyDown" SelectionChanged="ClientMediSelChanged"></ComboBox>
+                <Button Click="SearchByMediClick">Find</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Client Name</Label>
-                <ComboBox MinWidth="120" IsEditable="True" Name="ClientName"></ComboBox>
+                <ComboBox MinWidth="120" IsEditable="True" Name="ClientName"
+                          KeyDown="ClientNameKeyDown" SelectionChanged="ClientNameSelChanged"></ComboBox>
+                <Button Click="SearchByNameClick">Find</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Client Phone Number</Label>
-                <TextBox MinWidth="120" Name="ClientNumber"></TextBox>
+                <ComboBox MinWidth="120" IsEditable="True"  Name="ClientNumber" 
+                          KeyDown="ClientNumberKeyDown" SelectionChanged="ClientNumberSelChanged"></ComboBox>
+                <Button Click="SearchByPhoneClick">Find</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Booking Date</Label>
