@@ -64,9 +64,9 @@ namespace BookingCore
 
         public static void LaunchIcs(string ics)
         {
-            using (var isoStore = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Domain | IsolatedStorageScope.Assembly, null, null))
+            using (var isoStore = IsolatedStorageFile.GetStore(IsolatedStorageScope.User 
+                | IsolatedStorageScope.Domain | IsolatedStorageScope.Assembly, null, null))
             {
-
                 var isf = isoStore.CreateFile("temp.ics");
                 using (var sw = new StreamWriter(isf))
                 {
@@ -74,7 +74,6 @@ namespace BookingCore
                 }
                 var path = isf.GetType().GetField("m_FullPath",
                     BindingFlags.Instance | BindingFlags.NonPublic).GetValue(isf).ToString();
-                File.Copy(path, @"D:\temp\out.ics", true);
                 System.Diagnostics.Process.Start(path);
             }
         }
