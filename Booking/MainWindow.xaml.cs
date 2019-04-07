@@ -22,8 +22,8 @@ namespace Booking
         public MainWindow()
         {
             InitializeComponent();
+            SetTitle();
             LoadSettings();
-            SetupUI();
         }
 
         TimeSpan DEFAULT_EVENT_DURATION = TimeSpan.FromMinutes(30);
@@ -330,8 +330,11 @@ namespace Booking
             }
         }
 
-        void SetupUI()
+        void SetTitle()
         {
+            var ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            var verstr = $"{ver.Major}.{ver.Minor}.{ver.Build}";
+            Title = $"KMP Booking (Ver {verstr})";
         }
 
         private void LoadDataClick(object sender, RoutedEventArgs e)
