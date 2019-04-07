@@ -339,10 +339,7 @@ namespace Booking
         private void LoadSettings()
         {
             DataFilePath.Text = Properties.Settings.Default.DataFilePath;
-            if (DataFilePath.Text != null && DataFilePath.Text.Trim().Length > 0 &&  File.Exists(DataFilePath.Text))
-            {
-                LoadCustomerData(DataFilePath.Text);
-            }
+            LoadDataFile(false);
         }
 
         void SetTitle()
@@ -352,14 +349,20 @@ namespace Booking
             Title = $"KMP Booking (Ver {verstr})";
         }
 
-        private void LoadDataClick(object sender, RoutedEventArgs e)
+        private void LoadDataFile(bool save)
         {
             if (LoadCustomerData(DataFilePath.Text))
             {
-                Properties.Settings.Default.DataFilePath = DataFilePath.Text;
-                Properties.Settings.Default.Save();
+                if (save)
+                {
+                    Properties.Settings.Default.DataFilePath = DataFilePath.Text;
+                    Properties.Settings.Default.Save();
+                }
             }
         }
+
+        private void LoadDataClick(object sender, RoutedEventArgs e)
+            => LoadDataFile(true);
 
         private void BrowseDataPathClick(object sender, RoutedEventArgs e)
         {
@@ -371,6 +374,7 @@ namespace Booking
             if (ofd.ShowDialog() == true)
             {
                 DataFilePath.Text = ofd.FileName;
+                LoadDataFile(true);
             }
         }
 
