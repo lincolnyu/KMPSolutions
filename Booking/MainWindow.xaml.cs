@@ -14,6 +14,21 @@ using static BookingCore.DateTimeUtils;
 
 namespace Booking
 {
+    class AutoResetSuppressor
+    {
+        public bool Suppressing { get; private set; } = false;
+
+        public void Run(Action proc)
+        {
+            if (!Suppressing)
+            {
+                Suppressing = true;
+                proc();
+                Suppressing = false;
+            }
+        }
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -394,91 +409,100 @@ namespace Booking
 
         private void SearchByName(string name, bool updateSourceField=false)
         {
-            (var fn, var sn) = SplitCommaSeparatedName(name);
-            var clients = _clients.FindByName(fn, sn).OrderBy(x=>x.MedicareNumber).ToList();
-            if (clients.Count == 0)
+            _suppressSearch.Run(() =>
             {
-                MessageBox.Show("Error: Client not found.", Title);
-            }
-            else
-            {
-                ClientRecord client = null;
-                if (clients.Count > 1)
+                (var fn, var sn) = SplitCommaSeparatedName(name);
+                var clients = _clients.FindByName(fn, sn).OrderBy(x => x.MedicareNumber).ToList();
+                if (clients.Count == 0)
                 {
-                    var dc = new DuplicateClients($"Multiple clients found with name {name}", RecordsToStrings(clients));
-                    if (dc.ShowDialog() == true)
-                    {
-                        client = clients[dc.SelectedIndex];
-                    }
-                    else
-                    {
-                        return;
-                    }
+                    MessageBox.Show("Error: Client not found.", Title);
                 }
                 else
                 {
-                    client = clients[0];
+                    ClientRecord client = null;
+                    if (clients.Count > 1)
+                    {
+                        var dc = new DuplicateClients($"Multiple clients found with name {name}", RecordsToStrings(clients));
+                        if (dc.ShowDialog() == true)
+                        {
+                            client = clients[dc.SelectedIndex];
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        client = clients[0];
+                    }
+                    if (updateSourceField)
+                    {
+                        ClientName.Text = name;
+                    }
+                    ClientMedicare.Text = client.MedicareNumber;
+                    ClientNumber.Text = client.PhoneNumber;
                 }
-                if (updateSourceField)
-                {
-                    ClientName.Text = name;
-                }
-                ClientMedicare.Text = client.MedicareNumber;
-                ClientNumber.Text = client.PhoneNumber;
-            }
+            });
         }
 
         private void SearchByMedi(string medi, bool updateSourceField = false)
         {
-            var client = _clients.FindByMedicareNumber(medi);
-            if (client != null)
+            _suppressSearch.Run(() =>
             {
-                ClientName.Text = FormCommaSeparateName(client.FirstName, client.Surname);
-                ClientNumber.Text = client.PhoneNumber;
-                if (updateSourceField)
+                var client = _clients.FindByMedicareNumber(medi);
+                if (client != null)
                 {
-                    ClientMedicare.Text = medi;
-                }
-            }
-            else
-            {
-                MessageBox.Show("Error: Client not found.", Title);
-            }
-        }
-
-        private void SearchByPhone(string phone, bool updateSourceField = false)
-        {
-            var clients = _clients.FindByPhoneNumber(phone).OrderBy(x => x.MedicareNumber).ToList();
-            if (clients.Count == 0)
-            {
-                MessageBox.Show("Error: Client not found.", Title);
-            }
-            else
-            {
-                ClientRecord client;
-                if (clients.Count > 1)
-                {
-                    var dc = new DuplicateClients($"Multiple clients found with phone number {phone}", RecordsToStrings(clients));
-                    if (dc.ShowDialog() == true)
+                    ClientName.Text = FormCommaSeparateName(client.FirstName, client.Surname);
+                    ClientNumber.Text = client.PhoneNumber;
+                    if (updateSourceField)
                     {
-                        client = clients[dc.SelectedIndex];
-                    }
-                    else
-                    {
-                        return;
+                        ClientMedicare.Text = medi;
                     }
                 }
                 else
                 {
-                    client = clients[0];
+                    MessageBox.Show("Error: Client not found.", Title);
                 }
-                ClientMedicare.Text = client.MedicareNumber;
-                ClientName.Text = FormCommaSeparateName(client.FirstName, client.Surname);
-                if (updateSourceField)
+            });
+        }
+
+        private void SearchByPhone(string phone, bool updateSourceField = false)
+        {
+            _suppressSearch.Run(() =>
+            {
+                var clients = _clients.FindByPhoneNumber(phone).OrderBy(x => x.MedicareNumber).ToList();
+                if (clients.Count == 0)
                 {
-                    ClientNumber.Text = phone;
+                    MessageBox.Show("Error: Client not found.", Title);
                 }
-            }
+                else
+                {
+                    ClientRecord client;
+                    if (clients.Count > 1)
+                    {
+                        var dc = new DuplicateClients($"Multiple clients found with phone number {phone}", RecordsToStrings(clients));
+                        if (dc.ShowDialog() == true)
+                        {
+                            client = clients[dc.SelectedIndex];
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        client = clients[0];
+                    }
+                    ClientMedicare.Text = client.MedicareNumber;
+                    ClientName.Text = FormCommaSeparateName(client.FirstName, client.Surname);
+                    if (updateSourceField)
+                    {
+                        ClientNumber.Text = phone;
+                    }
+                }
+            });
         }
 
         private void SearchByNameClick(object sender, RoutedEventArgs e)
@@ -545,5 +569,6 @@ namespace Booking
         }
 
         ClientRecords _clients = new ClientRecords();
+        AutoResetSuppressor _suppressSearch = new AutoResetSuppressor();
     }
 }
