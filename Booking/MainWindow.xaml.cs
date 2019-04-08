@@ -298,28 +298,34 @@ namespace Booking
                     ClientNumber.Items.Clear();
                     for (var i = 2; i <= ws.Cells.Rows; i++)
                     {
-                        var medi = ws.Cells[i, 1];
-                        if (medi.Text.Trim().Length == 0) break;
+                        var medi = ws.Cells[i, 1].Text.Trim();
+                        if (medi.Length == 0) break;
                         var firstName = ws.Cells[i, 2];
                         var surname = ws.Cells[i, 3];
                         var name = FormCommaSeparateName(firstName.Text, surname.Text);
-                        var phone = ws.Cells[i, 6];
+                        var phone = ws.Cells[i, 6].Text;
 
-                        AddDistinctAlphabetic(ClientName.Items, name);
-                        AddDistinctAlphabetic(ClientMedicare.Items, medi.Text);
-                        AddDistinctAlphabetic(ClientNumber.Items, phone.Text);
+                        AddDistinctAlphabetic(ClientMedicare.Items, medi);
+                        if (name.Length > 0)
+                        {
+                            AddDistinctAlphabetic(ClientName.Items, name);
+                        }
+                        if (phone.Length > 0)
+                        {
+                            AddDistinctAlphabetic(ClientNumber.Items, phone);
+                        }
 
-                        var dob = ws.Cells[i, 5];
-                        var gen = ws.Cells[i, 4];
+                        var dob = ws.Cells[i, 5].Text.Trim();
+                        var gen = ws.Cells[i, 4].Text.Trim();
                         var client = new ClientRecord
                         {
                             FirstName = firstName.Text,
                             Surname = surname.Text,
-                            MedicareNumber = medi.Text,
-                            PhoneNumber = phone.Text,
-                            Gender = ClientRecord.ParseGender(gen.Text),
+                            MedicareNumber = medi,
+                            PhoneNumber = phone,
+                            Gender = ClientRecord.ParseGender(gen),
                         };
-                        if (DateTime.TryParse(dob.Text, out var dt))
+                        if (DateTime.TryParse(dob, out var dt))
                         {
                             client.DOB = dt;
                         }

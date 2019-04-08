@@ -119,10 +119,10 @@ namespace BookingCore
             => status.ToString();
 
         static string GetLastName(string name)
-            => name.Trim().Split(' ').Where(x => x.Length > 0).Last();
+            => name.Trim().Split(',').Where(x => x.Length > 0).First().Trim();
 
         static string GetFirstName(string name)
-            => name.Trim().Split(' ').Where(x => x.Length > 0).First();
+            => name.Trim().Split(',').Where(x => x.Length > 0).Last().Trim();
 
         static string ClientNameToCompactStr(string clientName)
         {
