@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using BookingCore;
 using static BookingCore.BookingIcs;
 using static BookingCore.DateTimeUtils;
+using System.Text;
 
 namespace Booking
 {
@@ -141,21 +142,41 @@ namespace Booking
             }
         }
 
-        private void BookClicked(object sender, RoutedEventArgs e)
+        private bool ValidateAndProceed()
         {
             var sms = SetSmsReminder.IsChecked == true;
             (var msg, var r) = CheckDate(sms ? Tolerance.AllowIncompleteSmsDate : Tolerance.Neither);
+            var sb = new StringBuilder();
+            sb.AppendLine(msg);
+            if (SetSmsReminder.IsChecked == true && string.IsNullOrWhiteSpace(ClientNumber.Text))
+            {
+                if (r == CheckResult.OK)
+                {
+                    r = CheckResult.Warning;
+                }
+                sb.AppendLine("Phone number not provided, SMS event will be incomplete.");
+            }
             if (r == CheckResult.Error)
             {
-                MessageBox.Show($"Error: {msg}. Unable to book.", Title);
-                return;
+                MessageBox.Show($"Unable to book. Error details:\n{sb.ToString()}", Title);
+                return false;
             }
             else if (r == CheckResult.Warning)
             {
-                if (MessageBox.Show($"Warning: {msg}. Are you sure to continue?", Title, MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+                if (MessageBox.Show($"Warning:\n{sb.ToString()}\nAre you sure to continue?", Title, MessageBoxButton.YesNo) != MessageBoxResult.Yes)
                 {
-                    return;
+                    return false;
                 }
+            }
+
+            return true;
+        }
+
+        private void BookClicked(object sender, RoutedEventArgs e)
+        {
+            if (!ValidateAndProceed())
+            {
+                return;
             }
             Book();
             if (SetSmsReminder.IsChecked == true)
@@ -172,32 +193,36 @@ namespace Booking
 
         private void BookingDateChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            CheckDateAndWarn();
-            UpdateSmsDate();
+            if (!UpdateSmsDate())
+            {
+                CheckDateAndWarn();
+            }
         }
 
-        private void UpdateSmsDate()
+        private bool UpdateSmsDate()
         {
             if (BookingDate.SelectedDate.HasValue)
             {
                 if (DayBefore.IsChecked == true)
                 {
                     SmsDate.SelectedDate = BookingDate.SelectedDate.Value.Subtract(TimeSpan.FromDays(1));
+                    return true;
                 }
             }
+            return false;
         }
 
-        private void SmsTimeSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void SmsTimeSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             CheckDateAndWarn();
         }
 
-        private void SmsDateChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void SmsDateChanged(object sender, SelectionChangedEventArgs e)
         {
             CheckDateAndWarn();
         }
 
-        private void BookingTimeSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void BookingTimeSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             CheckDateAndWarn();
         }
@@ -242,24 +267,29 @@ namespace Booking
                 {
                     return ("Booking time is in the past", CheckResult.Error);
                 }
+
+                var smsTime = GetSmsTime();
+                if (smsTime.HasValue)
+                {
+                    if (bd.Value <= smsTime.Value)
+                    {
+                        return ("SMS time is past booking time", CheckResult.Error);
+                    }
+                    else if ((bd.Value - smsTime.Value).TotalHours < 6)
+                    {
+                        return ("SMS time is too late", CheckResult.Warning);
+                    }
+                }
+                else if (tol == Tolerance.Neither)
+                {
+                    return ("Missing SMS reminder date", CheckResult.Error);
+                }
             }
             else if (tol != Tolerance.AllowBothIncomplete)
             {
                 return ("Missing booking date", CheckResult.Error);
             }
 
-            var smsTime = GetSmsTime();
-            if (smsTime.HasValue)
-            {
-                if ((bd.Value - smsTime.Value).TotalHours < 4)
-                {
-                    return ("SMS time is too late", CheckResult.Warning);
-                }
-            }
-            else if (tol == Tolerance.Neither)
-            {
-                return ("Missing SMS reminder date", CheckResult.Error);
-            }
             return ("", CheckResult.OK);
         }
 
@@ -300,9 +330,9 @@ namespace Booking
                     {
                         var medi = ws.Cells[i, 1].Text.Trim();
                         if (medi.Length == 0) break;
-                        var firstName = ws.Cells[i, 2];
-                        var surname = ws.Cells[i, 3];
-                        var name = FormCommaSeparateName(firstName.Text, surname.Text);
+                        var firstName = ws.Cells[i, 2].Text.LaunderSpaceSeparateString();
+                        var surname = ws.Cells[i, 3].Text.LaunderSpaceSeparateString();
+                        var name = FormCommaSeparateName(firstName, surname);
                         var phone = ws.Cells[i, 6].Text;
 
                         AddDistinctAlphabetic(ClientMedicare.Items, medi);
@@ -319,8 +349,8 @@ namespace Booking
                         var gen = ws.Cells[i, 4].Text.Trim();
                         var client = new ClientRecord
                         {
-                            FirstName = firstName.Text,
-                            Surname = surname.Text,
+                            FirstName = firstName,
+                            Surname = surname,
                             MedicareNumber = medi,
                             PhoneNumber = phone,
                             Gender = ClientRecord.ParseGender(gen),
@@ -384,31 +414,6 @@ namespace Booking
             }
         }
 
-        static string FormCommaSeparateName(string firstName, string surname)
-            => $"{surname}, {firstName}";
-
-        private static (string /* first name*/, string /* surname */) SplitCommaSeparatedName(string name)
-        {
-            name = name.Trim();
-            var segs = name.Split(',');
-            if (segs.Length > 1)
-            {
-                return (segs[1].Trim(), segs[0].Trim());
-            }
-            // Treated as FirstName LastName
-            var space = name.IndexOf(' ');
-            if (space >= 0)
-            {
-                var fn = name.Substring(0, space);
-                var sn = name.Substring(space + 1).Trim();
-                return (fn, sn);
-            }
-            else
-            {
-                return (name, "");
-            }
-        }
-
         private IEnumerable<string> RecordsToStrings(IList<ClientRecord> clients)
         {
             foreach (var c in clients)
@@ -421,7 +426,7 @@ namespace Booking
         {
             _suppressSearch.Run(() =>
             {
-                (var fn, var sn) = SplitCommaSeparatedName(name);
+                (var fn, var sn) = name.SmartParseName();
                 var clients = _clients.FindByName(fn, sn).OrderBy(x => x.MedicareNumber).ToList();
                 if (clients.Count == 0)
                 {
@@ -576,6 +581,30 @@ namespace Booking
             {
                 SearchByPhone(e.AddedItems[0].ToString());
             }
+        }
+
+        private void DataFilePath_Drop(object sender, DragEventArgs e)
+        {
+            var data = (DataObject)e.Data;
+            if (data.ContainsFileDropList())
+            {
+                string[] rawFiles = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (rawFiles.Length > 0)
+                {
+                    DataFilePath.Text = rawFiles[0];
+                    LoadDataFile(true);
+                }
+            }
+        }
+
+        private void DataFilePath_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.Copy;
+        }
+
+        private void DataFilePath_PreviewDragOver(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
         }
 
         ClientRecords _clients = new ClientRecords();

@@ -45,20 +45,26 @@ namespace BookingCore
 
         public static string GenerateBookingIcs(string clientName, string clientPhoneNumber,
            DateTime bookingTime, TimeSpan duration, BookingStatus status = BookingStatus.Pending)
-            => GenerateIcs(UID,
+        {
+            if (string.IsNullOrWhiteSpace(clientPhoneNumber))
+            {
+                clientPhoneNumber = "Phone number unprovided";
+            }
+            return GenerateIcs(UID,
                 DateTime.Now,
                 bookingTime,
                 bookingTime + duration,
-                $"KMPBooking [{StatusToCompactStr(status)}] - {ClientNameToCompactStr(clientName)} ({clientPhoneNumber})",
+                $"KMPBooking [{StatusToCompactStr(status)}] - {SmartLaunderNameToCommaSeparate(clientName)} ({clientPhoneNumber})",
                 "",
                 "Unit 12 66-80 Totterdell Street Belconnen ACT 2617");
+        }
 
         public static string GenerateSmsIcs(string clientName, string clientPhoneNumber,
             DateTime bookingTime, TimeSpan duration, DateTime smsReminderTime)
         {
             var sms = GenerateSms(clientName, clientPhoneNumber, bookingTime, smsReminderTime);
             return GenerateIcs(UID, DateTime.Now, smsReminderTime, smsReminderTime,
-                $"KMPSMS - {ClientNameToCompactStr(clientName)} ({clientPhoneNumber})",
+                $"KMPSMS - {SmartLaunderNameToCommaSeparate(clientName)} ({clientPhoneNumber})",
                 sms, "");
         }
 
@@ -89,7 +95,8 @@ namespace BookingCore
             }
 
             var sb = new StringBuilder();
-            sb.Append($"Dear {GetFirstName(clientName)}\\, ");
+            (var fn, var sn) = SmartParseName(clientName);
+            sb.Append($"Dear {fn}\\, ");
             sb.Append("This is just a reminder of your appointment with Kinetic Mobile Physio");
             if (daydesc != null)
             {
@@ -118,24 +125,62 @@ namespace BookingCore
         static string StatusToCompactStr(BookingStatus status)
             => status.ToString();
 
-        static string GetLastName(string name)
-            => name.Trim().Split(',').Where(x => x.Length > 0).First().Trim();
-
-        static string GetFirstName(string name)
-            => name.Trim().Split(',').Where(x => x.Length > 0).Last().Trim();
-
-        static string ClientNameToCompactStr(string clientName)
+        public static string LaunderSpaceSeparateString(this string input)
         {
-            var segs = clientName.Trim().Split(' ').Where(x => x.Length > 0);
+            var segs = input.Split(' ').Where(x=>x.Length > 0);
             var sb = new StringBuilder();
-            string proc(string input) => input[0] + input.Substring(1).ToLower();
             foreach (var seg in segs)
             {
-                sb.Append(proc(seg));
+                sb.Append(seg);
                 sb.Append(' ');
             }
-            sb.Remove(sb.Length - 1, 1);
+            if (sb.Length > 1)
+            {
+                sb.Remove(sb.Length - 1, 1);
+            }
             return sb.ToString();
         }
+
+        public static (string /* first name*/, string /* surname */) 
+            SmartParseName(this string name)
+        {
+            name = name.Trim();
+            var segs = name.Split(',');
+            if (segs.Length > 1)
+            {
+                var surname = segs[0].LaunderSpaceSeparateString();
+                var firstName = segs[1].LaunderSpaceSeparateString();
+                // subsequent segments ignored if any
+                return (firstName, surname);
+            }
+            // Treated as 'FirstName LastName'
+            var space = name.IndexOf(' ');
+            if (space >= 0)
+            {
+                var fn = name.Substring(0, space).LaunderSpaceSeparateString();
+                var sn = name.Substring(space + 1).LaunderSpaceSeparateString();
+                return (fn, sn);
+            }
+            else
+            {
+                return (name, "");
+            }
+        }
+
+        public static string SmartLaunderNameToCommaSeparate(this string name)
+        {
+            (var fn, var sn) = name.SmartParseName();
+            if (!string.IsNullOrEmpty(sn))
+            {
+                return FormCommaSeparateName(fn, sn);
+            }
+            else
+            {
+                return $"{fn}";
+            }
+        }
+
+        public static string FormCommaSeparateName(string firstName, string surname)
+            => $"{surname}, {firstName}";
     }
 }

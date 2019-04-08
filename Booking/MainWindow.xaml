@@ -9,8 +9,10 @@
     <Grid>
         <StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Label>Customer Data File Path</Label>
-                <TextBox MinWidth="200" Name="DataFilePath"></TextBox>
+                <Label>Data File Path</Label>
+                <TextBox MinWidth="200" Name="DataFilePath" AllowDrop="True"
+                         DragEnter="DataFilePath_DragEnter"
+                         Drop="DataFilePath_Drop" PreviewDragOver="DataFilePath_PreviewDragOver"></TextBox>
                 <Button Click="BrowseDataPathClick" MinWidth="30">...</Button>
                 <Button Click="LoadDataClick">Load</Button>
             </StackPanel>
@@ -92,7 +94,7 @@
             <StackPanel Orientation="Horizontal" IsEnabled="{Binding ElementName=SetSmsReminder, Path=IsChecked}">
                 <Label>SMS Date</Label>
                 <DatePicker Name="SmsDate" SelectedDateChanged="SmsDateChanged"></DatePicker>
-                <CheckBox Name="DayBefore" Checked="DayBeforeChecked" IsChecked="True">1 Day Before</CheckBox>
+                <CheckBox Name="DayBefore" Checked="DayBeforeChecked" IsChecked="True">1 Day Ahead</CheckBox>
             </StackPanel>
             <StackPanel Orientation="Horizontal" IsEnabled="{Binding ElementName=SetSmsReminder, Path=IsChecked}">
                 <Label>SMS Time</Label>
