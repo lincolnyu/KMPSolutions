@@ -15,18 +15,23 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <IsWebBootstrapper>true</IsWebBootstrapper>
-    <PublishUrl>publish\</PublishUrl>
+    <PublishUrl>\\qbintranet\wwwroot\kmp\downloads\KMPBooking\latest\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
-    <UpdateMode>Background</UpdateMode>
+    <UpdateMode>Foreground</UpdateMode>
     <UpdateInterval>7</UpdateInterval>
     <UpdateIntervalUnits>Days</UpdateIntervalUnits>
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>http://qbintranet/kmp/downloads/KMPBooking/latest/</InstallUrl>
-    <ApplicationRevision>1</ApplicationRevision>
+    <SupportUrl>http://qbintranet/kmp/</SupportUrl>
+    <TargetCulture>en</TargetCulture>
+    <ProductName>KMP Booking</ProductName>
+    <PublisherName>quanbenSoft</PublisherName>
+    <SuiteName>KMP Solutions</SuiteName>
+    <ApplicationRevision>4</ApplicationRevision>
     <ApplicationVersion>1.3.1.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
