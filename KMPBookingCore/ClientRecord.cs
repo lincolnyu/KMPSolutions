@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BookingCore
+namespace KMPBookingCore
 {
     public enum Gender
     {

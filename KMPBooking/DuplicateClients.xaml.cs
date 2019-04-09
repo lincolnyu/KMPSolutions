@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
 
-namespace Booking
+namespace KMPBooking
 {
     /// <summary>
     /// Interaction logic for DuplicateClients.xaml

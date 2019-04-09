@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <ProjectGuid>{BD71AD02-3FBD-4730-BAF0-493F640CE316}</ProjectGuid>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyName>KMPBookingCore</AssemblyName>
+  </PropertyGroup>
+</Project>

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 
-namespace BookingCore
+namespace KMPBookingCore
 {
     public class ClientRecords
     {

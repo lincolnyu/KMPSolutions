@@ -8,15 +8,15 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using System.Collections.Generic;
-using BookingCore;
-using static BookingCore.BookingIcs;
-using static BookingCore.DateTimeUtils;
+using KMPBookingCore;
+using static KMPBookingCore.BookingIcs;
+using static KMPBookingCore.DateTimeUtils;
 using System.Text;
 using System.Diagnostics;
 using System.Windows.Navigation;
 using System.Deployment.Application;
 
-namespace Booking
+namespace KMPBooking
 {
     class AutoResetSuppressor
     {

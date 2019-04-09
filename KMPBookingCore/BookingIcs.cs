@@ -4,9 +4,9 @@ using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using static BookingCore.DateTimeUtils;
+using static KMPBookingCore.DateTimeUtils;
 
-namespace BookingCore
+namespace KMPBookingCore
 {
     public static class BookingIcs
     {
