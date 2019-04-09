@@ -43,29 +43,57 @@ namespace BookingCore
             return sb.ToString();
         }
 
-        public static string GenerateBookingIcs(string clientName, string clientPhoneNumber,
+        public static string StandardClientTitle(string clientName, string clientMedi, string clientPhone)
+        {
+            var sb = new StringBuilder();
+            var formattedName = SmartLaunderNameToCommaSeparate(clientName);
+            if (!string.IsNullOrWhiteSpace(formattedName))
+            {
+                sb.Append($"{formattedName}");
+            }
+            else
+            {
+                sb.Append($"<Unspecified Client>");
+            }
+            if (!string.IsNullOrWhiteSpace(clientMedi))
+            {
+                sb.Append($" (MCare# {clientMedi})");
+            }
+            if (!string.IsNullOrWhiteSpace(clientPhone))
+            {
+                sb.Append($" (PH# {clientPhone})");
+            }
+            return sb.ToString();
+        }
+
+        public static string GenerateBookingIcs(string clientName, string clientMedi, string clientPhoneNumber,
            DateTime bookingTime, TimeSpan duration, BookingStatus status = BookingStatus.Pending)
         {
             if (string.IsNullOrWhiteSpace(clientPhoneNumber))
             {
                 clientPhoneNumber = "Phone number unprovided";
             }
+            var sbTitle = new StringBuilder();
+            sbTitle.Append($"KMPBooking [{StatusToCompactStr(status)}] - ");
+            sbTitle.Append(StandardClientTitle(clientName, clientMedi, clientPhoneNumber));
             return GenerateIcs(UID,
                 DateTime.Now,
                 bookingTime,
                 bookingTime + duration,
-                $"KMPBooking [{StatusToCompactStr(status)}] - {SmartLaunderNameToCommaSeparate(clientName)} ({clientPhoneNumber})",
+                sbTitle.ToString(),
                 "",
                 "Unit 12 66-80 Totterdell Street Belconnen ACT 2617");
         }
 
-        public static string GenerateSmsIcs(string clientName, string clientPhoneNumber,
+        public static string GenerateSmsIcs(string clientName, string clientMedi, string clientPhoneNumber,
             DateTime bookingTime, TimeSpan duration, DateTime smsReminderTime)
         {
             var sms = GenerateSms(clientName, clientPhoneNumber, bookingTime, smsReminderTime);
+            var sbTitle = new StringBuilder();
+            sbTitle.Append("KMPSMS - ");
+            sbTitle.Append(StandardClientTitle(clientName, clientMedi, clientPhoneNumber));
             return GenerateIcs(UID, DateTime.Now, smsReminderTime, smsReminderTime,
-                $"KMPSMS - {SmartLaunderNameToCommaSeparate(clientName)} ({clientPhoneNumber})",
-                sms, "");
+                sbTitle.ToString(), sms, "");
         }
 
         public static void LaunchIcs(string ics)
@@ -96,7 +124,7 @@ namespace BookingCore
 
             var sb = new StringBuilder();
             (var fn, var sn) = SmartParseName(clientName);
-            sb.Append($"Dear {fn}\\, ");
+            sb.Append($"Dear {(!string.IsNullOrWhiteSpace(fn) ? fn : "<Unspecified Client>")}\\, ");
             sb.Append("This is just a reminder of your appointment with Kinetic Mobile Physio");
             if (daydesc != null)
             {

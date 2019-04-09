@@ -12,6 +12,9 @@ using BookingCore;
 using static BookingCore.BookingIcs;
 using static BookingCore.DateTimeUtils;
 using System.Text;
+using System.Diagnostics;
+using System.Windows.Navigation;
+using System.Deployment.Application;
 
 namespace Booking
 {
@@ -37,6 +40,7 @@ namespace Booking
     {
         public MainWindow()
         {
+            _checkDateActioner = new StackBottomActioner(CheckDateAndWarn);
             InitializeComponent();
             SetTitle();
             LoadSettings();
@@ -82,8 +86,8 @@ namespace Booking
             {
                 duration = DEFAULT_EVENT_DURATION;
             }
-            var ics = GenerateBookingIcs(ClientName.Text, ClientNumber.Text, bookingDateTime.Value,
-                duration.Value);
+            var ics = GenerateBookingIcs(ClientName.Text, ClientNumber.Text, ClientMedicare.Text, 
+                bookingDateTime.Value, duration.Value);
             if (ics != null)
             {
                 LaunchIcs(ics);
@@ -130,7 +134,7 @@ namespace Booking
                 return;
             }
 
-            var smsics = GenerateSmsIcs(ClientName.Text, ClientNumber.Text,
+            var smsics = GenerateSmsIcs(ClientName.Text, ClientNumber.Text, ClientMedicare.Text,
                 bookingDateTime.Value, duration.Value, smsDateTime.Value);
             if (smsics != null)
             {
@@ -142,20 +146,51 @@ namespace Booking
             }
         }
 
+        static void AddValidationMessage(StringBuilder sb, 
+            ref CheckResult currentCr, CheckResult msgCr, string msg)
+        {
+            if (msgCr < currentCr)
+            {
+                return;
+            }
+            if (msgCr > currentCr)
+            {
+                currentCr = msgCr;
+                sb.Clear();
+            }
+            sb.Append("- ");
+            sb.Append(msg);
+            if (!msg.EndsWith("."))
+            {
+                sb.Append(".");
+            }
+            sb.AppendLine();
+        }
+
         private bool ValidateAndProceed()
         {
-            var sms = SetSmsReminder.IsChecked == true;
-            (var msg, var r) = CheckDate(sms ? Tolerance.AllowIncompleteSmsDate : Tolerance.Neither);
             var sb = new StringBuilder();
-            sb.AppendLine(msg);
-            if (SetSmsReminder.IsChecked == true && string.IsNullOrWhiteSpace(ClientNumber.Text))
+            var sms = SetSmsReminder.IsChecked == true;
+            var r = CheckResult.OK;
+            if (string.IsNullOrWhiteSpace(ClientName.Text))
             {
-                if (r == CheckResult.OK)
-                {
-                    r = CheckResult.Warning;
-                }
-                sb.AppendLine("Phone number not provided, SMS event will be incomplete.");
+                AddValidationMessage(sb, ref r, CheckResult.Error, "Missing client name");
             }
+
+            if (string.IsNullOrWhiteSpace(ClientMedicare.Text))
+            {
+                AddValidationMessage(sb, ref r, CheckResult.Warning, "Missing client medicare number");
+            }
+
+            (var msg, var rr) = CheckDate(sms ? Tolerance.AllowIncompleteSmsDate : Tolerance.Neither);
+            AddValidationMessage(sb, ref r, rr, msg);
+
+            if (SetSmsReminder.IsChecked == true && string.IsNullOrWhiteSpace(ClientNumber.Text) 
+                && r != CheckResult.Error)
+            {
+                AddValidationMessage(sb, ref r, CheckResult.Warning, "Phone number not provided, SMS event will be incomplete.");
+            }
+
             if (r == CheckResult.Error)
             {
                 MessageBox.Show($"Unable to book. Error details:\n{sb.ToString()}", Title);
@@ -163,7 +198,7 @@ namespace Booking
             }
             else if (r == CheckResult.Warning)
             {
-                if (MessageBox.Show($"Warning:\n{sb.ToString()}\nAre you sure to continue?", Title, MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+                if (MessageBox.Show($"Warning:\n{sb.ToString()}Are you sure to continue?", Title, MessageBoxButton.YesNo) != MessageBoxResult.Yes)
                 {
                     return false;
                 }
@@ -188,43 +223,53 @@ namespace Booking
 
         private void DayBeforeChecked(object sender, RoutedEventArgs e)
         {
-            UpdateSmsDate();
-        }
-
-        private void BookingDateChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            if (!UpdateSmsDate())
+            using (new StackBottomActioner.Guard(_checkDateActioner))
             {
-                CheckDateAndWarn();
+                UpdateSmsDate();
             }
         }
 
-        private bool UpdateSmsDate()
+        private void BookingDateChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (BookingDate.SelectedDate.HasValue)
+            using (new StackBottomActioner.Guard(_checkDateActioner))
             {
-                if (DayBefore.IsChecked == true)
+                UpdateSmsDate();
+            }
+        }
+
+        private void UpdateSmsDate()
+        {
+            using (new StackBottomActioner.Guard(_checkDateActioner))
+            {
+                if (BookingDate.SelectedDate.HasValue)
                 {
-                    SmsDate.SelectedDate = BookingDate.SelectedDate.Value.Subtract(TimeSpan.FromDays(1));
-                    return true;
+                    if (DayBefore.IsChecked == true)
+                    {
+                        SmsDate.SelectedDate = BookingDate.SelectedDate.Value.Subtract(TimeSpan.FromDays(1));
+                    }
                 }
             }
-            return false;
         }
 
         private void SmsTimeSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            CheckDateAndWarn();
+            using (new StackBottomActioner.Guard(_checkDateActioner))
+            {
+            }
         }
 
         private void SmsDateChanged(object sender, SelectionChangedEventArgs e)
         {
-            CheckDateAndWarn();
+            using (new StackBottomActioner.Guard(_checkDateActioner))
+            {
+            }
         }
 
         private void BookingTimeSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            CheckDateAndWarn();
+            using (new StackBottomActioner.Guard(_checkDateActioner))
+            {
+            }
         }
 
         void CheckDateAndWarn()
@@ -380,9 +425,22 @@ namespace Booking
 
         void SetTitle()
         {
-            var ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            (var ver, var deployed) = GetVersion();
             var verstr = $"{ver.Major}.{ver.Minor}.{ver.Build}";
-            Title = $"KMP Booking (Ver {verstr})";
+            Title = $"KMP Booking ({(deployed ? "" : "Assembly ")}Ver {verstr})";
+        }
+
+        static (Version, bool /*is network deployed*/) GetVersion(bool tryDeployed = true)
+        {
+            var networkDeployed = ApplicationDeployment.IsNetworkDeployed;
+            if (networkDeployed && tryDeployed)
+            {
+                return (ApplicationDeployment.CurrentDeployment.CurrentVersion, true);
+            }
+            else
+            {
+                return (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version, networkDeployed);
+            }
         }
 
         private void LoadDataFile(bool save)
@@ -422,12 +480,11 @@ namespace Booking
             }
         }
 
-        private void SearchByName(string name, bool updateSourceField=false)
+        private void SearchByName(string name)
         {
             _suppressSearch.Run(() =>
             {
-                (var fn, var sn) = name.SmartParseName();
-                var clients = _clients.FindByName(fn, sn).OrderBy(x => x.MedicareNumber).ToList();
+                var clients = _clients.FindNameContaining(name).OrderBy(x => x.MedicareNumber).ToList();
                 if (clients.Count == 0)
                 {
                     MessageBox.Show("Error: Client not found.", Title);
@@ -451,29 +508,23 @@ namespace Booking
                     {
                         client = clients[0];
                     }
-                    if (updateSourceField)
-                    {
-                        ClientName.Text = name;
-                    }
                     ClientMedicare.Text = client.MedicareNumber;
+                    ClientName.Text = FormCommaSeparateName(client.FirstName, client.Surname);
                     ClientNumber.Text = client.PhoneNumber;
                 }
             });
         }
 
-        private void SearchByMedi(string medi, bool updateSourceField = false)
+        private void SearchByMedi(string medi)
         {
             _suppressSearch.Run(() =>
             {
-                var client = _clients.FindByMedicareNumber(medi);
+                var client = _clients.FindByMedicareNumberContaining(medi);
                 if (client != null)
                 {
+                    ClientMedicare.Text = client.MedicareNumber;
                     ClientName.Text = FormCommaSeparateName(client.FirstName, client.Surname);
                     ClientNumber.Text = client.PhoneNumber;
-                    if (updateSourceField)
-                    {
-                        ClientMedicare.Text = medi;
-                    }
                 }
                 else
                 {
@@ -482,11 +533,11 @@ namespace Booking
             });
         }
 
-        private void SearchByPhone(string phone, bool updateSourceField = false)
+        private void SearchByPhone(string phone)
         {
             _suppressSearch.Run(() =>
             {
-                var clients = _clients.FindByPhoneNumber(phone).OrderBy(x => x.MedicareNumber).ToList();
+                var clients = _clients.FindByPhoneNumberContaining(phone).OrderBy(x => x.MedicareNumber).ToList();
                 if (clients.Count == 0)
                 {
                     MessageBox.Show("Error: Client not found.", Title);
@@ -512,10 +563,7 @@ namespace Booking
                     }
                     ClientMedicare.Text = client.MedicareNumber;
                     ClientName.Text = FormCommaSeparateName(client.FirstName, client.Surname);
-                    if (updateSourceField)
-                    {
-                        ClientNumber.Text = phone;
-                    }
+                    ClientNumber.Text = client.PhoneNumber;
                 }
             });
         }
@@ -607,7 +655,46 @@ namespace Booking
             e.Handled = true;
         }
 
+        private void HomePageLinkRequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            Process.Start(e.Uri.ToString());
+        }
+
+        class StackBottomActioner
+        {
+            public StackBottomActioner(Action finalAction)
+            {
+                _finalAction = finalAction;
+            }
+            public class Guard : IDisposable
+            {
+                public Guard(StackBottomActioner checker)
+                {
+                    _actioner = checker;
+                    _actioner._stackDepth++;
+                }
+
+                public void Dispose()
+                {
+                    if (_actioner != null)
+                    {
+                        _actioner._stackDepth--;
+                        if (_actioner._stackDepth == 0)
+                        {
+                            _actioner._finalAction?.Invoke();
+                        }
+                        _actioner = null;
+                    }
+                }
+
+                private StackBottomActioner _actioner;
+            }
+            private int _stackDepth;
+            private Action _finalAction;
+        }
+
         ClientRecords _clients = new ClientRecords();
         AutoResetSuppressor _suppressSearch = new AutoResetSuppressor();
+        private StackBottomActioner _checkDateActioner;
     }
 }

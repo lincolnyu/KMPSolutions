@@ -5,8 +5,26 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Booking"
         mc:Ignorable="d"
-        Title="KMP Booking" Height="400" Width="600">
+        Title="KMP Booking" Height="480" Width="640">
     <Grid>
+        <Grid.Resources>
+            <Style TargetType="StackPanel">
+                <Style.Setters>
+                    <Setter Property="Margin" Value="2"></Setter>
+                </Style.Setters>
+            </Style>
+            <Style TargetType="CheckBox">
+                <Style.Setters>
+                    <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                    <Setter Property="Margin" Value="2,0,0,0"></Setter>
+                </Style.Setters>
+            </Style>
+            <Style TargetType="TextBlock">
+                <Style.Setters>
+                    <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                </Style.Setters>
+            </Style>
+        </Grid.Resources>
         <StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Data File Path</Label>
@@ -20,19 +38,23 @@
                 <Label>Medicare Number</Label>
                 <ComboBox MinWidth="120" IsEditable="True" Name="ClientMedicare"
                           KeyDown="ClientMediKeyDown" SelectionChanged="ClientMediSelChanged"></ComboBox>
-                <Button Click="SearchByMediClick">Find</Button>
+                <Button Click="SearchByMediClick" ToolTip="Find the client with medicare numbers contain this text">Find</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Client Name</Label>
                 <ComboBox MinWidth="120" IsEditable="True" Name="ClientName"
                           KeyDown="ClientNameKeyDown" SelectionChanged="ClientNameSelChanged"></ComboBox>
-                <Button Click="SearchByNameClick">Find</Button>
+                <Button Click="SearchByNameClick" ToolTip="Find all clients whose names contain this text">
+                    Find
+                </Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Client Phone Number</Label>
                 <ComboBox MinWidth="120" IsEditable="True"  Name="ClientNumber" 
                           KeyDown="ClientNumberKeyDown" SelectionChanged="ClientNumberSelChanged"></ComboBox>
-                <Button Click="SearchByPhoneClick">Find</Button>
+                <Button Click="SearchByPhoneClick" ToolTip="Find all clients whose phone numbers contain this text">
+                    Find
+                </Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Booking Date</Label>
@@ -72,7 +94,7 @@
                 </ComboBox>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Label>Duration</Label>
+                <Label>Duration (Minutes)</Label>
                 <ComboBox Name="Duration" IsEditable="True">
                     <ComboBox.SelectedIndex>5</ComboBox.SelectedIndex>
                     <ComboBox.Items>
@@ -120,6 +142,11 @@
             <StackPanel Orientation="Horizontal">
                 <Button Click="BookClicked">Book the Appointment in Calendar</Button>
                 <CheckBox Name="SetSmsReminder" IsChecked="True">Also Create SMS Reminder in Calendar</CheckBox>
+            </StackPanel>
+            <StackPanel>
+                <TextBlock>
+                    Make sure to check out <Hyperlink NavigateUri="http://192.168.1.7/kmp" RequestNavigate="HomePageLinkRequestNavigate">KMP Intranet Homepage</Hyperlink>
+                </TextBlock>
             </StackPanel>
         </StackPanel>
     </Grid>
