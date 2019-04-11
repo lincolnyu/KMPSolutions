@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KMPBooking"
         mc:Ignorable="d"
-        Title="KMP Booking" Height="480" Width="640">
+        Title="KMP Booking" Height="480" Width="640" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.Resources>
             <Style TargetType="StackPanel">
