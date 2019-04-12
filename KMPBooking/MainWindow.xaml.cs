@@ -494,8 +494,12 @@ namespace KMPBooking
                     ClientRecord client = null;
                     if (clients.Count > 1)
                     {
-                        var dc = new DuplicateClients($"Multiple clients found with name {name}", RecordsToStrings(clients));
-                        if (dc.ShowDialog() == true)
+                        var dc = new DuplicateClients($"Multiple clients found with name containing '{name}'", RecordsToStrings(clients))
+                        {
+                            Owner = this,
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner
+                        };
+                        if (dc.ShowDialog() == true && dc.SelectedIndex >= 0)
                         {
                             client = clients[dc.SelectedIndex];
                         }
@@ -519,17 +523,36 @@ namespace KMPBooking
         {
             _suppressSearch.Run(() =>
             {
-                var client = _clients.FindByMedicareNumberContaining(medi);
-                if (client != null)
-                {
-                    ClientMedicare.Text = client.MedicareNumber;
-                    ClientName.Text = FormCommaSeparateName(client.FirstName, client.Surname);
-                    ClientNumber.Text = client.PhoneNumber;
-                }
-                else
+                var clients = _clients.FindByMedicareNumberContaining(medi)
+                    .OrderBy(x => x.MedicareNumber).ToList();
+                if (clients.Count == 0)
                 {
                     MessageBox.Show("Error: Client not found.", Title);
                 }
+                ClientRecord client = null;
+                if (clients.Count > 1)
+                {
+                    var dc = new DuplicateClients($"Multiple clients found with medicare number containing '{medi}'", RecordsToStrings(clients))
+                    {
+                        Owner = this,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner
+                    };
+                    if (dc.ShowDialog() == true && dc.SelectedIndex >= 0)
+                    {
+                        client = clients[dc.SelectedIndex];
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    client = clients[0];
+                }
+                ClientMedicare.Text = client.MedicareNumber;
+                ClientName.Text = FormCommaSeparateName(client.FirstName, client.Surname);
+                ClientNumber.Text = client.PhoneNumber;
             });
         }
 
@@ -547,8 +570,12 @@ namespace KMPBooking
                     ClientRecord client;
                     if (clients.Count > 1)
                     {
-                        var dc = new DuplicateClients($"Multiple clients found with phone number {phone}", RecordsToStrings(clients));
-                        if (dc.ShowDialog() == true)
+                        var dc = new DuplicateClients($"Multiple clients found with phone number containing '{phone}'", RecordsToStrings(clients))
+                        {
+                            Owner = this,
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner
+                        };
+                        if (dc.ShowDialog() == true && dc.SelectedIndex >= 0)
                         {
                             client = clients[dc.SelectedIndex];
                         }

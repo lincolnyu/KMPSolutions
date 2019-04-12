@@ -41,8 +41,8 @@ namespace KMPBookingCore
         public ClientRecord FindByMedicareNumber(string medicareNumber)
             => _records.FirstOrDefault(x => x.MedicareNumber == medicareNumber);
 
-        public ClientRecord FindByMedicareNumberContaining(string medSubstr)
-            => _records.FirstOrDefault(x => x.MedicareNumber.Contains(medSubstr));
+        public IEnumerable<ClientRecord> FindByMedicareNumberContaining(string medSubstr)
+            => _records.Where(x => x.MedicareNumber.Contains(medSubstr));
 
         public IEnumerable<ClientRecord> FindByPhoneNumber(string phoneNumber)
             => _records.Where(x => x.PhoneNumber == phoneNumber);
