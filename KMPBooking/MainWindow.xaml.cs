@@ -458,6 +458,19 @@ namespace KMPBooking
         private void LoadDataClick(object sender, RoutedEventArgs e)
             => LoadDataFile(true);
 
+        private void ShowInExplorerClick(object sender, RoutedEventArgs e)
+        {
+            var dn = Path.GetDirectoryName(DataFilePath.Text);
+            if (Directory.Exists(dn))
+            {
+                Process.Start("explorer.exe", dn);
+            }
+            else
+            {
+                MessageBox.Show("Error: Unable to find the diretory.", Title);
+            }
+        }
+
         private void BrowseDataPathClick(object sender, RoutedEventArgs e)
         {
             var ofd = new OpenFileDialog();

@@ -32,7 +32,8 @@
                          DragEnter="DataFilePath_DragEnter"
                          Drop="DataFilePath_Drop" PreviewDragOver="DataFilePath_PreviewDragOver"></TextBox>
                 <Button Click="BrowseDataPathClick" MinWidth="30">...</Button>
-                <Button Click="LoadDataClick">Reload</Button>
+                <!--<Button Click="LoadDataClick">Reload</Button>-->
+                <Button Click="ShowInExplorerClick">Locate</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Medicare Number</Label>
