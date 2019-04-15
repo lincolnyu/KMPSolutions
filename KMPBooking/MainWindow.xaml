@@ -31,9 +31,9 @@
                 <TextBox MinWidth="200" Name="DataFilePath" AllowDrop="True"
                          DragEnter="DataFilePath_DragEnter"
                          Drop="DataFilePath_Drop" PreviewDragOver="DataFilePath_PreviewDragOver"></TextBox>
-                <Button Click="BrowseDataPathClick" MinWidth="30">...</Button>
+                <Button Click="BrowseDataPathClick" MinWidth="30" ToolTip="Browse to find a data file">...</Button>
                 <!--<Button Click="LoadDataClick">Reload</Button>-->
-                <Button Click="ShowInExplorerClick">Locate</Button>
+                <Button Click="ShowInExplorerClick" ToolTip="Locate the data file in Windows Explorer">Locate</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Medicare Number</Label>

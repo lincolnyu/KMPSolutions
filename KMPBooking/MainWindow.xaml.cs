@@ -358,7 +358,7 @@ namespace KMPBooking
             {
                 if (!File.Exists(filepath))
                 {
-                    MessageBox.Show("Error: The data file does not exist.", Title);
+                    MessageBox.Show("Error: The data file does not exist. Please provide a valid one.\nIf this is the first time to run a new version, it may not be initially available.", Title);
                     return false;
                 }
 
@@ -460,15 +460,16 @@ namespace KMPBooking
 
         private void ShowInExplorerClick(object sender, RoutedEventArgs e)
         {
-            var dn = Path.GetDirectoryName(DataFilePath.Text);
-            if (Directory.Exists(dn))
+            if (File.Exists(DataFilePath.Text))
             {
-                Process.Start("explorer.exe", dn);
+                var dn = Path.GetDirectoryName(DataFilePath.Text);
+                if (Directory.Exists(dn))
+                {
+                    Process.Start("explorer.exe", dn);
+                    return;
+                }
             }
-            else
-            {
-                MessageBox.Show("Error: Unable to find the diretory.", Title);
-            }
+            MessageBox.Show("Error: Unable to locate the file.", Title);
         }
 
         private void BrowseDataPathClick(object sender, RoutedEventArgs e)
