@@ -1,0 +1,51 @@
+﻿<Window x:Class="KMPCenter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:KMPCenter"
+        mc:Ignorable="d"
+        Title="KMP Center" Height="450" Width="800">
+    <Grid>
+        <Grid.Resources>
+            <Style TargetType="StackPanel">
+                <Style.Setters>
+                    <Setter Property="Margin" Value="2"></Setter>
+                </Style.Setters>
+            </Style>
+            <Style TargetType="CheckBox">
+                <Style.Setters>
+                    <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                    <Setter Property="Margin" Value="2,0,0,0"></Setter>
+                </Style.Setters>
+            </Style>
+            <Style TargetType="TextBlock">
+                <Style.Setters>
+                    <Setter Property="VerticalAlignment" Value="Center"></Setter>
+                </Style.Setters>
+            </Style>
+        </Grid.Resources>
+        <StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label>Client Excel File Path</Label>
+                <TextBox MinWidth="200" Name="ExcelPath" AllowDrop="True"
+                         DragEnter="ExcelPathDragEnter"
+                         Drop="ExcelPathDrop" PreviewDragOver="ExcelPathPreviewDragOver"></TextBox>
+                <Button Click="ExcelBrowseClick" MinWidth="30" ToolTip="Browse to find a Microsoft Excel file">...</Button>
+                <Button Click="ExcelShowInExplorerClick" ToolTip="Locate the Microsoft Excel file in Windows Explorer">Locate</Button>
+                <Button Click="ExcelSyncToDbClick">Sync to Database</Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label>Client Database Path</Label>
+                <TextBox MinWidth="200" AllowDrop="True" Name="DbPath"
+                         DragEnter="DbPathDragEnter"
+                         Drop="DbPathDrop" PreviewDragOver="DbPathPreviewDragOver"></TextBox>
+                <Button Click="DbBrowseClick" MinWidth="30" ToolTip="Browse to find a Microsoft Access Database file">...</Button>
+                <Button Click="DbShowInExplorerClick" ToolTip="Locate the Microsoft Access Database file in Windows Explorer">Locate</Button>
+                <Button Click="DbSyncToExcelClick">Sync to Excel</Button>
+            </StackPanel>
+            <Button Click="BookingClick">Booking</Button>
+            <Button Click="InvoiceGenerationClick">Invoice Generation</Button>
+        </StackPanel>
+    </Grid>
+</Window>
