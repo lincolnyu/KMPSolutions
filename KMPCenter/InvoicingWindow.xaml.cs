@@ -3,11 +3,11 @@
 namespace KMPCenter
 {
     /// <summary>
-    /// Interaction logic for Booking.xaml
+    /// Interaction logic for InvoiceGeneratorWindow.xaml
     /// </summary>
-    public partial class BookingWindow : Window
+    public partial class InvoicingWindow : Window
     {
-        public BookingWindow()
+        public InvoicingWindow()
         {
             InitializeComponent();
         }

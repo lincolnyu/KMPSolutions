@@ -3,6 +3,7 @@ using System.Windows;
 using System.Data.OleDb;
 using Microsoft.Win32;
 using System.IO;
+using System.Diagnostics;
 
 namespace KMPCenter
 {
@@ -13,11 +14,32 @@ namespace KMPCenter
     {
         private OleDbConnection _conn;
         private BookingWindow _booking;
-        private InvoiceGeneratorWindow _invoiceGenerator;
+        private InvoicingWindow _invoicing;
 
         public MainWindow()
         {
             InitializeComponent();
+            SetTitle();
+            LoadSettings();
+        }
+
+        private void SetTitle()
+        {
+            //TODO implement it
+        }
+
+        private void LoadSettings()
+        {
+            ExcelPath.Text = Properties.Settings.Default.ExcelPath;
+            DbPath.Text = Properties.Settings.Default.DbPath;
+            if (!string.IsNullOrWhiteSpace(ExcelPath.Text))
+            {
+                LoadExcel(false);
+            }
+            if (!string.IsNullOrWhiteSpace(DbPath.Text))
+            {
+                ConnectToDb(false);
+            }
         }
 
         private void ExcelPathDragEnter(object sender, DragEventArgs e)
@@ -46,7 +68,10 @@ namespace KMPCenter
 
         private void ExcelBrowseClick(object sender, RoutedEventArgs e)
         {
-            var ofd = new OpenFileDialog();
+            var ofd = new OpenFileDialog
+            {
+                Filter = "Microsoft Excel files (*.xslx)|*.xslx|All files (*.*)|*.*"
+            };
             if (File.Exists(ExcelPath.Text))
             {
                 ofd.InitialDirectory = Path.GetDirectoryName(ExcelPath.Text);
@@ -60,8 +85,19 @@ namespace KMPCenter
 
         private void ExcelShowInExplorerClick(object sender, RoutedEventArgs e)
         {
+            if (File.Exists(ExcelPath.Text))
+            {
+                var dn = Path.GetDirectoryName(ExcelPath.Text);
+                if (Directory.Exists(dn))
+                {
+                    Process.Start("explorer.exe", dn);
+                    return;
+                }
+            }
+            MessageBox.Show("Error: Unable to locate the Excel file.", Title);
 
         }
+
         private void DbPathDragEnter(object sender, DragEventArgs e)
         {
             e.Effects = DragDropEffects.Copy;
@@ -79,7 +115,10 @@ namespace KMPCenter
 
         private void DbBrowseClick(object sender, RoutedEventArgs e)
         {
-            var ofd = new OpenFileDialog();
+            var ofd = new OpenFileDialog
+            {
+                Filter = "Microsoft Access database files (*.accdb)|*.accdb|All files (*.*)|*.*"
+            };
             if (File.Exists(DbPath.Text))
             {
                 ofd.InitialDirectory = Path.GetDirectoryName(DbPath.Text);
@@ -93,7 +132,16 @@ namespace KMPCenter
 
         private void DbShowInExplorerClick(object sender, RoutedEventArgs e)
         {
-
+            if (File.Exists(DbPath.Text))
+            {
+                var dn = Path.GetDirectoryName(DbPath.Text);
+                if (Directory.Exists(dn))
+                {
+                    Process.Start("explorer.exe", dn);
+                    return;
+                }
+            }
+            MessageBox.Show("Error: Unable to locate the database file.", Title);
         }
 
         private void ExcelSyncToDbClick(object sender, RoutedEventArgs e)
@@ -132,7 +180,8 @@ namespace KMPCenter
         
         bool LoadClientsFromExcel(string excelPath)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            return true;
         }
 
         private bool ConnectToDb(string path)
@@ -145,12 +194,12 @@ namespace KMPCenter
             try
             {
                 _conn.Open();
-                MessageBox.Show("Succeeded to connect to the database.");
+                MessageBox.Show("Successfully connected to the database.", Title);
                 return true;
             }
             catch (Exception e)
             {
-                MessageBox.Show($"Failed to connect to the database. Details:\n{e.Message}");
+                MessageBox.Show($"Failed to connect to the database. Details:\n{e.Message}", Title);
                 return false;
             }
         }
@@ -169,18 +218,18 @@ namespace KMPCenter
             _booking.Activate();
         }
 
-        private void InvoiceGenerationClick(object sender, RoutedEventArgs e)
+        private void InvoicingClick(object sender, RoutedEventArgs e)
         {
-            if (_invoiceGenerator == null)
+            if (_invoicing == null)
             {
-                _invoiceGenerator = new InvoiceGeneratorWindow();
-                _invoiceGenerator.Closed += (s1, e1) =>
+                _invoicing = new InvoicingWindow();
+                _invoicing.Closed += (s1, e1) =>
                 {
-                    _invoiceGenerator = null;
+                    _invoicing = null;
                 };
             }
-            _invoiceGenerator.Show();
-            _invoiceGenerator.Activate();
+            _invoicing.Show();
+            _invoicing.Activate();
         }
     }
 }
