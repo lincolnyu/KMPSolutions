@@ -59,7 +59,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="InvoiceGeneratorWindow.xaml">
+    <Page Include="InvoicingWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -74,8 +74,8 @@
     <Compile Include="BookingWindow.xaml.cs">
       <DependentUpon>BookingWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="InvoiceGeneratorWindow.xaml.cs">
-      <DependentUpon>InvoiceGeneratorWindow.xaml</DependentUpon>
+    <Compile Include="InvoicingWindow.xaml.cs">
+      <DependentUpon>InvoicingWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

@@ -45,7 +45,7 @@
                 <Button Click="DbSyncToExcelClick">Sync to Excel</Button>
             </StackPanel>
             <Button Click="BookingClick">Booking</Button>
-            <Button Click="InvoiceGenerationClick">Invoice Generation</Button>
+            <Button Click="InvoicingClick">Invoicing</Button>
         </StackPanel>
     </Grid>
 </Window>
