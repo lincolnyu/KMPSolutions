@@ -448,5 +448,10 @@ namespace KMPCenter
             _invoicing.Show();
             _invoicing.Activate();
         }
+
+        private void HomePageLinkRequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+
+        }
     }
 }
