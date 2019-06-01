@@ -6,6 +6,8 @@ namespace KMPBookingCore
 {
     public class ClientRecords
     {
+        private readonly List<ClientRecord> _records = new List<ClientRecord>();
+
         public ClientRecords()
         {
         }
@@ -50,6 +52,7 @@ namespace KMPBookingCore
         public IEnumerable<ClientRecord> FindByPhoneNumberContaining(string numberSubstr)
             => _records.Where(x => x.PhoneNumber.Contains(numberSubstr));
 
-        List<ClientRecord> _records = new List<ClientRecord>();
+        public IReadOnlyList<ClientRecord> Records()
+            => _records;
     }
 }
