@@ -102,7 +102,7 @@ namespace KMPCenter
                     return;
                 }
             }
-            MessageBox.Show("Error: Unable to locate the Excel file.", Title);
+            App.ShowMessage("Error: Unable to locate the Excel file.");
         }
 
         private void DbPathDragEnter(object sender, DragEventArgs e)
@@ -148,7 +148,7 @@ namespace KMPCenter
                     return;
                 }
             }
-            MessageBox.Show("Error: Unable to locate the database file.", Title);
+            App.ShowMessage("Error: Unable to locate the database file.");
         }
 
         private DateTime? TryGetDateTime(OleDbDataReader r, int col)
@@ -184,7 +184,7 @@ namespace KMPCenter
             var excelRecords = _clients.Records();
             if (excelRecords.Count > 0)
             {
-                MessageBox.Show($"{excelRecords.Count} client records found in Excel. Syncing to the database.", Title);
+                App.ShowMessage($"{excelRecords.Count} client records found in Excel. Syncing to the database.");
                 var dbClients = new Dictionary<string, ClientRecord>();
                 using (var r = RunReaderQuery("select [Client Name], [DOB], [Gender], [Medicare], [Phone], [Address] from Clients"))
                 {
@@ -312,6 +312,7 @@ namespace KMPCenter
             {
                 return;
             }
+            App.ShowMessage("Not implemented yet.");
         }
 
         private void LoadExcel(bool saveSettings)
@@ -344,7 +345,7 @@ namespace KMPCenter
             {
                 if (!File.Exists(excelPath))
                 {
-                    MessageBox.Show("Error: The data file does not exist. Please provide a valid one.\nIf this is the first time to run a new version, it may not be initially available.", Title);
+                    App.ShowMessage("Error: The data file does not exist. Please provide a valid one.\nIf this is the first time to run a new version, it may not be initially available.");
                     return false;
                 }
 
@@ -385,7 +386,7 @@ namespace KMPCenter
             }
             catch (Exception e)
             {
-                MessageBox.Show($"Error: Failed to load the data file. Details:\n{e.Message}.", Title);
+                App.ShowMessage($"Error: Failed to load the data file. Details:\n{e.Message}.");
                 return false;
             }
         }
@@ -399,12 +400,12 @@ namespace KMPCenter
             {
                 _connection = new OleDbConnection(_connectionString);
                 _connection.Open();
-                MessageBox.Show("Successfully connected to the database.", Title);
+                App.ShowMessage("Successfully connected to the database.");
                 successful = true;
             }
             catch (Exception e)
             {
-                MessageBox.Show($"Failed to connect to the database. Details:\n{e.Message}", Title);
+                App.ShowMessage($"Failed to connect to the database. Details:\n{e.Message}");
                 _connection = null;
             }
             finally

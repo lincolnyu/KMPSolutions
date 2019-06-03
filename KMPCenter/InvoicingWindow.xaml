@@ -7,6 +7,8 @@
         mc:Ignorable="d"
         Title="KMP Invoicing" Height="450" Width="800">
     <Grid>
-        
+        <StackPanel>
+            <Button Click="GenerateClick">_Generate</Button>
+        </StackPanel>
     </Grid>
 </Window>
