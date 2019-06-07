@@ -10,6 +10,7 @@ using System.Text;
 using System.Data;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Windows.Controls;
 
 namespace KMPCenter
 {
@@ -40,6 +41,7 @@ namespace KMPCenter
         {
             ExcelPath.Text = Properties.Settings.Default.ExcelPath;
             DbPath.Text = Properties.Settings.Default.DbPath;
+            InvoiceTemplatePath.Text = Properties.Settings.Default.InvoiceTemplatePath;
             if (!string.IsNullOrWhiteSpace(ExcelPath.Text))
             {
                 LoadExcel(false);
@@ -47,6 +49,10 @@ namespace KMPCenter
             if (!string.IsNullOrWhiteSpace(DbPath.Text))
             {
                 ConnectToDb(false);
+            }
+            if (!string.IsNullOrWhiteSpace(InvoiceTemplatePath.Text))
+            {
+                LoadInvoiceTemplate(false);
             }
         }
 
@@ -57,19 +63,22 @@ namespace KMPCenter
 
         private void ExcelPathDrop(object sender, DragEventArgs e)
         {
+            DropHandler(sender, e, ExcelPath, LoadExcel);
+        }
+
+        void DropHandler(object sender, DragEventArgs e, TextBox tb, Action<bool> loader)
+        {
             var data = (DataObject)e.Data;
             if (data.ContainsFileDropList())
             {
                 string[] rawFiles = (string[])e.Data.GetData(DataFormats.FileDrop);
                 if (rawFiles.Length > 0)
                 {
-                    ExcelPath.Text = rawFiles[0];
-                    LoadExcel(true);
+                    tb.Text = rawFiles[0];
+                    loader(true);
                 }
             }
         }
-
-        void DropHandler(object sender, DragEventArgs e)
 
         private void ExcelPathPreviewDragOver(object sender, DragEventArgs e)
         {
@@ -114,7 +123,7 @@ namespace KMPCenter
 
         private void DbPathDrop(object sender, DragEventArgs e)
         {
-
+            DropHandler(sender, e, DbPath, ConnectToDb);
         }
 
         private void DbPathPreviewDragOver(object sender, DragEventArgs e)
@@ -428,7 +437,7 @@ namespace KMPCenter
         {
             if (_booking == null)
             {
-                _booking = new BookingWindow();
+                _booking = new BookingWindow(this);
                 _booking.Closed += (s1, e1) =>
                 {
                     _booking = null;
@@ -442,7 +451,7 @@ namespace KMPCenter
         {
             if (_invoicing == null)
             {
-                _invoicing = new InvoicingWindow();
+                _invoicing = new InvoicingWindow(this);
                 _invoicing.Closed += (s1, e1) =>
                 {
                     _invoicing = null;
@@ -454,7 +463,7 @@ namespace KMPCenter
 
         private void InvoiceTemplatePathDrop(object sender, DragEventArgs e)
         {
-
+            DropHandler(sender, e, InvoiceTemplatePath, b => { LoadInvoiceTemplate(b); });
         }
 
         private void InvoiceTemplatePathPreviewDragOver(object sender, DragEventArgs e)
@@ -464,19 +473,55 @@ namespace KMPCenter
 
         private void InvoiceTemplateBrowseClick(object sender, RoutedEventArgs e)
         {
-
+            var ofd = new OpenFileDialog
+            {
+                Filter = "Microsoft Word documents (*.docx)|*.docx|All files (*.*)|*.*"
+            };
+            if (File.Exists(InvoiceTemplatePath.Text))
+            {
+                ofd.InitialDirectory = Path.GetDirectoryName(InvoiceTemplatePath.Text);
+            }
+            if (ofd.ShowDialog() == true)
+            {
+                InvoiceTemplatePath.Text = ofd.FileName;
+                LoadInvoiceTemplate(true);
+            }
         }
 
         private void InvoiceTemplateShowInExplorerClick(object sender, RoutedEventArgs e)
         {
-
+            if (File.Exists(InvoiceTemplatePath.Text))
+            {
+                var dn = Path.GetDirectoryName(InvoiceTemplatePath.Text);
+                if (Directory.Exists(dn))
+                {
+                    Process.Start("explorer.exe", dn);
+                    return;
+                }
+            }
+            App.ShowMessage("Error: Unable to locate the invoice template.");
         }
 
+        private void LoadInvoiceTemplate(bool saveSettings)
+        {
+            if (File.Exists(InvoiceTemplatePath.Text))
+            {
+                if (saveSettings)
+                {
+                    Properties.Settings.Default.InvoiceTemplatePath = InvoiceTemplatePath.Text;
+                    Properties.Settings.Default.Save();
+                }
+            }
+        }
 
         private void HomePageLinkRequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
 
         }
 
+        private void InvoiceTemplateLostFocus(object sender, RoutedEventArgs e)
+        {
+            LoadInvoiceTemplate(true);
+        }
     }
 }
