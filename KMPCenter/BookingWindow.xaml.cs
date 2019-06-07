@@ -1,4 +1,7 @@
 ﻿using System.Windows;
+using System.Windows.Input;
+using System.Windows.Controls;
+using System.Windows.Navigation;
 
 namespace KMPCenter
 {
@@ -7,27 +10,30 @@ namespace KMPCenter
     /// </summary>
     public partial class BookingWindow : Window
     {
-        public BookingWindow()
+        private MainWindow _mainwindow;
+
+        public BookingWindow(MainWindow mw)
         {
+            _mainwindow = mw;
             InitializeComponent();
         }
 
-        private void ClientMediKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void ClientMediKeyDown(object sender, KeyEventArgs e)
         {
 
         }
 
-        private void ClientMediSelChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void ClientMediSelChanged(object sender, SelectionChangedEventArgs e)
         {
 
         }
 
-        private void ClientNameKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void ClientNameKeyDown(object sender, KeyEventArgs e)
         {
 
         }
 
-        private void ClientNameSelChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void ClientNameSelChanged(object sender, SelectionChangedEventArgs e)
         {
 
         }
@@ -37,12 +43,12 @@ namespace KMPCenter
 
         }
 
-        private void ClientNumberKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void ClientNumberKeyDown(object sender, KeyEventArgs e)
         {
 
         }
 
-        private void ClientNumberSelChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void ClientNumberSelChanged(object sender, SelectionChangedEventArgs e)
         {
 
         }
@@ -52,17 +58,17 @@ namespace KMPCenter
 
         }
 
-        private void BookingDateChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void BookingDateChanged(object sender, SelectionChangedEventArgs e)
         {
 
         }
 
-        private void BookingTimeSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void BookingTimeSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
         }
 
-        private void SmsDateChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void SmsDateChanged(object sender, SelectionChangedEventArgs e)
         {
 
         }
@@ -87,7 +93,7 @@ namespace KMPCenter
 
         }
 
-        private void HomePageLinkRequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        private void HomePageLinkRequestNavigate(object sender, RequestNavigateEventArgs e)
         {
 
         }

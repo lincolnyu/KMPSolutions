@@ -48,7 +48,8 @@
                 <Label>Invoice Template</Label>
                 <TextBox MinWidth="200" AllowDrop="True" Name="InvoiceTemplatePath"
                          DragEnter="DbPathDragEnter"
-                         Drop="InvoiceTemplatePathDrop" PreviewDragOver="InvoiceTemplatePathPreviewDragOver"></TextBox>
+                         Drop="InvoiceTemplatePathDrop" PreviewDragOver="InvoiceTemplatePathPreviewDragOver"
+                         LostFocus="InvoiceTemplateLostFocus" ></TextBox>
                 <Button Click="InvoiceTemplateBrowseClick" MinWidth="30" ToolTip="Browse to find the invoice template Word document file">...</Button>
                 <Button Click="InvoiceTemplateShowInExplorerClick" ToolTip="Locate the invoice template Word document file in Windows Explorer">Locate</Button>
             </StackPanel>
