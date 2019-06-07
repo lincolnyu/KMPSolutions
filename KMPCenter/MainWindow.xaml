@@ -27,7 +27,7 @@
         </Grid.Resources>
         <StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Label>Client Excel File Path</Label>
+                <Label>Client Excel File</Label>
                 <TextBox MinWidth="200" Name="ExcelPath" AllowDrop="True"
                          DragEnter="ExcelPathDragEnter"
                          Drop="ExcelPathDrop" PreviewDragOver="ExcelPathPreviewDragOver"></TextBox>
@@ -36,13 +36,21 @@
                 <Button Click="ExcelSyncToDbClick">Sync to Database</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Label>Client Database Path</Label>
+                <Label>Client Database</Label>
                 <TextBox MinWidth="200" AllowDrop="True" Name="DbPath"
                          DragEnter="DbPathDragEnter"
                          Drop="DbPathDrop" PreviewDragOver="DbPathPreviewDragOver"></TextBox>
                 <Button Click="DbBrowseClick" MinWidth="30" ToolTip="Browse to find a Microsoft Access Database file">...</Button>
                 <Button Click="DbShowInExplorerClick" ToolTip="Locate the Microsoft Access Database file in Windows Explorer">Locate</Button>
                 <Button Click="DbSyncToExcelClick">Sync to Excel</Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label>Invoice Template</Label>
+                <TextBox MinWidth="200" AllowDrop="True" Name="InvoiceTemplatePath"
+                         DragEnter="DbPathDragEnter"
+                         Drop="InvoiceTemplatePathDrop" PreviewDragOver="InvoiceTemplatePathPreviewDragOver"></TextBox>
+                <Button Click="InvoiceTemplateBrowseClick" MinWidth="30" ToolTip="Browse to find the invoice template Word document file">...</Button>
+                <Button Click="InvoiceTemplateShowInExplorerClick" ToolTip="Locate the invoice template Word document file in Windows Explorer">Locate</Button>
             </StackPanel>
             <Button Click="BookingClick">Booking</Button>
             <Button Click="InvoicingClick">Invoicing</Button>
