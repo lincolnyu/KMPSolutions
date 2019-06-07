@@ -23,6 +23,8 @@ namespace KMPCenter
         private string _connectionString;
         private BookingWindow _booking;
         private InvoicingWindow _invoicing;
+        private ClientsWindow _clientsWindow;
+        private string _loadedExcel;
         private readonly ClientRecords _clients = new ClientRecords();
 
         public MainWindow()
@@ -44,15 +46,15 @@ namespace KMPCenter
             InvoiceTemplatePath.Text = Properties.Settings.Default.InvoiceTemplatePath;
             if (!string.IsNullOrWhiteSpace(ExcelPath.Text))
             {
-                LoadExcel(false);
+                LoadExcel();
             }
             if (!string.IsNullOrWhiteSpace(DbPath.Text))
             {
-                ConnectToDb(false);
+                ConnectToDb();
             }
             if (!string.IsNullOrWhiteSpace(InvoiceTemplatePath.Text))
             {
-                LoadInvoiceTemplate(false);
+                LoadInvoiceTemplate();
             }
         }
 
@@ -66,7 +68,7 @@ namespace KMPCenter
             DropHandler(sender, e, ExcelPath, LoadExcel);
         }
 
-        void DropHandler(object sender, DragEventArgs e, TextBox tb, Action<bool> loader)
+        void DropHandler(object sender, DragEventArgs e, TextBox tb, Action loader)
         {
             var data = (DataObject)e.Data;
             if (data.ContainsFileDropList())
@@ -75,7 +77,7 @@ namespace KMPCenter
                 if (rawFiles.Length > 0)
                 {
                     tb.Text = rawFiles[0];
-                    loader(true);
+                    loader();
                 }
             }
         }
@@ -98,7 +100,7 @@ namespace KMPCenter
             if (ofd.ShowDialog() == true)
             {
                 ExcelPath.Text = ofd.FileName;
-                LoadExcel(true);
+                LoadExcel();
             }
         }
 
@@ -144,7 +146,7 @@ namespace KMPCenter
             if (ofd.ShowDialog() == true)
             {
                 DbPath.Text = ofd.FileName;
-                ConnectToDb(true);
+                ConnectToDb();
             }
         }
 
@@ -326,27 +328,21 @@ namespace KMPCenter
             App.ShowMessage("Not implemented yet.");
         }
 
-        private void LoadExcel(bool saveSettings)
+        private void LoadExcel()
         {
             if (LoadClientsFromExcel(ExcelPath.Text))
             {
-                if (saveSettings)
-                {
-                    Properties.Settings.Default.ExcelPath = ExcelPath.Text;
-                    Properties.Settings.Default.Save();
-                }
+                Properties.Settings.Default.ExcelPath = ExcelPath.Text;
+                Properties.Settings.Default.Save();
             }
         }
 
-        private void ConnectToDb(bool saveSettings)
+        private void ConnectToDb()
         {
             if (ConnectToDb(DbPath.Text))
             {
-                if (saveSettings)
-                {
-                    Properties.Settings.Default.DbPath = DbPath.Text;
-                    Properties.Settings.Default.Save();
-                }
+                Properties.Settings.Default.DbPath = DbPath.Text;
+                Properties.Settings.Default.Save();
             }
         }
         
@@ -354,6 +350,11 @@ namespace KMPCenter
         {
             try
             {
+                if (_loadedExcel == excelPath)
+                {
+                    return true;
+                }
+
                 if (!File.Exists(excelPath))
                 {
                     App.ShowMessage("Error: The data file does not exist. Please provide a valid one.\nIf this is the first time to run a new version, it may not be initially available.");
@@ -393,6 +394,8 @@ namespace KMPCenter
                     }
                 }
 
+                _loadedExcel = excelPath;
+
                 return true;
             }
             catch (Exception e)
@@ -405,6 +408,10 @@ namespace KMPCenter
         private bool ConnectToDb(string path)
         {
             var connstr = $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={path};Persist Security Info=True";
+            if (_connection?.ConnectionString == connstr)
+            {
+                return true;
+            }
             _connectionString = connstr;
             var successful = false;
             try
@@ -463,7 +470,7 @@ namespace KMPCenter
 
         private void InvoiceTemplatePathDrop(object sender, DragEventArgs e)
         {
-            DropHandler(sender, e, InvoiceTemplatePath, b => { LoadInvoiceTemplate(b); });
+            DropHandler(sender, e, InvoiceTemplatePath, LoadInvoiceTemplate);
         }
 
         private void InvoiceTemplatePathPreviewDragOver(object sender, DragEventArgs e)
@@ -484,7 +491,7 @@ namespace KMPCenter
             if (ofd.ShowDialog() == true)
             {
                 InvoiceTemplatePath.Text = ofd.FileName;
-                LoadInvoiceTemplate(true);
+                LoadInvoiceTemplate();
             }
         }
 
@@ -502,15 +509,12 @@ namespace KMPCenter
             App.ShowMessage("Error: Unable to locate the invoice template.");
         }
 
-        private void LoadInvoiceTemplate(bool saveSettings)
+        private void LoadInvoiceTemplate()
         {
             if (File.Exists(InvoiceTemplatePath.Text))
             {
-                if (saveSettings)
-                {
-                    Properties.Settings.Default.InvoiceTemplatePath = InvoiceTemplatePath.Text;
-                    Properties.Settings.Default.Save();
-                }
+                Properties.Settings.Default.InvoiceTemplatePath = InvoiceTemplatePath.Text;
+                Properties.Settings.Default.Save();
             }
         }
 
@@ -519,9 +523,33 @@ namespace KMPCenter
 
         }
 
-        private void InvoiceTemplateLostFocus(object sender, RoutedEventArgs e)
+        private void InvoiceTemplatePathLostFocus(object sender, RoutedEventArgs e)
         {
-            LoadInvoiceTemplate(true);
+            LoadInvoiceTemplate();
+        }
+
+        private void ExcelPathLostFocus(object sender, RoutedEventArgs e)
+        {
+            LoadExcel();
+        }
+
+        private void DbPathLostFocus(object sender, RoutedEventArgs e)
+        {
+            ConnectToDb();
+        }
+
+        private void ClientsClick(object sender, RoutedEventArgs e)
+        {
+            if (_clientsWindow == null)
+            {
+                _clientsWindow = new ClientsWindow(this);
+                _clientsWindow.Closed += (s1, e1) =>
+                {
+                    _clientsWindow = null;
+                };
+            }
+            _clientsWindow.Show();
+            _clientsWindow.Activate();
         }
     }
 }
