@@ -69,6 +69,8 @@ namespace KMPCenter
             }
         }
 
+        void DropHandler(object sender, DragEventArgs e)
+
         private void ExcelPathPreviewDragOver(object sender, DragEventArgs e)
         {
             e.Handled = true;
@@ -450,9 +452,31 @@ namespace KMPCenter
             _invoicing.Activate();
         }
 
+        private void InvoiceTemplatePathDrop(object sender, DragEventArgs e)
+        {
+
+        }
+
+        private void InvoiceTemplatePathPreviewDragOver(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void InvoiceTemplateBrowseClick(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void InvoiceTemplateShowInExplorerClick(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+
         private void HomePageLinkRequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
 
         }
+
     }
 }
