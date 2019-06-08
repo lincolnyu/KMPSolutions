@@ -30,8 +30,22 @@ namespace KMPCenter
         public MainWindow()
         {
             InitializeComponent();
+
+            this.Closed += MainWindowClosed;
+            this.Closing += MainWindowClosing; ;
+
             SetTitle();
             LoadSettings();
+        }
+
+        private void MainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            //TODO ask
+        }
+
+        private void MainWindowClosed(object sender, EventArgs e)
+        {
+            Application.Current.Shutdown();
         }
 
         private void SetTitle()
