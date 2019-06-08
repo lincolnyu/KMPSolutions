@@ -47,7 +47,7 @@
                 <Button Click="DbSyncToExcelClick">Sync to Excel</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Label>Invoice Template</Label>
+                <Label>`ce Template</Label>
                 <TextBox MinWidth="200" AllowDrop="True" Name="InvoiceTemplatePath"
                          DragEnter="DbPathDragEnter"
                          Drop="InvoiceTemplatePathDrop" PreviewDragOver="InvoiceTemplatePathPreviewDragOver"
@@ -55,9 +55,9 @@
                 <Button Click="InvoiceTemplateBrowseClick" MinWidth="30" ToolTip="Browse to find the invoice template Word document file">...</Button>
                 <Button Click="InvoiceTemplateShowInExplorerClick" ToolTip="Locate the invoice template Word document file in Windows Explorer">Locate</Button>
             </StackPanel>
-            <Button Click="ClientsClick">Clients</Button>
-            <Button Click="BookingClick">Booking</Button>
-            <Button Click="InvoicingClick">Invoicing</Button>
+            <Button Click="ClientsClick">_Clients</Button>
+            <Button Click="BookingClick">_Booking</Button>
+            <Button Click="InvoicingClick">_Invoicing</Button>
             <StackPanel>
                 <TextBlock>
                     Check out <Hyperlink NavigateUri="http://qbintranet/kmp/" RequestNavigate="HomePageLinkRequestNavigate">KMP Homepage on Intranet</Hyperlink> for more information.

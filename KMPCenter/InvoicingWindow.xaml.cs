@@ -25,13 +25,14 @@ namespace KMPCenter
 
         private void GenerateClick(object sender, RoutedEventArgs e)
         {
-            Generate("Test client", "Test client No.", "Test claim no.", "test diagnosis detail",
+            Generate(@"c:\temp\output.docx", "Test client", "Test client No.", "Test claim no.", "test diagnosis detail",
                 "test receipt no.", DateTime.Today, "test healthfund", "test membership no.", new Service[]{ }, 
                 30, 10, 20);
         }
 
         //https://www.c-sharpcorner.com/UploadFile/muralidharan.d/how-to-create-word-document-using-C-Sharp/
-        void Generate(string clientName, string clientNo, string claimNo, string diagnosis, 
+        void Generate(string outputfilename,
+            string clientName, string clientNo, string claimNo, string diagnosis, 
             string receiptNo, DateTime date, string healthFund, string memberNo, IList<Service> services, 
             decimal paymentReceived, decimal discount, decimal balance)
         {
@@ -46,7 +47,7 @@ namespace KMPCenter
 
                 //Set status for word application is to be visible or not.  
                 winword.Visible = false;
-                object readOnly = false;
+                object readOnly = true;
                 object isVisible = false;
 
                 //Create a missing variable for missing value  
@@ -65,16 +66,26 @@ namespace KMPCenter
                 t.Cell(4, 4).Range.Text = healthFund;
                 t.Cell(5, 4).Range.Text = memberNo;
 
-                t.Cell(10, 6).Range.Text = paymentReceived.ToString();
+                var due = services.Sum(x => x.Balance);
+                t.Cell(11, 3).Range.Text = due.ToString();
+                t.Cell(12, 3).Range.Text = paymentReceived.ToString();
+                t.Cell(13, 3).Range.Text = $"{discount}%";
+                t.Cell(14, 3).Range.Text = balance.ToString();
 
-                //TODO ...
-                object filename = @"d:\temp\output.docx";
+                object rref = t.Cell(9, 1);
+                t.Rows.Add(ref rref);
+                t.Rows.Add(ref rref);
+                t.Rows.Add(ref rref);
+                t.Rows.Add(ref rref);
+                t.Rows.Add(ref rref);
+
+                object filename = outputfilename;
                 document.SaveAs2(ref filename);
                 document.Close(ref missing, ref missing, ref missing);
                 document = null;
                 winword.Quit(ref missing, ref missing, ref missing);
                 winword = null;
-                MessageBox.Show("Document created successfully !");
+                App.ShowMessage("Invoice generated successfully!");
             }
             catch (Exception ex)
             {
