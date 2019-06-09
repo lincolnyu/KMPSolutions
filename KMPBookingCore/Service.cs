@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace KMPCenter.Data
+namespace KMPBookingCore
 {
     public class Service
     {
@@ -12,10 +14,5 @@ namespace KMPCenter.Data
         public decimal Gap;
         public decimal Discount;
         public decimal Balance;
-
-        internal object ToDecPlaces(int v)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

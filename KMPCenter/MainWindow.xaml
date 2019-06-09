@@ -47,7 +47,7 @@
                 <Button Click="DbSyncToExcelClick">Sync to Excel</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Label>`ce Template</Label>
+                <Label>Invoice Template</Label>
                 <TextBox MinWidth="200" AllowDrop="True" Name="InvoiceTemplatePath"
                          DragEnter="DbPathDragEnter"
                          Drop="InvoiceTemplatePathDrop" PreviewDragOver="InvoiceTemplatePathPreviewDragOver"

@@ -9,6 +9,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KMPBookingCore", "KMPBookin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPCenter", "KMPCenter\KMPCenter.csproj", "{29DD197E-DAAE-4D47-B58C-F96CE1DD0A1C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPControls", "KMPControls\KMPControls.csproj", "{2C23B536-F2DF-4BE5-AC00-1BDD99EF3D8C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPBookingPlus", "KMPBookingPlus\KMPBookingPlus.csproj", "{6559CD9F-EA71-4EDE-A33A-3852B425F1E3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{29DD197E-DAAE-4D47-B58C-F96CE1DD0A1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29DD197E-DAAE-4D47-B58C-F96CE1DD0A1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29DD197E-DAAE-4D47-B58C-F96CE1DD0A1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C23B536-F2DF-4BE5-AC00-1BDD99EF3D8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C23B536-F2DF-4BE5-AC00-1BDD99EF3D8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C23B536-F2DF-4BE5-AC00-1BDD99EF3D8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C23B536-F2DF-4BE5-AC00-1BDD99EF3D8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6559CD9F-EA71-4EDE-A33A-3852B425F1E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6559CD9F-EA71-4EDE-A33A-3852B425F1E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6559CD9F-EA71-4EDE-A33A-3852B425F1E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6559CD9F-EA71-4EDE-A33A-3852B425F1E3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
