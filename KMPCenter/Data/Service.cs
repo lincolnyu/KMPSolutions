@@ -12,5 +12,10 @@ namespace KMPCenter.Data
         public decimal Gap;
         public decimal Discount;
         public decimal Balance;
+
+        internal object ToDecPlaces(int v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
