@@ -16,11 +16,12 @@ namespace KMPCenter
         static object missing = System.Reflection.Missing.Value;
 
         private MainWindow _mainwindow;
-
         public InvoicingWindow(MainWindow mw)
         {
             _mainwindow = mw;
             InitializeComponent();
+
+            Clients.SetDataConnection(_mainwindow.Connection);
         }
 
         public string InvoiceTemplatePath => _mainwindow.InvoiceTemplatePath.Text;

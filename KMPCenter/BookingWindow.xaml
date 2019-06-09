@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KMPCenter"
+        xmlns:kmpcontrols="clr-namespace:KMPControls;assembly=KMPControls"
         mc:Ignorable="d"
         Title="KMP Booking" Height="450" Width="800">
     <Grid>
@@ -26,28 +27,7 @@
             </Style>
         </Grid.Resources>
         <StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label>Medicare Number</Label>
-                <ComboBox MinWidth="120" IsEditable="True" Name="ClientMedicare"
-                          KeyDown="ClientMediKeyDown" SelectionChanged="ClientMediSelChanged"></ComboBox>
-                <Button Click="SearchByMediClick" ToolTip="Find the client with medicare numbers contain this text">Find</Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label>Client Name</Label>
-                <ComboBox MinWidth="120" IsEditable="True" Name="ClientName"
-                          KeyDown="ClientNameKeyDown" SelectionChanged="ClientNameSelChanged"></ComboBox>
-                <Button Click="SearchByNameClick" ToolTip="Find all clients whose names contain this text">
-                    Find
-                </Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label>Client Phone Number</Label>
-                <ComboBox MinWidth="120" IsEditable="True"  Name="ClientNumber" 
-                          KeyDown="ClientNumberKeyDown" SelectionChanged="ClientNumberSelChanged"></ComboBox>
-                <Button Click="SearchByPhoneClick" ToolTip="Find all clients whose phone numbers contain this text">
-                    Find
-                </Button>
-            </StackPanel>
+            <kmpcontrols:ClientsControl Name="Clients"></kmpcontrols:ClientsControl>
             <StackPanel Orientation="Horizontal">
                 <Label>Booking Date</Label>
                 <DatePicker Name="BookingDate" SelectedDateChanged="BookingDateChanged"></DatePicker>

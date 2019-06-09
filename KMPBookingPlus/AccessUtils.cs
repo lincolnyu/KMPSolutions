@@ -1,10 +1,35 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Data.OleDb;
 
 namespace KMPBookingPlus
 {
     public static class AccessUtils
     {
+        public static string TryGetString(this OleDbDataReader r, int col)
+        {
+            try
+            {
+                return r.GetString(col);
+            }
+            catch (Exception)
+            {
+                return "";
+            }
+        }
+
+        public static DateTime? TryGetDateTime(this OleDbDataReader r, int col)
+        {
+            try
+            {
+                return r.GetDateTime(col);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public static OleDbDataReader RunReaderQuery(this OleDbConnection conn, string query, bool closeConnectionOnComplete = true)
         {
             using (var cmd = new OleDbCommand(query, conn))

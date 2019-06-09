@@ -80,5 +80,15 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KMPBookingCore\KMPBookingCore.csproj">
+      <Project>{bd71ad02-3fbd-4730-baf0-493f640ce316}</Project>
+      <Name>KMPBookingCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\KMPBookingPlus\KMPBookingPlus.csproj">
+      <Project>{6559cd9f-ea71-4ede-a33a-3852b425f1e3}</Project>
+      <Name>KMPBookingPlus</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

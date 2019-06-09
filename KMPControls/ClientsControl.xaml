@@ -9,6 +9,12 @@
     <Grid>
         <StackPanel>
             <StackPanel Orientation="Horizontal">
+                <Label>Client ID</Label>
+                <ComboBox MinWidth="120" IsEditable="True" Name="ClientId"
+                          KeyDown="ClientIdKeyDown" SelectionChanged="ClientIdSelChanged"></ComboBox>
+                <Button Click="SearchByIdClick" ToolTip="Find the client by ID">Find</Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
                 <Label>Medicare Number</Label>
                 <ComboBox MinWidth="120" IsEditable="True" Name="ClientMedicare"
                           KeyDown="ClientMediKeyDown" SelectionChanged="ClientMediSelChanged"></ComboBox>

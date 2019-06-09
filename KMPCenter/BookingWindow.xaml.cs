@@ -16,6 +16,7 @@ namespace KMPCenter
         {
             _mainwindow = mw;
             InitializeComponent();
+            Clients.SetDataConnection(_mainwindow.Connection);
         }
 
         private void ClientMediKeyDown(object sender, KeyEventArgs e)
