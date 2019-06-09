@@ -19,7 +19,7 @@ namespace KMPCenter
     /// </summary>
     public partial class MainWindow : Window
     {
-        private OleDbConnection _connection;
+        public OleDbConnection Connection { get; private set; }
         private string _connectionString;
         private BookingWindow _booking;
         private InvoicingWindow _invoicing;
@@ -178,33 +178,9 @@ namespace KMPCenter
             App.ShowMessage("Error: Unable to locate the database file.");
         }
 
-        private DateTime? TryGetDateTime(OleDbDataReader r, int col)
-        {
-            try
-            {
-                return r.GetDateTime(col);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        private string TryGetString(OleDbDataReader r, int col)
-        {
-            try
-            {
-                return r.GetString(col);
-            }
-            catch (Exception)
-            {
-                return "";
-            }
-        }
-
         private void ExcelSyncToDbClick(object sender, RoutedEventArgs e)
         {
-            if (_connection == null)
+            if (Connection == null)
             {
                 return;
             }
@@ -216,10 +192,9 @@ namespace KMPCenter
                 {
                     App.ShowMessage($"{excelRecords.Count} client records found in Excel. Syncing to the database.");
                     var dbClients = new Dictionary<string, ClientRecord>();
-                    using (var r = _connection.RunReaderQuery("select [Client Name], [DOB], [Gender], [Medicare], [Phone], [Address] from Clients"))
+                    using (var r = Connection.RunReaderQuery("select [Client Name], [DOB], [Gender], [Medicare], [Phone], [Address] from Clients"))
                     {
                         var sb = new StringBuilder();
-                        var prov = CultureInfo.InvariantCulture;
                         while (r.Read())
                         {
                             var name = r.GetString(0);
@@ -228,11 +203,11 @@ namespace KMPCenter
                             {
                                 FirstName = fn,
                                 Surname = sn,
-                                DOB = TryGetDateTime(r, 1),
-                                Gender = ClientRecord.ParseGender(TryGetString(r, 2)),
-                                MedicareNumber = TryGetString(r, 3),
-                                PhoneNumber = TryGetString(r, 4),
-                                Address = TryGetString(r, 5)
+                                DOB = r.TryGetDateTime(1),
+                                Gender = ClientRecord.ParseGender(r.TryGetString(2)),
+                                MedicareNumber = r.TryGetString(3),
+                                PhoneNumber = r.TryGetString(4),
+                                Address = r.TryGetString(5)
                             };
                             dbClients[cr.MedicareNumber] = cr;
                         }
@@ -262,7 +237,7 @@ namespace KMPCenter
                             sbSql.Append($"[Phone] = '{mr.PhoneNumber}',");
                             sbSql.Append($"[Address] = \"{mr.Address}\"");
                             sbSql.Append($" where [Medicare] = '{mr.MedicareNumber}'");
-                            _connection.RunNonQuery(sbSql.ToString(), false);
+                            Connection.RunNonQuery(sbSql.ToString(), false);
                         }
                         foreach (var nr in newRecords)
                         {
@@ -274,7 +249,7 @@ namespace KMPCenter
                             sbSql.Append($"'{nr.MedicareNumber}',");
                             sbSql.Append($"'{nr.PhoneNumber}',");
                             sbSql.Append($"\"{nr.Address}\")");
-                            _connection.RunNonQuery(sbSql.ToString(), false);
+                            Connection.RunNonQuery(sbSql.ToString(), false);
                         }
                         //TODO  delete non-existent clients?
                     }
@@ -300,12 +275,12 @@ namespace KMPCenter
 
         private void CloseConnection()
         {
-            _connection.Close();
+            Connection.Close();
         }
 
         private void DbSyncToExcelClick(object sender, RoutedEventArgs e)
         {
-            if (_connection == null)
+            if (Connection == null)
             {
                 return;
             }
@@ -392,7 +367,7 @@ namespace KMPCenter
         private bool ConnectToDb(string path)
         {
             var connstr = $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={path};Persist Security Info=True";
-            if (_connection?.ConnectionString == connstr)
+            if (Connection?.ConnectionString == connstr)
             {
                 return true;
             }
@@ -400,25 +375,25 @@ namespace KMPCenter
             var successful = false;
             try
             {
-                _connection = new OleDbConnection(_connectionString);
-                _connection.Open();
+                Connection = new OleDbConnection(_connectionString);
+                Connection.Open();
                 App.ShowMessage("Successfully connected to the database.");
                 successful = true;
             }
             catch (Exception e)
             {
                 App.ShowMessage($"Failed to connect to the database. Details:\n{e.Message}");
-                _connection = null;
+                Connection = null;
             }
             finally
             {
-                if (_connection != null)
+                if (Connection != null)
                 {
-                    _connection.Close();
+                    Connection.Close();
                 }
                 if (!successful)
                 {
-                    _connection = null;
+                    Connection = null;
                 }
             }
             return successful;

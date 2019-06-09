@@ -9,7 +9,7 @@
         Title="KMP Invoicing" Height="450" Width="800">
     <Grid>
         <StackPanel>
-            <kmpcontrols:ClientsControl></kmpcontrols:ClientsControl>
+            <kmpcontrols:ClientsControl Name="Clients"></kmpcontrols:ClientsControl>
             <Button Click="GenerateClick">_Generate</Button>
         </StackPanel>
     </Grid>
