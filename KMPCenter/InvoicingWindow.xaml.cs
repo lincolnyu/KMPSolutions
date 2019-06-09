@@ -1,4 +1,5 @@
 ﻿using KMPCenter.Data;
+using KMPBookingCore;
 using Microsoft.Office.Interop.Word;
 using System;
 using System.Collections.Generic;
@@ -97,10 +98,10 @@ namespace KMPCenter
                 t.Cell(5, 4).Range.Text = memberNo;
 
                 var due = services.Sum(x => x.Balance);
-                t.Cell(11, 3).Range.Text = due.ToString();
-                t.Cell(12, 3).Range.Text = paymentReceived.ToString();
-                t.Cell(13, 3).Range.Text = $"{discount}%";
-                t.Cell(14, 3).Range.Text = balance.ToString();
+                t.Cell(11, 3).Range.Text = due.ToDecPlaces();
+                t.Cell(12, 3).Range.Text = paymentReceived.ToDecPlaces();
+                t.Cell(13, 3).Range.Text = $"{discount.ToDecPlaces(0)}%";
+                t.Cell(14, 3).Range.Text = balance.ToDecPlaces();
 
                 object rref = t.Cell(9, 1);
 
@@ -109,16 +110,18 @@ namespace KMPCenter
                 {
                     t.Cell(rn, 1).Range.Text = svc.Date.ToShortDateString();
                     t.Cell(rn, 2).Range.Text = svc.Detail;
-                    t.Cell(rn, 3).Range.Text = svc.Total.ToString();
-                    t.Cell(rn, 4).Range.Text = svc.Owing.ToString();
-                    t.Cell(rn, 5).Range.Text = svc.Benefit.ToString();
-                    t.Cell(rn, 6).Range.Text = svc.Gap.ToString();
-                    t.Cell(rn, 7).Range.Text = $"{svc.Discount}%";
-                    t.Cell(rn, 8).Range.Text = svc.Balance.ToString();
+                    t.Cell(rn, 3).Range.Text = svc.Total.ToDecPlaces();
+                    t.Cell(rn, 4).Range.Text = svc.Owing.ToDecPlaces();
+                    t.Cell(rn, 5).Range.Text = svc.Benefit.ToDecPlaces();
+                    t.Cell(rn, 6).Range.Text = svc.Gap.ToDecPlaces();
+                    t.Cell(rn, 7).Range.Text = $"{svc.Discount.ToDecPlaces(0)}%";
+                    t.Cell(rn, 8).Range.Text = svc.Balance.ToDecPlaces();
 
                     t.Rows.Add(ref rref);
                     rn++;
                 }
+
+                https://stackoverflow.com/questions/7097402/how-do-i-find-the-page-number-for-a-word-paragraph
 
                 var origPagesCount = GetPagesCount(document);
                 while (true)
