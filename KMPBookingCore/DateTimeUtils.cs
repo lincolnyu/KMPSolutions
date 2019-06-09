@@ -126,5 +126,17 @@ namespace KMPBookingCore
             }
             return sb.ToString();
         }
+
+        public static string ToDbDate(this DateTime? date)
+        {
+            if (date.HasValue)
+            {
+                return date.Value.ToString("dd/MM/yyyy");
+            }
+            else
+            {
+                return "NULL";
+            }
+        }
     }
 }

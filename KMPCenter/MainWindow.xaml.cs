@@ -1,13 +1,13 @@
-﻿using System;
+﻿using KMPBookingCore;
+using KMPBookingPlus;
+using System;
 using System.Windows;
 using System.Data.OleDb;
 using Microsoft.Win32;
 using System.IO;
 using System.Diagnostics;
-using KMPBookingCore;
 using OfficeOpenXml;
 using System.Text;
-using System.Data;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Controls;
@@ -211,70 +211,89 @@ namespace KMPCenter
             var excelRecords = _clients.Records();
             if (excelRecords.Count > 0)
             {
-                App.ShowMessage($"{excelRecords.Count} client records found in Excel. Syncing to the database.");
-                var dbClients = new Dictionary<string, ClientRecord>();
-                using (var r = RunReaderQuery("select [Client Name], [DOB], [Gender], [Medicare], [Phone], [Address] from Clients"))
+                string errorMsg = null;
+                try
                 {
-                    var sb = new StringBuilder();
-                    var prov= CultureInfo.InvariantCulture;
-                    while (r.Read())
+                    App.ShowMessage($"{excelRecords.Count} client records found in Excel. Syncing to the database.");
+                    var dbClients = new Dictionary<string, ClientRecord>();
+                    using (var r = _connection.RunReaderQuery("select [Client Name], [DOB], [Gender], [Medicare], [Phone], [Address] from Clients"))
                     {
-                        var name = r.GetString(0);
-                        var (fn, sn) = BookingIcs.SmartParseName(name);
-                        var cr = new ClientRecord
+                        var sb = new StringBuilder();
+                        var prov = CultureInfo.InvariantCulture;
+                        while (r.Read())
                         {
-                            FirstName = fn,
-                            Surname = sn,
-                            DOB = TryGetDateTime(r, 1),
-                            Gender = ClientRecord.ParseGender(TryGetString(r, 2)),
-                            MedicareNumber = TryGetString(r, 3),
-                            PhoneNumber = TryGetString(r, 4),
-                            Address = TryGetString(r, 5)
-                        };
-                        dbClients[cr.MedicareNumber] = cr;
-                    }
-                    var modRecords = new List<ClientRecord>();
-                    var newRecords = new List<ClientRecord>();
-                    foreach (var er in excelRecords)
-                    {
-                        if (dbClients.TryGetValue(er.MedicareNumber, out var dr))
-                        {
-                            if(!er.Equals(dr))
+                            var name = r.GetString(0);
+                            var (fn, sn) = BookingIcs.SmartParseName(name);
+                            var cr = new ClientRecord
                             {
-                                modRecords.Add(er);
+                                FirstName = fn,
+                                Surname = sn,
+                                DOB = TryGetDateTime(r, 1),
+                                Gender = ClientRecord.ParseGender(TryGetString(r, 2)),
+                                MedicareNumber = TryGetString(r, 3),
+                                PhoneNumber = TryGetString(r, 4),
+                                Address = TryGetString(r, 5)
+                            };
+                            dbClients[cr.MedicareNumber] = cr;
+                        }
+                        var modRecords = new List<ClientRecord>();
+                        var newRecords = new List<ClientRecord>();
+                        foreach (var er in excelRecords)
+                        {
+                            if (dbClients.TryGetValue(er.MedicareNumber, out var dr))
+                            {
+                                if (!er.Equals(dr))
+                                {
+                                    modRecords.Add(er);
+                                }
+                            }
+                            else
+                            {
+                                newRecords.Add(er);
                             }
                         }
-                        else
+                        foreach (var mr in modRecords)
                         {
-                            newRecords.Add(er);
+                            var name = BookingIcs.FormCommaSeparateName(mr.FirstName, mr.Surname);
+                            var sbSql = new StringBuilder($"update Clients set ");
+                            sbSql.Append($"[Client Name] = \"{name}\",");
+                            sbSql.Append($"[DOB] = {mr.DOB.ToDbDate()},");
+                            sbSql.Append($"[Gender] = '{ClientRecord.ToString(mr.Gender)}',");
+                            sbSql.Append($"[Phone] = '{mr.PhoneNumber}',");
+                            sbSql.Append($"[Address] = \"{mr.Address}\"");
+                            sbSql.Append($" where [Medicare] = '{mr.MedicareNumber}'");
+                            _connection.RunNonQuery(sbSql.ToString(), false);
                         }
+                        foreach (var nr in newRecords)
+                        {
+                            var name = BookingIcs.FormCommaSeparateName(nr.FirstName, nr.Surname);
+                            var sbSql = new StringBuilder("insert into Clients([Client Name], [DOB], [Gender], [Medicare], [Phone], [Address]) values(");
+                            sbSql.Append($"\"{name}\",");
+                            sbSql.Append($"{nr.DOB.ToDbDate()},");
+                            sbSql.Append($"'{ClientRecord.ToString(nr.Gender)}',");
+                            sbSql.Append($"'{nr.MedicareNumber}',");
+                            sbSql.Append($"'{nr.PhoneNumber}',");
+                            sbSql.Append($"\"{nr.Address}\")");
+                            _connection.RunNonQuery(sbSql.ToString(), false);
+                        }
+                        //TODO  delete non-existent clients?
                     }
-                    foreach (var mr in modRecords)
-                    {
-                        var name = BookingIcs.FormCommaSeparateName(mr.FirstName, mr.Surname);
-                        var sbSql = new StringBuilder($"update Clients set ");
-                        sbSql.Append($"[Client Name] = \"{name}\",");
-                        sbSql.Append($"[DOB] = {mr.DOB?.ToString("'dd/MM/yyyy'") ?? "NULL"},");
-                        sbSql.Append($"[Gender] = '{ClientRecord.ToString(mr.Gender)}'");
-                        sbSql.Append($"[Phone] = '{mr.PhoneNumber}'");
-                        sbSql.Append($"[Address] = \"{mr.Address}\"");
-                        sbSql.Append($" where [Medicare] = '{mr.MedicareNumber}'");
-                        RunNonQuery(sbSql.ToString(), false);
-                    }
-                    foreach (var nr in newRecords)
-                    {
-                        var name = BookingIcs.FormCommaSeparateName(nr.FirstName, nr.Surname);
-                        var sbSql = new StringBuilder("insert into Clients([Client Name], [DOB], [Gender], [Medicare], [Phone], [Address]) values(");
-                        sbSql.Append($"\"{name}\",");
-                        sbSql.Append($"{nr.DOB?.ToString("'dd/MM/yyyy'") ?? "NULL"},");
-                        sbSql.Append($"'{ClientRecord.ToString(nr.Gender)}',");
-                        sbSql.Append($"'{nr.MedicareNumber}',");
-                        sbSql.Append($"'{nr.PhoneNumber}',");
-                        sbSql.Append($"\"{nr.Address}\")");
-                        RunNonQuery(sbSql.ToString(), false);
-                    }
-                    //TODO  delete non-existent clients?
+                }
+                catch (Exception ex)
+                {
+                    errorMsg = ex.Message;
+                }
+                finally
+                {
                     CloseConnection();
+                }
+                if (errorMsg != null)
+                {
+                    App.ShowMessage($"Sync Excel to DB failed:\n{errorMsg}");
+                }
+                else
+                {
+                    App.ShowMessage("Sync Excel to DB succeeded.");
                 }
             }
         }
@@ -282,55 +301,6 @@ namespace KMPCenter
         private void CloseConnection()
         {
             _connection.Close();
-        }
-
-        private OleDbDataReader RunReaderQuery(string query, bool closeConnectionOnComplete = true)
-        {
-            using (var cmd = new OleDbCommand(query, _connection))
-            {
-                if (_connection.State != ConnectionState.Open)
-                {
-                    _connection.Open();
-                }
-                var cb = closeConnectionOnComplete? 
-                    CommandBehavior.CloseConnection 
-                    : CommandBehavior.Default;
-                var reader = cmd.ExecuteReader(cb);
-                return reader;
-            }
-        }
-
-        private object RunScalarQuery(string query, bool closeConnectionOnComplete = true)
-        {
-            using (var cmd = new OleDbCommand(query, _connection))
-            {
-                if (_connection.State != ConnectionState.Open)
-                {
-                    _connection.Open();
-                }
-                var res = cmd.ExecuteScalar();
-                if (closeConnectionOnComplete)
-                {
-                    _connection.Close();
-                }
-                return res;
-            }
-        }
-
-        private void RunNonQuery(string cmdstr, bool closeConnectionOnComplete)
-        {
-            using (var cmd = new OleDbCommand(cmdstr, _connection))
-            {
-                if (_connection.State != ConnectionState.Open)
-                {
-                    _connection.Open();
-                }
-                cmd.ExecuteNonQuery();
-                if (closeConnectionOnComplete)
-                {
-                    _connection.Close();
-                }
-            }
         }
 
         private void DbSyncToExcelClick(object sender, RoutedEventArgs e)

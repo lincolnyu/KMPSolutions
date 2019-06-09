@@ -9,11 +9,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KMPBookingCore", "KMPBookin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPCenter", "KMPCenter\KMPCenter.csproj", "{29DD197E-DAAE-4D47-B58C-F96CE1DD0A1C}"
 EndProject
+<<<<<<< HEAD
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KmpCrmCore", "KmpCrmCore\KmpCrmCore.csproj", "{364BFC06-639B-400A-AC94-B2E5A3254623}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KmpCrmConsole", "KmpCrmConsole\KmpCrmConsole.csproj", "{E1E9DFEE-7381-41A9-9683-160A11D697D3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KmpCrmUwp", "KmpCrmUwp\KmpCrmUwp.csproj", "{377509F9-811B-41D4-B8F4-5E0479194DF1}"
+=======
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPControls", "KMPControls\KMPControls.csproj", "{2C23B536-F2DF-4BE5-AC00-1BDD99EF3D8C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPBookingPlus", "KMPBookingPlus\KMPBookingPlus.csproj", "{6559CD9F-EA71-4EDE-A33A-3852B425F1E3}"
+>>>>>>> refactoring etc.
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -104,6 +110,7 @@ Global
 		{29DD197E-DAAE-4D47-B58C-F96CE1DD0A1C}.Debug|x86.Build.0 = Debug|Any CPU
 		{29DD197E-DAAE-4D47-B58C-F96CE1DD0A1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29DD197E-DAAE-4D47-B58C-F96CE1DD0A1C}.Release|Any CPU.Build.0 = Release|Any CPU
+<<<<<<< HEAD
 		{29DD197E-DAAE-4D47-B58C-F96CE1DD0A1C}.Release|ARM.ActiveCfg = Release|Any CPU
 		{29DD197E-DAAE-4D47-B58C-F96CE1DD0A1C}.Release|ARM.Build.0 = Release|Any CPU
 		{29DD197E-DAAE-4D47-B58C-F96CE1DD0A1C}.Release|ARM64.ActiveCfg = Release|Any CPU
@@ -182,6 +189,16 @@ Global
 		{377509F9-811B-41D4-B8F4-5E0479194DF1}.Release|x86.ActiveCfg = Release|x86
 		{377509F9-811B-41D4-B8F4-5E0479194DF1}.Release|x86.Build.0 = Release|x86
 		{377509F9-811B-41D4-B8F4-5E0479194DF1}.Release|x86.Deploy.0 = Release|x86
+=======
+		{2C23B536-F2DF-4BE5-AC00-1BDD99EF3D8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C23B536-F2DF-4BE5-AC00-1BDD99EF3D8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C23B536-F2DF-4BE5-AC00-1BDD99EF3D8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C23B536-F2DF-4BE5-AC00-1BDD99EF3D8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6559CD9F-EA71-4EDE-A33A-3852B425F1E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6559CD9F-EA71-4EDE-A33A-3852B425F1E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6559CD9F-EA71-4EDE-A33A-3852B425F1E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6559CD9F-EA71-4EDE-A33A-3852B425F1E3}.Release|Any CPU.Build.0 = Release|Any CPU
+>>>>>>> refactoring etc.
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
