@@ -7,11 +7,49 @@
         xmlns:kmpcontrols="clr-namespace:KMPControls;assembly=KMPControls"
         mc:Ignorable="d"
         WindowStartupLocation="CenterOwner"
-        Title="KMP Invoicing" Height="450" Width="800">
+        Title="KMP Invoicing" Height="600" Width="800">
     <Grid>
         <StackPanel>
             <kmpcontrols:ClientsControl Name="Clients"></kmpcontrols:ClientsControl>
-            <Button Click="GenerateClick">_Generate</Button>
+            <TextBlock>Existing Bookings</TextBlock>
+            <ListBox MinHeight="80"></ListBox>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition MaxWidth="160"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Row="0" Grid.Column="0">Description</TextBlock>
+                <TextBox Grid.Row="0" Grid.Column="1" Name="ServiceDesc"></TextBox>
+                <TextBlock Grid.Row="1" Grid.Column="0">Date</TextBlock>
+                <DatePicker Grid.Row="1" Grid.Column="1" Name="ServiceDate"></DatePicker>
+                <TextBlock Grid.Row="2" Grid.Column="0">Total Service Fee</TextBlock>
+                <TextBox Grid.Row="2" Grid.Column="1" Name="ServiceTotal"></TextBox>
+                <TextBlock Grid.Row="3" Grid.Column="0">Benefit</TextBlock>
+                <TextBox Grid.Row="3" Grid.Column="1" Name="ServiceBenefit"></TextBox>
+                <TextBlock Grid.Row="4" Grid.Column="0">Discount (%)</TextBlock>
+                <TextBox Grid.Row="4" Grid.Column="1" Name="ServiceDiscount">0</TextBox>
+                <TextBlock Grid.Row="5" Grid.Column="0">Total Charge</TextBlock>
+                <TextBox Grid.Row="5" Grid.Column="1" IsReadOnly="True" Name="ServiceCharge"></TextBox>
+            </Grid>
+            <Button>Add Service</Button>
+            <TextBlock>Invoiced Services</TextBlock>
+            <ListBox MinHeight="80"></ListBox>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition MaxWidth="160"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Click="GenerateClick">_Generate</Button>
+                <CheckBox Grid.Column="1" Name="AddToDB" IsChecked="True">Add to Database</CheckBox>
+            </Grid>
         </StackPanel>
     </Grid>
 </Window>

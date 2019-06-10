@@ -104,6 +104,15 @@ namespace KMPCenter
                 Thread.Sleep(1000);
                 SmsReminder();
             }
+            if (AddToDB.IsChecked == true)
+            {
+                AddBookingToDB();
+            }
+        }
+
+        private void AddBookingToDB()
+        {
+            //TODO implement it...
         }
 
         private void SmsReminder()
