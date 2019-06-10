@@ -38,6 +38,10 @@ namespace KMPCenter
             Owner = mw;
             _checkDateActioner = new StackBottomActioner(CheckDateAndWarn);
             InitializeComponent();
+            Clients.ErrorReporter = s =>
+            {
+                App.ShowMessage(s);
+            };
             Clients.SetDataConnection(MainWindow.Connection);
         }
 
@@ -46,14 +50,13 @@ namespace KMPCenter
             (var msg, var e) = CheckDate(Tolerance.AllowBothIncomplete);
             if (e == CheckResult.Warning)
             {
-                MessageBox.Show($"Warning: {msg}", Title);
+                App.ShowMessage($"Warning: {msg}");
             }
             else if (e == CheckResult.Error)
             {
-                MessageBox.Show($"Error: {msg}", Title);
+                App.ShowMessage($"Error: {msg}");
             }
         }
-
 
         private void BookingDateChanged(object sender, SelectionChangedEventArgs e)
         {

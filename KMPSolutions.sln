@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPBooking", "KMPBooking\KMPBooking.csproj", "{09D7C833-6AA1-4D55-9F67-C830BCC4F9EC}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KMPBookingCore", "KMPBookingCore\KMPBookingCore.csproj", "{BD71AD02-3FBD-4730-BAF0-493F640CE316}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPCenter", "KMPCenter\KMPCenter.csproj", "{29DD197E-DAAE-4D47-B58C-F96CE1DD0A1C}"
@@ -35,6 +33,7 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+<<<<<<< HEAD
 		{09D7C833-6AA1-4D55-9F67-C830BCC4F9EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{09D7C833-6AA1-4D55-9F67-C830BCC4F9EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09D7C833-6AA1-4D55-9F67-C830BCC4F9EC}.Debug|ARM.ActiveCfg = Debug|Any CPU
@@ -55,6 +54,8 @@ Global
 		{09D7C833-6AA1-4D55-9F67-C830BCC4F9EC}.Release|x64.Build.0 = Release|Any CPU
 		{09D7C833-6AA1-4D55-9F67-C830BCC4F9EC}.Release|x86.ActiveCfg = Release|Any CPU
 		{09D7C833-6AA1-4D55-9F67-C830BCC4F9EC}.Release|x86.Build.0 = Release|Any CPU
+=======
+>>>>>>> remove obsolete files and projects.
 		{BD71AD02-3FBD-4730-BAF0-493F640CE316}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BD71AD02-3FBD-4730-BAF0-493F640CE316}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD71AD02-3FBD-4730-BAF0-493F640CE316}.Debug|ARM.ActiveCfg = Debug|Any CPU

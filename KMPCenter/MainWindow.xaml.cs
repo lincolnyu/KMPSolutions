@@ -25,7 +25,7 @@ namespace KMPCenter
         private InvoicingWindow _invoicing;
         private ClientsWindow _clientsWindow;
         private string _loadedExcel;
-        private readonly ClientRecords _clients = new ClientRecords();
+        private readonly List<ClientRecord> _excelRecords = new List<ClientRecord>();
 
         public MainWindow()
         {
@@ -184,13 +184,12 @@ namespace KMPCenter
             {
                 return;
             }
-            var excelRecords = _clients.Records();
-            if (excelRecords.Count > 0)
+            if (_excelRecords.Count > 0)
             {
                 string errorMsg = null;
                 try
                 {
-                    App.ShowMessage($"{excelRecords.Count} client records found in Excel. Syncing to the database.");
+                    App.ShowMessage($"{_excelRecords.Count} client records found in Excel. Syncing to the database.");
                     var dbClients = new Dictionary<string, ClientRecord>();
                     using (var r = Connection.RunReaderQuery("select [Client Name], [DOB], [Gender], [Medicare], [Phone], [Address] from Clients"))
                     {
@@ -213,7 +212,7 @@ namespace KMPCenter
                         }
                         var modRecords = new List<ClientRecord>();
                         var newRecords = new List<ClientRecord>();
-                        foreach (var er in excelRecords)
+                        foreach (var er in _excelRecords)
                         {
                             if (dbClients.TryGetValue(er.MedicareNumber, out var dr))
                             {
@@ -325,7 +324,7 @@ namespace KMPCenter
                 {
                     var ws = p.Workbook.Worksheets["Details"];
 
-                    _clients.Clear();
+                    _excelRecords.Clear();
                     for (var i = 2; i <= ws.Cells.Rows; i++)
                     {
                         var medi = ws.Cells[i, 1].Text.Trim();
@@ -349,7 +348,7 @@ namespace KMPCenter
                         {
                             client.DOB = dt;
                         }
-                        _clients.Add(client);
+                        _excelRecords.Add(client);
                     }
                 }
 
