@@ -226,10 +226,6 @@ namespace KMPControls
             _suppressSearch.Run(() =>
             {
                 var clients = finderResults;
-                if (clients.Count == 0)
-                {
-                    ErrorReporter?.Invoke("Error: Client not found.");
-                }
                 ActiveClient = null;
                 if (clients.Count > 1)
                 {
@@ -243,19 +239,25 @@ namespace KMPControls
                     {
                         ActiveClient = clients[dc.SelectedIndex];
                     }
-                    else
-                    {
-                        return;
-                    }
                 }
-                else
+                else if (clients.Count == 1)
                 {
                     ActiveClient = clients[0];
                 }
-                ClientId.Text = ActiveClient.Id;
-                ClientMedicare.Text = ActiveClient.MedicareNumber;
-                ClientName.Text = ActiveClient.ClientFormalName();
-                ClientNumber.Text = ActiveClient.PhoneNumber;
+                else
+                {
+                    ErrorReporter?.Invoke("Error: Client not found.");
+                }
+                if (ActiveClient != null)
+                {
+                    ClientId.Text = ActiveClient.Id;
+                    ClientMedicare.Text = ActiveClient.MedicareNumber;
+                    ClientName.Text = ActiveClient.ClientFormalName();
+                    ClientNumber.Text = ActiveClient.PhoneNumber;
+                }
+                else
+                {
+                }
             });
         }
 
