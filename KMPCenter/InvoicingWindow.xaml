@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:KMPCenter"
         xmlns:kmpcontrols="clr-namespace:KMPControls;assembly=KMPControls"
         mc:Ignorable="d"
+        WindowStartupLocation="CenterOwner"
         Title="KMP Invoicing" Height="450" Width="800">
     <Grid>
         <StackPanel>

@@ -1,6 +1,8 @@
 ﻿using KMPBookingCore;
 using KMPBookingPlus;
+using static KMPBookingCore.BookingIcs;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Data.OleDb;
 using System.Windows;
@@ -14,11 +16,30 @@ namespace KMPControls
     /// </summary>
     public partial class ClientsControl : UserControl
     {
+        class AutoResetSuppressor
+        {
+            public bool Suppressing { get; private set; } = false;
+
+            public void Run(Action proc)
+            {
+                if (!Suppressing)
+                {
+                    Suppressing = true;
+                    proc();
+                    Suppressing = false;
+                }
+            }
+        }
+
         public OleDbConnection _connection;
         private Dictionary<string, List<ClientRecord>> _nameToClients;
         private Dictionary<string, List<ClientRecord>> _mediToClients;
         private Dictionary<string, List<ClientRecord>> _phoneToClients;
-        private Dictionary<int, ClientRecord> _idToClient;
+        private Dictionary<string, ClientRecord> _idToClient;
+        AutoResetSuppressor _suppressSearch = new AutoResetSuppressor();
+        public Action<string> ErrorReporter { private get;  set; }
+
+        public ClientRecord ActiveClient { get; private set; }
 
         public ClientsControl()
         {
@@ -39,7 +60,7 @@ namespace KMPControls
                 _nameToClients = new Dictionary<string, List<ClientRecord>>();
                 _mediToClients = new Dictionary<string, List<ClientRecord>>();
                 _phoneToClients = new Dictionary<string, List<ClientRecord>>();
-                _idToClient = new Dictionary<int, ClientRecord>();
+                _idToClient = new Dictionary<string, ClientRecord>();
 
                 using (var r = _connection.RunReaderQuery(query))
                 {
@@ -47,8 +68,11 @@ namespace KMPControls
                     {
                         var name = r.GetString(1);
                         var (fn, sn) = BookingIcs.SmartParseName(name);
+                        var id = r.GetInt32(0);
+                        var idstr = id.ClientIdToStr();
                         var cr = new ClientRecord
                         {
+                            Id = idstr,
                             FirstName = fn,
                             Surname = sn,
                             DOB = r.TryGetDateTime(2),
@@ -57,11 +81,10 @@ namespace KMPControls
                             PhoneNumber = r.TryGetString(5),
                             Address = r.TryGetString(6)
                         };
-                        var id = r.GetInt32(0);
-                        if (!_idToClient.ContainsKey(id))
+                        if (!_idToClient.ContainsKey(idstr))
                         {
-                            _idToClient[id] = cr;
-                            ClientId.Items.Add(id.ClientIdToStr());
+                            _idToClient[idstr] = cr;
+                            ClientId.Items.Add(idstr);
                         }
                         else
                         {
@@ -189,24 +212,79 @@ namespace KMPControls
             SearchById(ClientId.Text);
         }
 
-        private void SearchById(string text)
+        private IEnumerable<string> RecordsToStrings(IList<ClientRecord> clients)
         {
-            throw new NotImplementedException();
+            foreach (var c in clients)
+            {
+                yield return $"{c.Id}: {c.ClientFormalName()} (Medicare#{c.MedicareNumber}, Phone#{c.PhoneNumber})";
+            }
         }
 
-        private void SearchByMedi(string v)
+
+        private void SearchBy(IList<ClientRecord> finderResults, string duplicateMessage)
         {
-            throw new NotImplementedException();
+            _suppressSearch.Run(() =>
+            {
+                var clients = finderResults;
+                if (clients.Count == 0)
+                {
+                    ErrorReporter?.Invoke("Error: Client not found.");
+                }
+                ActiveClient = null;
+                if (clients.Count > 1)
+                {
+                    var dc = new DuplicateClients(duplicateMessage,
+                        RecordsToStrings(clients))
+                    {
+                        //TODO set owner to the owner of this control
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner
+                    };
+                    if (dc.ShowDialog() == true && dc.SelectedIndex >= 0)
+                    {
+                        ActiveClient = clients[dc.SelectedIndex];
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    ActiveClient = clients[0];
+                }
+                ClientId.Text = ActiveClient.Id;
+                ClientMedicare.Text = ActiveClient.MedicareNumber;
+                ClientName.Text = ActiveClient.ClientFormalName();
+                ClientNumber.Text = ActiveClient.PhoneNumber;
+            });
         }
 
-        private void SearchByName(string v)
+        private void SearchByMedi(string medi)
         {
-            throw new NotImplementedException();
+            SearchBy(_idToClient.Values.FindByMedicareNumberContaining(medi)
+                    .OrderBy(x => x.MedicareNumber).ToList(),
+                    $"Multiple clients found with medicare number containing '{medi}'");
         }
 
-        private void SearchByPhone(string v)
+        private void SearchById(string id)
         {
-            throw new NotImplementedException();
+            SearchBy(_idToClient.Values.FindByIdContaining(id)
+                    .OrderBy(x => x.Id).ToList(),
+                    $"Multiple clients found with ID containing '{id}'");
+        }
+
+        private void SearchByName(string name)
+        {
+            SearchBy(_idToClient.Values.FindNameContaining(name)
+                    .OrderBy(x => x.Id).ToList(),
+                    $"Multiple clients found with name containing '{name}'");
+        }
+
+        private void SearchByPhone(string phone)
+        {
+            SearchBy(_idToClient.Values.FindByPhoneNumberContaining(phone)
+                    .OrderBy(x => x.Id).ToList(),
+                    $"Multiple clients found with phone number containing '{phone}'");
         }
     }
 }

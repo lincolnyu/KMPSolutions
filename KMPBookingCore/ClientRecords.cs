@@ -23,28 +23,16 @@ namespace KMPBookingCore
         }
 
         public IEnumerable<ClientRecord> FindByName(string firstName, string surname)
-            => _records.Where(x => x.FirstName == firstName && x.Surname == surname);
+            => _records.FindByName(firstName, surname);
 
         public IEnumerable<ClientRecord> FindNameContaining(string nameSubstr)
-        {
-            if (nameSubstr.Contains(','))
-            {
-                (var fn, var sn) = nameSubstr.SmartParseName();
-                return FindByName(fn, sn);
-            }
-            else
-            {
-                var segs = nameSubstr.Split(' ').Select(x => x.Trim().ToLower()).Where(x => x.Length > 0);
-                return _records.Where(x => segs.All(y=>x.FirstName.ToLower().Contains(y) 
-                    || x.Surname.ToLower().Contains(y)));
-            }
-        }
+            => _records.FindNameContaining(nameSubstr);
 
         public ClientRecord FindByMedicareNumber(string medicareNumber)
             => _records.FirstOrDefault(x => x.MedicareNumber == medicareNumber);
 
         public IEnumerable<ClientRecord> FindByMedicareNumberContaining(string medSubstr)
-            => _records.Where(x => x.MedicareNumber.Contains(medSubstr));
+            => _records.FindByMedicareNumberContaining(medSubstr);
 
         public IEnumerable<ClientRecord> FindByPhoneNumber(string phoneNumber)
             => _records.Where(x => x.PhoneNumber == phoneNumber);

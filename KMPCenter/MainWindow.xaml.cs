@@ -479,7 +479,7 @@ namespace KMPCenter
 
         private void HomePageLinkRequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
-
+            Process.Start(e.Uri.ToString());
         }
 
         private void InvoiceTemplatePathLostFocus(object sender, RoutedEventArgs e)
