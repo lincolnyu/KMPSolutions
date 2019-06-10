@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:KMPCenter"
         xmlns:kmpcontrols="clr-namespace:KMPControls;assembly=KMPControls"
         mc:Ignorable="d"
+        WindowStartupLocation="CenterOwner"
         Title="KMP Booking" Height="450" Width="800">
     <Grid>
         <Grid.Resources>
@@ -114,11 +115,7 @@
             <StackPanel Orientation="Horizontal">
                 <Button Click="BookClicked">Book the Appointment in Calendar</Button>
                 <CheckBox Name="SetSmsReminder" IsChecked="True">Also Create SMS Reminder in Calendar</CheckBox>
-            </StackPanel>
-            <StackPanel>
-                <TextBlock>
-                    Check out <Hyperlink NavigateUri="http://qbintranet/kmp/" RequestNavigate="HomePageLinkRequestNavigate">KMP Homepage on Intranet</Hyperlink> for more information.
-                </TextBlock>
+                <CheckBox Name="AddToDB" IsChecked="True">Add to Database</CheckBox>
             </StackPanel>
         </StackPanel>
     </Grid>

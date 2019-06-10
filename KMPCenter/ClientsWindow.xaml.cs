@@ -7,11 +7,11 @@ namespace KMPCenter
     /// </summary>
     public partial class ClientsWindow : Window
     {
-        private MainWindow _mainwindow;
+        private MainWindow MainWindow => (MainWindow) Owner;
 
         public ClientsWindow(MainWindow mw)
         {
-            _mainwindow = mw;
+            Owner = mw;
             InitializeComponent();
         }
     }

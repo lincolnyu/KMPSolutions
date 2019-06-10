@@ -15,16 +15,17 @@ namespace KMPCenter
     {
         static object missing = System.Reflection.Missing.Value;
 
-        private MainWindow _mainwindow;
+        private MainWindow MainWindow => (MainWindow)Owner;
+
         public InvoicingWindow(MainWindow mw)
         {
-            _mainwindow = mw;
+            Owner = mw;
             InitializeComponent();
 
-            Clients.SetDataConnection(_mainwindow.Connection);
+            Clients.SetDataConnection(MainWindow.Connection);
         }
 
-        public string InvoiceTemplatePath => _mainwindow.InvoiceTemplatePath.Text;
+        public string InvoiceTemplatePath => MainWindow.InvoiceTemplatePath.Text;
 
         private void GenerateClick(object sender, RoutedEventArgs e)
         {
