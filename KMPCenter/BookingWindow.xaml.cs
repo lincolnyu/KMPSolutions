@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using KMPBookingPlus;
 
 namespace KMPCenter
 {
@@ -101,21 +102,91 @@ namespace KMPCenter
             {
                 return;
             }
+            if (AddToDB.IsChecked == true)
+            {
+                if (HasClash())
+                {
+                    return;
+                }
+                AddBookingToDB();
+            }
             Book();
             if (SetSmsReminder.IsChecked == true)
             {
                 Thread.Sleep(1000);
                 SmsReminder();
             }
-            if (AddToDB.IsChecked == true)
+        }
+
+        private bool HasClash()
+        {
+            var (start, dur) = GetBookingTemporalInfo();
+            if (!start.HasValue) return false;
+            var end = start.Value + (dur.HasValue? dur.Value : TimeSpan.Zero);
+            var query = "select Clients.ID, Clients.[Client Name], Bookings.[Booking Date], Bookings.Duration from Bookings inner join Clients on Bookings.[Client ID] = Clients.ID order by Bookings.[Booking Date]";
+            var sb = new StringBuilder("Has clash with:\n");
+            var hasClash = false;
+            using (var r = MainWindow.Connection.RunReaderQuery(query))
             {
-                AddBookingToDB();
+                while (r.Read())
+                {
+                    var cid = r.GetInt32(0).ClientIdToStr();
+                    var cname = r.GetString(1);
+                    var estart = r.TryGetDateTime(2);
+                    var nummins = r.GetInt32(3);
+                    var edur = TimeSpan.FromMinutes(nummins);
+                    if (estart > end)
+                    {
+                        break;
+                    }
+
+                    var eend = estart + edur;
+                    bool clash = false;
+                    if (edur > TimeSpan.Zero)
+                    {
+                        clash = (start > estart && start < eend
+                            || end > estart && end < eend
+                            || start == estart && end > estart
+                            || start < eend && end == eend
+                            || start < estart && end > eend);
+                    }
+                    else
+                    {
+                        clash = (estart > start && estart < end
+                            || estart == start && estart == end);
+                    }
+                    if (clash)
+                    {
+                        sb.AppendLine($"#{cid}: {cname} at {estart.ToString()} for {edur.TotalMinutes} mins");
+                        hasClash = true;
+                    }
+                }
             }
+            if (hasClash)
+            {
+                App.ShowMessage(sb.ToString());
+            }
+            return hasClash;
         }
 
         private void AddBookingToDB()
         {
-            //TODO implement it...
+            var fields = new StringBuilder();
+            var values= new StringBuilder();
+            fields.Append("[Client ID], ");
+            values.Append($"{Clients.ActiveClient.Id}, ");
+            var (bookingTime, dur) = GetBookingTemporalInfo();
+            fields.Append("[Booking Date], ");
+            values.Append($"{bookingTime.ToDbDateTime()}, ");
+            if (dur.HasValue)
+            {
+                fields.Append($"Duration, ");
+                values.Append($"{dur.Value.TotalMinutes}, ");
+            }
+            fields.Append($"[SMS Date]");
+            values.Append($"{GetSmsTime().ToDbDateTime()}");
+            var cmd = $"insert into Bookings ({fields}) values ({values})";
+            MainWindow.Connection.RunNonQuery(cmd.ToString());
         }
 
         private void SmsReminder()
@@ -181,7 +252,8 @@ namespace KMPCenter
             var client = Clients.ActiveClient;
             if (client == null)
             {
-                AddValidationMessage(sb, ref r, CheckResult.Error, "No client");
+                App.ShowMessage($"Unable to book. No client");
+                return false;
             }
 
             if (string.IsNullOrWhiteSpace(client.ClientFormalName()))
@@ -205,12 +277,12 @@ namespace KMPCenter
 
             if (r == CheckResult.Error)
             {
-                MessageBox.Show($"Unable to book. Error details:\n{sb.ToString()}", Title);
+                App.ShowMessage($"Unable to book. Error details:\n{sb.ToString()}");
                 return false;
             }
             else if (r == CheckResult.Warning)
             {
-                if (MessageBox.Show($"Warning:\n{sb.ToString()}Are you sure to continue?", Title, MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+                if (MessageBox.Show($"Warning:\n{sb.ToString()}Are you sure to continue?", MainWindow.Title, MessageBoxButton.YesNo) != MessageBoxResult.Yes)
                 {
                     return false;
                 }

@@ -216,7 +216,7 @@ namespace KMPControls
         {
             foreach (var c in clients)
             {
-                yield return $"{c.Id}: {c.ClientFormalName()} (Medicare#{c.MedicareNumber}, Phone#{c.PhoneNumber})";
+                yield return $"#{c.Id}: {c.ClientFormalName()} (Medicare#{c.MedicareNumber}, Phone#{c.PhoneNumber})";
             }
         }
 

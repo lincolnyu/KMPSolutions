@@ -117,6 +117,7 @@ namespace KMPBookingCore
             => new DateTime(date.Year, date.Month, date.Day,
                time.Hour, time.Minute, time.Second);
 
+
         private static string PullDigits(string s)
         {
             var sb = new StringBuilder();
@@ -131,7 +132,20 @@ namespace KMPBookingCore
         {
             if (date.HasValue)
             {
-                return date.Value.ToString("dd/MM/yyyy");
+                //return date.Value.ToString("dd/MM/yyyy");
+                return $"\"{date.Value.ToShortDateString()}\"";
+            }
+            else
+            {
+                return "NULL";
+            }
+        }
+
+        public static string ToDbDateTime(this DateTime? date)
+        {
+            if (date.HasValue)
+            {
+                return $"\"{date.Value.ToString()}\"";
             }
             else
             {
