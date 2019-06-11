@@ -63,7 +63,7 @@ namespace KMPBookingPlus
             }
         }
 
-        public static void RunNonQuery(this OleDbConnection conn, string cmdstr, bool closeConnectionOnComplete)
+        public static void RunNonQuery(this OleDbConnection conn, string cmdstr, bool closeConnectionOnComplete = true)
         {
             using (var cmd = new OleDbCommand(cmdstr, conn))
             {
