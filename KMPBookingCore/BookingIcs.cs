@@ -209,6 +209,19 @@ namespace KMPBookingCore
         }
 
         public static string FormCommaSeparateName(string firstName, string surname)
-            => $"{surname}, {firstName}";
+        {
+            if (string.IsNullOrWhiteSpace(firstName))
+            {
+                return surname;
+            }
+            else if (string.IsNullOrWhiteSpace(surname))
+            {
+                return firstName;
+            }
+            else
+            {
+                return $"{surname}, {firstName}";
+            }
+        }
     }
 }

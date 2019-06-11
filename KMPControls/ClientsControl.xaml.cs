@@ -220,7 +220,6 @@ namespace KMPControls
             }
         }
 
-
         private void SearchBy(IList<ClientRecord> finderResults, string duplicateMessage)
         {
             _suppressSearch.Run(() =>
