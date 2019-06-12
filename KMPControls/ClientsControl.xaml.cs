@@ -39,7 +39,22 @@ namespace KMPControls
         AutoResetSuppressor _suppressSearch = new AutoResetSuppressor();
         public Action<string> ErrorReporter { private get;  set; }
 
-        public ClientRecord ActiveClient { get; private set; }
+        private ClientRecord _activeClient;
+        public ClientRecord ActiveClient
+        {
+            get => _activeClient;
+            private set
+            {
+                if (_activeClient != value)
+                {
+                    _activeClient = value;
+                    ActiveClientChanged?.Invoke();
+                }
+            }
+        }
+
+        public delegate void ActiveClientChangedEventHandler();
+        public event ActiveClientChangedEventHandler ActiveClientChanged;
 
         public ClientsControl()
         {

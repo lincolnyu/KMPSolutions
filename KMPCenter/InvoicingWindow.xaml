@@ -11,8 +11,13 @@
     <Grid>
         <StackPanel>
             <kmpcontrols:ClientsControl Name="Clients"></kmpcontrols:ClientsControl>
-            <TextBlock>Existing Bookings</TextBlock>
-            <ListBox MinHeight="80"></ListBox>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock>Existing Bookings</TextBlock>
+                <CheckBox Name="OnlyPreviousBookings" IsChecked="True">
+                    Only show bookings in the past
+                </CheckBox>
+            </StackPanel>
+            <ListBox Name="ExistingBookings" MinHeight="80"></ListBox>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition/>

@@ -113,7 +113,8 @@
                 </ComboBox>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Button Click="BookClicked">Book the Appointment in Calendar</Button>
+                <Button Click="BookClicked">Book the Appointment</Button>
+                <CheckBox Name="BookingInCalendar" IsChecked="True">Add the appointment in Calendar</CheckBox>
                 <CheckBox Name="SetSmsReminder" IsChecked="True">Also Create SMS Reminder in Calendar</CheckBox>
                 <CheckBox Name="AddToDB" IsChecked="True">Add to Database</CheckBox>
             </StackPanel>
