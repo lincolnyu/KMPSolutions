@@ -13,6 +13,7 @@ namespace KMPCenter
         {
             Owner = mw;
             InitializeComponent();
+            Clients.SetDataConnection(MainWindow.Connection);
         }
     }
 }

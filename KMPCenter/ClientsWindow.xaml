@@ -4,10 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KMPCenter"
+        xmlns:kmpcontrols="clr-namespace:KMPControls;assembly=KMPControls"
         mc:Ignorable="d"
         WindowStartupLocation="CenterOwner"
         Title="ClientsWindow" Height="450" Width="800">
     <Grid>
-        
+        <StackPanel>
+            <kmpcontrols:ClientsControl Name="Clients"></kmpcontrols:ClientsControl>
+        </StackPanel>
     </Grid>
 </Window>

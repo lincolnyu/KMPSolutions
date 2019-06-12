@@ -110,7 +110,10 @@ namespace KMPCenter
                 }
                 AddBookingToDB();
             }
-            Book();
+            if (BookingInCalendar.IsChecked == true)
+            {
+                BookInCalendar();
+            }
             if (SetSmsReminder.IsChecked == true)
             {
                 Thread.Sleep(1000);
@@ -229,7 +232,8 @@ namespace KMPCenter
 
         private DateTime? GetSmsTime()
         {
-            if (!SmsDate.SelectedDate.HasValue)
+            //TODO later may implement a service that send sms/reminder to client automatically...
+            if (SetSmsReminder.IsChecked != true || !SmsDate.SelectedDate.HasValue)
             {
                 return null;
             }
@@ -266,7 +270,7 @@ namespace KMPCenter
                 AddValidationMessage(sb, ref r, CheckResult.Warning, "Missing client medicare number");
             }
 
-            (var msg, var rr) = CheckDate(sms ? Tolerance.AllowIncompleteSmsDate : Tolerance.Neither);
+            (var msg, var rr) = CheckDate(sms ? Tolerance.Neither : Tolerance.AllowIncompleteSmsDate);
             AddValidationMessage(sb, ref r, rr, msg);
 
             if (SetSmsReminder.IsChecked == true && string.IsNullOrWhiteSpace(client.PhoneNumber)
@@ -365,7 +369,7 @@ namespace KMPCenter
             }
         }
 
-        private void Book()
+        private void BookInCalendar()
         {
             (var bookingDateTime, var duration) = GetBookingTemporalInfo();
             if (!bookingDateTime.HasValue)

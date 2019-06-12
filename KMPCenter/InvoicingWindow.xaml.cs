@@ -1,4 +1,5 @@
 ﻿using KMPBookingCore;
+using KMPBookingPlus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,14 @@ namespace KMPCenter
             InitializeComponent();
 
             Clients.SetDataConnection(MainWindow.Connection);
+            Clients.ActiveClientChanged += OnActiveClientChanged;
+            OnlyPreviousBookings.Checked += OnlyPreviousBookingsCheckedOrUnchecked;
+            OnlyPreviousBookings.Unchecked += OnlyPreviousBookingsCheckedOrUnchecked;
+        }
+
+        private void OnActiveClientChanged()
+        {
+            UpdateBookingList();
         }
 
         public string InvoiceTemplatePath => MainWindow.InvoiceTemplatePath.Text;
@@ -68,6 +77,36 @@ namespace KMPCenter
                     Gap = 0,
                     Balance = total
                 };
+            }
+        }
+
+        private void OnlyPreviousBookingsCheckedOrUnchecked(object sender, RoutedEventArgs e)
+        {
+            UpdateBookingList();
+        }
+
+        private void UpdateBookingList()
+        {
+            ExistingBookings.Items.Clear();
+            if (Clients.ActiveClient != null && MainWindow.Connection != null)
+            {
+                var query = $"select [Booking Date], Duration from Bookings where [Client ID]={Clients.ActiveClient.Id.ClientIdFromStr()} order by Bookings.[Booking Date]";
+                using (var r = MainWindow.Connection.RunReaderQuery(query))
+                {
+                    while (r.Read())
+                    {
+                        var dt = r.TryGetDateTime(0);
+                        if (OnlyPreviousBookings.IsChecked == true)
+                        {
+                            if (dt > DateTime.Now)
+                            {
+                                break;
+                            }
+                        }
+                        var nummins = r.GetInt32(1);
+                        ExistingBookings.Items.Add($"{dt?.ToString() ?? "Unspecified date"} for {nummins} mins");
+                    }
+                }
             }
         }
     }
