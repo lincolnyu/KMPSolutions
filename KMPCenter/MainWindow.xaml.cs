@@ -344,7 +344,8 @@ namespace KMPCenter
                             Address = addr,
                             Gender = ClientRecord.ParseGender(gen)
                         };
-                        if (DateTime.TryParse(dob, out var dt))
+                        CultureInfo cultureinfo = new CultureInfo("en-AU");
+                        if (DateTime.TryParse(dob, cultureinfo, DateTimeStyles.AssumeLocal, out var dt))
                         {
                             client.DOB = dt;
                         }

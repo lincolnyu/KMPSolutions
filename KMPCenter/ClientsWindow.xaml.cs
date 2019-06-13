@@ -13,6 +13,7 @@ namespace KMPCenter
         {
             Owner = mw;
             InitializeComponent();
+            Clients.InputMode = KMPControls.ClientsControl.Mode.Input;
             Clients.SetDataConnection(MainWindow.Connection);
         }
     }
