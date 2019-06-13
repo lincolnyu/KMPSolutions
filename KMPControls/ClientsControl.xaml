@@ -36,6 +36,29 @@
                     Find
                 </Button>
             </StackPanel>
+            <StackPanel Name="ClientGenderSection" Orientation="Horizontal">
+                <Label>Client Gender</Label>
+                <ComboBox Name="ClientGender">
+                    <ComboBox.Items>
+                        <ComboBoxItem>Unspecified</ComboBoxItem>
+                        <ComboBoxItem>Male</ComboBoxItem>
+                        <ComboBoxItem>Female</ComboBoxItem>
+                        <ComboBoxItem>Nonbinary</ComboBoxItem>
+                    </ComboBox.Items>
+                </ComboBox>
+            </StackPanel>
+            <StackPanel Name="ClientDobSection" Orientation="Horizontal">
+                <Label>Client DOB</Label>
+                <DatePicker Name="ClientDob"></DatePicker>
+            </StackPanel>
+            <StackPanel Name="ClientAddressSection" Orientation="Horizontal">
+                <Label>Client Address</Label>
+                <TextBox Name="ClientAddress" MinWidth="360"></TextBox>
+            </StackPanel>
+            <StackPanel Name="AddClientControl" Orientation="Horizontal">
+                <CheckBox Name="IsAdding">Adding</CheckBox>
+                <Button Click="AddClientClick">Add</Button>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </UserControl>

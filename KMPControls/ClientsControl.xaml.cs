@@ -31,6 +31,39 @@ namespace KMPControls
             }
         }
 
+        public enum Mode
+        {
+            Init,
+            Simple,
+            Input
+        }
+
+        private Mode _inputMode = Mode.Init;
+        public Mode InputMode
+        {
+            get => _inputMode;
+            set
+            {
+                if (_inputMode != value && value != Mode.Init)
+                {
+                    _inputMode = value;
+                    switch (_inputMode)
+                    {
+                        case Mode.Simple:
+                            ClientGenderSection.Visibility = Visibility.Collapsed;
+                            ClientDobSection.Visibility = Visibility.Collapsed;
+                            ClientAddressSection.Visibility = Visibility.Collapsed;
+                            break;
+                        case Mode.Input:
+                            ClientGenderSection.Visibility = Visibility.Visible;
+                            ClientDobSection.Visibility = Visibility.Visible;
+                            ClientAddressSection.Visibility = Visibility.Visible;
+                            break;
+                    }
+                }
+            }
+        }
+
         public OleDbConnection _connection;
         private Dictionary<string, List<ClientRecord>> _nameToClients;
         private Dictionary<string, List<ClientRecord>> _mediToClients;
@@ -59,6 +92,7 @@ namespace KMPControls
         public ClientsControl()
         {
             InitializeComponent();
+            InputMode = Mode.Simple;
         }
 
         public void SetDataConnection(OleDbConnection connection)
@@ -268,6 +302,15 @@ namespace KMPControls
                     ClientMedicare.Text = ActiveClient.MedicareNumber;
                     ClientName.Text = ActiveClient.ClientFormalName();
                     ClientNumber.Text = ActiveClient.PhoneNumber;
+                    if (InputMode == Mode.Input)
+                    {
+                        ClientGender.SelectedIndex = (int)ActiveClient.Gender;
+                        if (ActiveClient.DOB.HasValue)
+                        {
+                            ClientDob.SelectedDate = ActiveClient.DOB.Value;
+                        }
+                        ClientAddress.Text = ActiveClient.Address;
+                    }
                 }
                 else
                 {
@@ -301,6 +344,11 @@ namespace KMPControls
             SearchBy(_idToClient.Values.FindByPhoneNumberContaining(phone)
                     .OrderBy(x => x.Id).ToList(),
                     $"Multiple clients found with phone number containing '{phone}'");
+        }
+
+        private void AddClientClick(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
