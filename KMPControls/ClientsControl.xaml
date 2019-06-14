@@ -12,19 +12,19 @@
                 <Label>Client ID</Label>
                 <ComboBox MinWidth="120" IsEditable="True" Name="ClientId"
                           KeyDown="ClientIdKeyDown" SelectionChanged="ClientIdSelChanged"></ComboBox>
-                <Button Click="SearchByIdClick" ToolTip="Find the client by ID">Find</Button>
+                <Button Name="SearchByIdBtn" Click="SearchByIdClick" ToolTip="Find the client by ID">Find</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Medicare Number</Label>
                 <ComboBox MinWidth="120" IsEditable="True" Name="ClientMedicare"
                           KeyDown="ClientMediKeyDown" SelectionChanged="ClientMediSelChanged"></ComboBox>
-                <Button Click="SearchByMediClick" ToolTip="Find the client with medicare numbers contain this text">Find</Button>
+                <Button Name="SearchByMediBtn" Click="SearchByMediClick" ToolTip="Find the client with medicare numbers contain this text">Find</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Client Name</Label>
                 <ComboBox MinWidth="120" IsEditable="True" Name="ClientName"
                           KeyDown="ClientNameKeyDown" SelectionChanged="ClientNameSelChanged"></ComboBox>
-                <Button Click="SearchByNameClick" ToolTip="Find all clients whose names contain this text">
+                <Button Name="SearchByNameBtn" Click="SearchByNameClick" ToolTip="Find all clients whose names contain this text">
                     Find
                 </Button>
             </StackPanel>
@@ -32,7 +32,7 @@
                 <Label>Client Phone Number</Label>
                 <ComboBox MinWidth="120" IsEditable="True"  Name="ClientNumber" 
                           KeyDown="ClientNumberKeyDown" SelectionChanged="ClientNumberSelChanged"></ComboBox>
-                <Button Click="SearchByPhoneClick" ToolTip="Find all clients whose phone numbers contain this text">
+                <Button Name="SearchByPhoneBtn" Click="SearchByPhoneClick" ToolTip="Find all clients whose phone numbers contain this text">
                     Find
                 </Button>
             </StackPanel>
@@ -57,7 +57,8 @@
             </StackPanel>
             <StackPanel Name="AddClientControl" Orientation="Horizontal">
                 <CheckBox Name="IsAdding">Adding</CheckBox>
-                <Button Click="AddClientClick">Add</Button>
+                <Button Width="90" Name="ResetBtn" Click="ResetClick">Reset</Button>
+                <Button Width="80" Name="AddBtn" Click="AddClientClick">Add</Button>
             </StackPanel>
         </StackPanel>
     </Grid>
