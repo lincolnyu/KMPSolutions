@@ -132,8 +132,8 @@ namespace KMPBookingCore
         {
             if (date.HasValue)
             {
-                //return date.Value.ToString("dd/MM/yyyy");
-                return $"\"{date.Value.ToShortDateString()}\"";
+                return $"\"{date.Value.ToString("yyyy-MM-dd")}\"";
+                //return $"\"{date.Value.ToShortDateString()}\"";
             }
             else
             {
@@ -145,7 +145,8 @@ namespace KMPBookingCore
         {
             if (date.HasValue)
             {
-                return $"\"{date.Value.ToString()}\"";
+                return $"\"{date.Value.ToString("yyyy-MM-dd hh:mm:ss")}\"";
+                //return $"\"{date.Value.ToString()}\"";
             }
             else
             {
