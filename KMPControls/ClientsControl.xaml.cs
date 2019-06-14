@@ -1,6 +1,5 @@
 ﻿using KMPBookingCore;
 using KMPBookingPlus;
-using static KMPBookingCore.BookingIcs;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -53,11 +52,15 @@ namespace KMPControls
                             ClientGenderSection.Visibility = Visibility.Collapsed;
                             ClientDobSection.Visibility = Visibility.Collapsed;
                             ClientAddressSection.Visibility = Visibility.Collapsed;
+                            AddClientControl.Visibility = Visibility.Collapsed;
+                            IsAdding.IsChecked = false;
                             break;
                         case Mode.Input:
                             ClientGenderSection.Visibility = Visibility.Visible;
                             ClientDobSection.Visibility = Visibility.Visible;
                             ClientAddressSection.Visibility = Visibility.Visible;
+                            AddClientControl.Visibility = Visibility.Visible;
+                            IsAdding.IsChecked = true;
                             break;
                     }
                 }
@@ -71,6 +74,7 @@ namespace KMPControls
         private Dictionary<string, ClientRecord> _idToClient;
         AutoResetSuppressor _suppressSearch = new AutoResetSuppressor();
         public Action<string> ErrorReporter { private get;  set; }
+        public bool Adding => IsAdding.IsVisible && IsAdding.IsChecked == true;
 
         private ClientRecord _activeClient;
         public ClientRecord ActiveClient
@@ -93,6 +97,57 @@ namespace KMPControls
         {
             InitializeComponent();
             InputMode = Mode.Simple;
+            UpdateUIOnAddingStatusChanged();
+            IsAdding.Checked += IsAddingChecked;
+            IsAdding.Unchecked += IsAddingUnchecked;
+            ClientMedicare.DropDownOpened += ClientFieldDropDownOpened;
+            ClientName.DropDownOpened += ClientFieldDropDownOpened;
+            ClientNumber.DropDownOpened += ClientFieldDropDownOpened;
+        }
+
+        private void ClientFieldDropDownOpened(object sender, EventArgs e)
+        {
+            if (Adding)
+            {
+                ((ComboBox)sender).IsDropDownOpen = false;
+            }
+        }
+
+        private void IsAddingUnchecked(object sender, RoutedEventArgs e)
+        {
+            UpdateUIOnAddingStatusChanged();
+        }
+
+        private void IsAddingChecked(object sender, RoutedEventArgs e)
+        {
+            UpdateUIOnAddingStatusChanged();
+        }
+
+        private void UpdateUIOnAddingStatusChanged()
+        {
+            var notAdding = !Adding;
+            var visible = notAdding ? Visibility.Visible : Visibility.Collapsed;
+            SearchByIdBtn.Visibility = visible;
+            SearchByNameBtn.Visibility = visible;
+            SearchByMediBtn.Visibility = visible;
+            SearchByPhoneBtn.Visibility = visible;
+            ClientMedicare.IsTextSearchEnabled = notAdding;
+            ClientName.IsTextSearchEnabled = notAdding;
+            ClientNumber.IsTextSearchEnabled = notAdding;
+            ClientId.IsEnabled = notAdding;
+            AddBtn.IsEnabled = Adding;
+            ResetBtn.IsEnabled = Adding;
+            ClientAddress.IsReadOnly = notAdding;
+            ClientGender.IsReadOnly = notAdding;
+            ClientDob.IsEnabled = Adding;
+            if (Adding)
+            {
+                ClientId.Text = "(Adding ...)";
+            }
+            else
+            {
+                ClientId.Text = "";
+            }
         }
 
         public void SetDataConnection(OleDbConnection connection)
@@ -298,7 +353,7 @@ namespace KMPControls
                 }
                 if (ActiveClient != null)
                 {
-                    ClientId.Text = ActiveClient.Id;
+                    ClientId.Text = Adding? "(Adding ...)" : ActiveClient.Id;
                     ClientMedicare.Text = ActiveClient.MedicareNumber;
                     ClientName.Text = ActiveClient.ClientFormalName();
                     ClientNumber.Text = ActiveClient.PhoneNumber;
@@ -349,6 +404,16 @@ namespace KMPControls
         private void AddClientClick(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void ResetClick(object sender, RoutedEventArgs e)
+        {
+            ClientName.Text = "";
+            ClientMedicare.Text = "";
+            ClientNumber.Text = "";
+            ClientGender.SelectedIndex = (int)Gender.Unspecified;
+            ClientDob.Text = "";
+            ClientAddress.Text = "";
         }
     }
 }
