@@ -7,6 +7,7 @@ using System.Data.OleDb;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Text;
 
 namespace KMPControls
 {
@@ -53,7 +54,7 @@ namespace KMPControls
                             ClientDobSection.Visibility = Visibility.Collapsed;
                             ClientAddressSection.Visibility = Visibility.Collapsed;
                             AddClientControl.Visibility = Visibility.Collapsed;
-                            IsAdding.IsChecked = false;
+                            IsEditing.IsChecked = false;
                             break;
                         case Mode.Input:
                             ClientGenderSection.Visibility = Visibility.Visible;
@@ -61,20 +62,47 @@ namespace KMPControls
                             ClientAddressSection.Visibility = Visibility.Visible;
                             AddClientControl.Visibility = Visibility.Visible;
                             IsAdding.IsChecked = true;
+                            IsAdding.IsChecked = false;
                             break;
                     }
                 }
             }
         }
+        public bool IsUpdating => CurrentUpdateMode == UpdateMode.Adding || CurrentUpdateMode == UpdateMode.Editing;
 
-        public OleDbConnection _connection;
+        public OleDbConnection Connection { get; private set; }
         private Dictionary<string, List<ClientRecord>> _nameToClients;
         private Dictionary<string, List<ClientRecord>> _mediToClients;
         private Dictionary<string, List<ClientRecord>> _phoneToClients;
         private Dictionary<string, ClientRecord> _idToClient;
         AutoResetSuppressor _suppressSearch = new AutoResetSuppressor();
-        public Action<string> ErrorReporter { private get;  set; }
-        public bool Adding => IsAdding.IsVisible && IsAdding.IsChecked == true;
+        public Action<string> ErrorReporter { private get; set; }
+
+        public enum UpdateMode
+        {
+            Reading,
+            Editing,
+            Adding
+        }
+
+        public UpdateMode CurrentUpdateMode
+        {
+            get
+            {
+                if (IsAdding.IsVisible && IsAdding.IsChecked == true)
+                {
+                    return UpdateMode.Adding;
+                }
+                else if (IsEditing.IsVisible && IsEditing.IsChecked == true)
+                {
+                    return UpdateMode.Editing;
+                }
+                else
+                {
+                    return UpdateMode.Reading;
+                }
+            }
+        }
 
         private ClientRecord _activeClient;
         public ClientRecord ActiveClient
@@ -98,8 +126,10 @@ namespace KMPControls
             InitializeComponent();
             InputMode = Mode.Simple;
             UpdateUIOnAddingStatusChanged();
-            IsAdding.Checked += IsAddingChecked;
-            IsAdding.Unchecked += IsAddingUnchecked;
+            IsAdding.Checked += IsAddingEditingCheckedUnchecked;
+            IsAdding.Unchecked += IsAddingEditingCheckedUnchecked;
+            IsEditing.Checked += IsAddingEditingCheckedUnchecked;
+            IsEditing.Unchecked += IsAddingEditingCheckedUnchecked;
             ClientMedicare.DropDownOpened += ClientFieldDropDownOpened;
             ClientName.DropDownOpened += ClientFieldDropDownOpened;
             ClientNumber.DropDownOpened += ClientFieldDropDownOpened;
@@ -107,58 +137,67 @@ namespace KMPControls
 
         private void ClientFieldDropDownOpened(object sender, EventArgs e)
         {
-            if (Adding)
+            if (CurrentUpdateMode == UpdateMode.Adding
+                || CurrentUpdateMode == UpdateMode.Editing)
             {
                 ((ComboBox)sender).IsDropDownOpen = false;
             }
         }
 
-        private void IsAddingUnchecked(object sender, RoutedEventArgs e)
-        {
-            UpdateUIOnAddingStatusChanged();
-        }
-
-        private void IsAddingChecked(object sender, RoutedEventArgs e)
+        private void IsAddingEditingCheckedUnchecked(object sender, RoutedEventArgs e)
         {
             UpdateUIOnAddingStatusChanged();
         }
 
         private void UpdateUIOnAddingStatusChanged()
         {
-            var notAdding = !Adding;
-            var visible = notAdding ? Visibility.Visible : Visibility.Collapsed;
-            SearchByIdBtn.Visibility = visible;
+            var isUpdating = IsUpdating;
+            var visible = isUpdating ? Visibility.Collapsed : Visibility.Visible;
             SearchByNameBtn.Visibility = visible;
             SearchByMediBtn.Visibility = visible;
             SearchByPhoneBtn.Visibility = visible;
-            ClientMedicare.IsTextSearchEnabled = notAdding;
-            ClientName.IsTextSearchEnabled = notAdding;
-            ClientNumber.IsTextSearchEnabled = notAdding;
-            ClientId.IsEnabled = notAdding;
-            AddBtn.IsEnabled = Adding;
-            ResetBtn.IsEnabled = Adding;
-            ClientAddress.IsReadOnly = notAdding;
-            ClientGender.IsReadOnly = notAdding;
-            ClientDob.IsEnabled = Adding;
-            if (Adding)
+            ClientMedicare.IsTextSearchEnabled = !isUpdating;
+            ClientName.IsTextSearchEnabled = !isUpdating;
+            ClientNumber.IsTextSearchEnabled = !isUpdating;
+            ClientAddress.IsReadOnly = !isUpdating;
+            ClientGender.IsReadOnly = !isUpdating;
+            ClientDob.IsEnabled = isUpdating;
+            UpdateBtn.IsEnabled = isUpdating;
+            ResetBtn.IsEnabled = isUpdating;
+            ResetDob.IsEnabled = isUpdating;
+
+            switch (CurrentUpdateMode)
             {
-                ClientId.Text = "(Adding ...)";
-            }
-            else
-            {
-                ClientId.Text = "";
+                case UpdateMode.Adding:
+                    SearchByIdBtn.Visibility = Visibility.Collapsed;
+                    ClientId.IsEnabled = false;
+                    UpdateBtn.Content = "Add";
+                    ClientId.Text = "(Adding ...)";
+                    break;
+                case UpdateMode.Editing:
+                    SearchByIdBtn.Visibility = Visibility.Visible;
+                    ClientId.IsEnabled = true;
+                    UpdateBtn.Content = "Update";
+                    ClientId.Text = ActiveClient?.Id ?? "";
+                    break;
+                default:
+                    SearchByIdBtn.Visibility = Visibility.Visible;
+                    ClientId.IsEnabled = true;
+                    UpdateBtn.Content = "Update";
+                    ClientId.Text = ActiveClient?.Id ?? "";
+                    break;
             }
         }
 
         public void SetDataConnection(OleDbConnection connection)
         {
-            _connection = connection;
+            Connection = connection;
             LoadData();
         }
 
         private void LoadData()
         {
-            if (_connection != null)
+            if (Connection != null)
             {
                 var query = "select ID, [Client Name], [DOB], [Gender], [Medicare], [Phone], [Address] from Clients";
                 _nameToClients = new Dictionary<string, List<ClientRecord>>();
@@ -166,7 +205,7 @@ namespace KMPControls
                 _phoneToClients = new Dictionary<string, List<ClientRecord>>();
                 _idToClient = new Dictionary<string, ClientRecord>();
 
-                using (var r = _connection.RunReaderQuery(query))
+                using (var r = Connection.RunReaderQuery(query))
                 {
                     while (r.Read())
                     {
@@ -353,7 +392,8 @@ namespace KMPControls
                 }
                 if (ActiveClient != null)
                 {
-                    ClientId.Text = Adding? "(Adding ...)" : ActiveClient.Id;
+                    ClientId.Text = CurrentUpdateMode == UpdateMode.Adding ?
+                        "(Adding ...)" : ActiveClient.Id;
                     ClientMedicare.Text = ActiveClient.MedicareNumber;
                     ClientName.Text = ActiveClient.ClientFormalName();
                     ClientNumber.Text = ActiveClient.PhoneNumber;
@@ -401,19 +441,90 @@ namespace KMPControls
                     $"Multiple clients found with phone number containing '{phone}'");
         }
 
-        private void AddClientClick(object sender, RoutedEventArgs e)
+        private void UpdateClientClick(object sender, RoutedEventArgs e)
         {
+            if (CurrentUpdateMode == UpdateMode.Adding)
+            {
+                Add();
+            }
+            else if (CurrentUpdateMode == UpdateMode.Editing)
+            {
+                Edit();
+            }
+        }
 
+        private void Add()
+        {
+            ActiveClient = new ClientRecord();
+            UpdateUiToActive();
+            var sbSql = new StringBuilder("insert into Clients([Client Name], [DOB], [Gender], [Medicare], [Phone], [Address]) values(");
+            sbSql.Append($"'{ActiveClient.ClientFormalName()}',");
+            sbSql.Append($"{ActiveClient.DOB.ToDbDate()},");
+            sbSql.Append($"'{ClientRecord.ToString(ActiveClient.Gender)}',");
+            sbSql.Append($"'{ActiveClient.MedicareNumber}',");
+            sbSql.Append($"'{ActiveClient.PhoneNumber}',");
+            sbSql.Append($"'{ActiveClient.Address}')");
+            Connection.RunNonQuery(sbSql.ToString(), false);
+        }
+
+        private void Edit()
+        {
+            if (ActiveClient == null)
+            {
+                //TODO Error message...
+                return;
+            }
+
+            UpdateUiToActive();
+            var sbSql = new StringBuilder($"update Clients set ");
+            sbSql.Append($"[Client Name] = '{ActiveClient.ClientFormalName()}',");
+            sbSql.Append($"[DOB] = {ActiveClient.DOB.ToDbDate()},");
+            sbSql.Append($"[Medicare] = {ActiveClient.MedicareNumber}, ");
+            sbSql.Append($"[Gender] = '{ClientRecord.ToString(ActiveClient.Gender)}',");
+            sbSql.Append($"[Phone] = '{ActiveClient.PhoneNumber}',");
+            sbSql.Append($"[Address] = '{ActiveClient.Address}'");
+            sbSql.Append($" where ID = {ActiveClient.Id.ClientIdFromStr()}");
+            Connection.RunNonQuery(sbSql.ToString());
+
+            //TODO Successful message
+        }
+
+        private void UpdateUiToActive()
+        {
+            ActiveClient.DOB = ClientDob.SelectedDate;
+            ActiveClient.MedicareNumber = ClientMedicare.Text.Trim();
+            ActiveClient.Gender = (Gender)ClientGender.SelectedIndex;
+            ActiveClient.PhoneNumber = ClientNumber.Text;
+            ActiveClient.Address = ClientAddress.Text;
+            var name = ClientName.Text;
+            (ActiveClient.FirstName, ActiveClient.Surname) = BookingIcs.SmartParseName(name);
         }
 
         private void ResetClick(object sender, RoutedEventArgs e)
         {
-            ClientName.Text = "";
-            ClientMedicare.Text = "";
-            ClientNumber.Text = "";
-            ClientGender.SelectedIndex = (int)Gender.Unspecified;
-            ClientDob.Text = "";
-            ClientAddress.Text = "";
+            if (CurrentUpdateMode == UpdateMode.Adding)
+            {
+                ClientName.Text = "";
+                ClientMedicare.Text = "";
+                ClientNumber.Text = "";
+                ClientGender.SelectedIndex = (int)Gender.Unspecified;
+                ClientDob.SelectedDate = null;
+                ClientAddress.Text = "";
+            }
+            else if (CurrentUpdateMode == UpdateMode.Editing && ActiveClient != null)
+            {
+                ClientName.Text = ActiveClient.ClientFormalName();
+                ClientMedicare.Text = ActiveClient.MedicareNumber;
+                ClientNumber.Text = ActiveClient.PhoneNumber;
+                ClientGender.SelectedIndex = (int)ActiveClient.Gender;
+                ClientDob.SelectedDate = ActiveClient.DOB;
+                ClientAddress.Text = ActiveClient.Address;
+            }
+        }
+
+        private void ClientDobReset(object sender, RoutedEventArgs e)
+        {
+            ClientDob.SelectedDate = null;
         }
     }
 }

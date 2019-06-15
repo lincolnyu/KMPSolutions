@@ -12,13 +12,13 @@
                 <Label>Client ID</Label>
                 <ComboBox MinWidth="120" IsEditable="True" Name="ClientId"
                           KeyDown="ClientIdKeyDown" SelectionChanged="ClientIdSelChanged"></ComboBox>
-                <Button Name="SearchByIdBtn" Click="SearchByIdClick" ToolTip="Find the client by ID">Find</Button>
+                <Button Name="SearchByIdBtn" Click="SearchByIdClick" ToolTip="Find the client whose IDs that contain this text">Find</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Medicare Number</Label>
                 <ComboBox MinWidth="120" IsEditable="True" Name="ClientMedicare"
                           KeyDown="ClientMediKeyDown" SelectionChanged="ClientMediSelChanged"></ComboBox>
-                <Button Name="SearchByMediBtn" Click="SearchByMediClick" ToolTip="Find the client with medicare numbers contain this text">Find</Button>
+                <Button Name="SearchByMediBtn" Click="SearchByMediClick" ToolTip="Find the clients whose medicare numbers contain this text">Find</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label>Client Name</Label>
@@ -50,6 +50,7 @@
             <StackPanel Name="ClientDobSection" Orientation="Horizontal">
                 <Label>Client DOB</Label>
                 <DatePicker Name="ClientDob"></DatePicker>
+                <Button Name="ResetDob" Click="ClientDobReset">Reset</Button>
             </StackPanel>
             <StackPanel Name="ClientAddressSection" Orientation="Horizontal">
                 <Label>Client Address</Label>
@@ -57,8 +58,9 @@
             </StackPanel>
             <StackPanel Name="AddClientControl" Orientation="Horizontal">
                 <CheckBox Name="IsAdding">Adding</CheckBox>
+                <CheckBox Name="IsEditing">Editing</CheckBox>
                 <Button Width="90" Name="ResetBtn" Click="ResetClick">Reset</Button>
-                <Button Width="80" Name="AddBtn" Click="AddClientClick">Add</Button>
+                <Button Width="80" Name="UpdateBtn" Click="UpdateClientClick">Update</Button>
             </StackPanel>
         </StackPanel>
     </Grid>
