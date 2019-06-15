@@ -228,26 +228,24 @@ namespace KMPCenter
                         }
                         foreach (var mr in modRecords)
                         {
-                            var name = BookingIcs.FormCommaSeparateName(mr.FirstName, mr.Surname);
                             var sbSql = new StringBuilder($"update Clients set ");
-                            sbSql.Append($"[Client Name] = \"{name}\",");
+                            sbSql.Append($"[Client Name] = '{mr.ClientFormalName()}',");
                             sbSql.Append($"[DOB] = {mr.DOB.ToDbDate()},");
                             sbSql.Append($"[Gender] = '{ClientRecord.ToString(mr.Gender)}',");
                             sbSql.Append($"[Phone] = '{mr.PhoneNumber}',");
-                            sbSql.Append($"[Address] = \"{mr.Address}\"");
+                            sbSql.Append($"[Address] = '{mr.Address}'");
                             sbSql.Append($" where [Medicare] = '{mr.MedicareNumber}'");
                             Connection.RunNonQuery(sbSql.ToString(), false);
                         }
                         foreach (var nr in newRecords)
                         {
-                            var name = BookingIcs.FormCommaSeparateName(nr.FirstName, nr.Surname);
                             var sbSql = new StringBuilder("insert into Clients([Client Name], [DOB], [Gender], [Medicare], [Phone], [Address]) values(");
-                            sbSql.Append($"\"{name}\",");
+                            sbSql.Append($"'{nr.ClientFormalName()}',");
                             sbSql.Append($"{nr.DOB.ToDbDate()},");
                             sbSql.Append($"'{ClientRecord.ToString(nr.Gender)}',");
                             sbSql.Append($"'{nr.MedicareNumber}',");
                             sbSql.Append($"'{nr.PhoneNumber}',");
-                            sbSql.Append($"\"{nr.Address}\")");
+                            sbSql.Append($"'{nr.Address}')");
                             Connection.RunNonQuery(sbSql.ToString(), false);
                         }
                         //TODO  delete non-existent clients?
