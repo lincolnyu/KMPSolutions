@@ -7,17 +7,28 @@
         xmlns:kmpcontrols="clr-namespace:KMPControls;assembly=KMPControls"
         mc:Ignorable="d"
         WindowStartupLocation="CenterOwner"
-        Title="KMP Invoicing" Height="600" Width="800">
+        Title="KMP Invoicing" Height="700" Width="800">
     <Grid>
         <StackPanel>
-            <kmpcontrols:ClientsControl Name="Clients"></kmpcontrols:ClientsControl>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <kmpcontrols:ClientsControl Grid.Column="0" Name="Clients"></kmpcontrols:ClientsControl>
+                <StackPanel Grid.Column="1">
+                    <TextBlock>Saved Invoices</TextBlock>
+                    <ListBox Name="SavedInvoices" MinHeight="80" SelectionMode="Single"></ListBox>
+                </StackPanel>
+            </Grid>
             <StackPanel Orientation="Horizontal">
                 <TextBlock>Existing Bookings</TextBlock>
                 <CheckBox Name="OnlyPreviousBookings" IsChecked="True">
                     Only show bookings in the past
                 </CheckBox>
+                <Button Click="ServiceFromBookingClick">Generate service from selected booking</Button>
             </StackPanel>
-            <ListBox Name="ExistingBookings" MinHeight="80"></ListBox>
+            <ListBox Name="ExistingBookings" MinHeight="80" SelectionMode="Single"></ListBox>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition/>
@@ -44,7 +55,16 @@
                 <TextBlock Grid.Row="5" Grid.Column="0">Total Charge</TextBlock>
                 <TextBox Grid.Row="5" Grid.Column="1" IsReadOnly="True" Name="ServiceCharge"></TextBox>
             </Grid>
-            <Button>Add Service</Button>
+            <StackPanel Orientation="Horizontal">
+                <CheckBox Name="AttachBookingChk">Attach/detach booking</CheckBox>
+                <TextBox IsReadOnly ="True"  Name="AttachBookingId" MinWidth="100"></TextBox>
+                <Button Click="AttachBookingClick">Show attached booking</Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <CheckBox Name="AddingChk">Adding</CheckBox>
+                <CheckBox Name="EditingChk">Editing</CheckBox>
+                <Button>Update Service</Button>
+            </StackPanel>
             <TextBlock>Invoiced Services</TextBlock>
             <ListBox MinHeight="80"></ListBox>
             <Grid>
@@ -53,7 +73,7 @@
                     <ColumnDefinition MaxWidth="160"/>
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="0" Click="GenerateClick">_Generate</Button>
-                <CheckBox Grid.Column="1" Name="AddToDB" IsChecked="True">Add to Database</CheckBox>
+                <CheckBox Grid.Column="1" Name="AddToDB" IsChecked="True">Save in Database</CheckBox>
             </Grid>
         </StackPanel>
     </Grid>

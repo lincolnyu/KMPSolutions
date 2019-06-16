@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Text;
+using static KMPBookingCore.UiUtils;
 
 namespace KMPControls
 {
@@ -16,21 +17,6 @@ namespace KMPControls
     /// </summary>
     public partial class ClientsControl : UserControl
     {
-        class AutoResetSuppressor
-        {
-            public bool Suppressing { get; private set; } = false;
-
-            public void Run(Action proc)
-            {
-                if (!Suppressing)
-                {
-                    Suppressing = true;
-                    proc();
-                    Suppressing = false;
-                }
-            }
-        }
-
         public enum Mode
         {
             Init,
@@ -118,6 +104,16 @@ namespace KMPControls
             }
         }
 
+        public bool TrySetActiveClient(ClientRecord client)
+        {
+            if (_idToClient[client.Id] == client)
+            {
+                SearchBy(new[] { client }, "");
+                return true;
+            }
+            return false;
+        }
+
         public delegate void ActiveClientChangedEventHandler();
         public event ActiveClientChangedEventHandler ActiveClientChanged;
 
@@ -126,10 +122,10 @@ namespace KMPControls
             InitializeComponent();
             InputMode = Mode.Simple;
             UpdateUIOnAddingStatusChanged();
-            IsAdding.Checked += IsAddingEditingCheckedUnchecked;
-            IsAdding.Unchecked += IsAddingEditingCheckedUnchecked;
-            IsEditing.Checked += IsAddingEditingCheckedUnchecked;
-            IsEditing.Unchecked += IsAddingEditingCheckedUnchecked;
+            IsAdding.Checked += IsAddingCheckedUnchecked;
+            IsAdding.Unchecked += IsAddingCheckedUnchecked;
+            IsEditing.Checked += IsEditingCheckedUnchecked;
+            IsEditing.Unchecked += IsEditingCheckedUnchecked;
             ClientMedicare.DropDownOpened += ClientFieldDropDownOpened;
             ClientName.DropDownOpened += ClientFieldDropDownOpened;
             ClientNumber.DropDownOpened += ClientFieldDropDownOpened;
@@ -144,8 +140,21 @@ namespace KMPControls
             }
         }
 
-        private void IsAddingEditingCheckedUnchecked(object sender, RoutedEventArgs e)
+        private void IsAddingCheckedUnchecked(object sender, RoutedEventArgs e)
         {
+            if (IsAdding.IsChecked == true)
+            {
+                IsEditing.IsChecked = false;
+            }
+            UpdateUIOnAddingStatusChanged();
+        }
+
+        private void IsEditingCheckedUnchecked(object sender, RoutedEventArgs e)
+        {
+            if (IsEditing.IsChecked == true)
+            {
+                IsAdding.IsChecked = false;
+            }
             UpdateUIOnAddingStatusChanged();
         }
 
@@ -363,28 +372,27 @@ namespace KMPControls
             }
         }
 
-        private void SearchBy(IList<ClientRecord> finderResults, string duplicateMessage)
+        private void SearchBy(IList<ClientRecord> foundClients, string duplicateMessage)
         {
             _suppressSearch.Run(() =>
             {
-                var clients = finderResults;
                 ActiveClient = null;
-                if (clients.Count > 1)
+                if (foundClients.Count > 1)
                 {
                     var dc = new DuplicateClients(duplicateMessage,
-                        RecordsToStrings(clients))
+                        RecordsToStrings(foundClients))
                     {
                         //TODO set owner to the owner of this control
                         WindowStartupLocation = WindowStartupLocation.CenterOwner
                     };
                     if (dc.ShowDialog() == true && dc.SelectedIndex >= 0)
                     {
-                        ActiveClient = clients[dc.SelectedIndex];
+                        ActiveClient = foundClients[dc.SelectedIndex];
                     }
                 }
-                else if (clients.Count == 1)
+                else if (foundClients.Count == 1)
                 {
-                    ActiveClient = clients[0];
+                    ActiveClient = foundClients[0];
                 }
                 else
                 {
