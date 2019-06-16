@@ -63,10 +63,10 @@
             <StackPanel Orientation="Horizontal">
                 <CheckBox Name="AddingChk">Adding</CheckBox>
                 <CheckBox Name="EditingChk">Editing</CheckBox>
-                <Button>Update Service</Button>
+                <Button Name="UpdateServiceBtn" Click="UpdateServiceClick">Update Service</Button>
             </StackPanel>
             <TextBlock>Invoiced Services</TextBlock>
-            <ListBox MinHeight="80"></ListBox>
+            <ListBox MinHeight="80" x:Name="InvoicedServices"></ListBox>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
