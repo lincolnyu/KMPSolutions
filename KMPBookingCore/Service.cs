@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace KMPBookingCore
 {
     public class Service
     {
-        public DateTime Date;
+        public DateTime? Date;
         public string Detail;
         public decimal Total;
         public decimal Owing;
@@ -14,5 +12,12 @@ namespace KMPBookingCore
         public decimal Gap;
         public decimal Discount;
         public decimal Balance;
+        public Booking Booking;
+
+        public void Workout()
+        {
+            Gap = Owing - Benefit;
+            Balance = Gap * (1 - Discount / 100);
+        }
     }
 }

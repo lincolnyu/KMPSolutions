@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 
 namespace KMPBookingCore
 {
@@ -19,6 +17,15 @@ namespace KMPBookingCore
             }
             var fmt = "{0:0" + decstr.ToString() + "}";
             return string.Format(fmt, val);
+        }
+
+        public static decimal GetDecimalOrZero(this string s)
+        {
+            if (decimal.TryParse(s, out var res))
+            {
+                return res;
+            }
+            return 0;
         }
     }
 }

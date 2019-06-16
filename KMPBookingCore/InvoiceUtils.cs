@@ -15,7 +15,7 @@ namespace KMPBookingCore
             string receiptNo, DateTime date, string healthFund, string memberNo, IList<Service> services,
             decimal paymentReceived, decimal discount, decimal balance)
         {
-            Microsoft.Office.Interop.Word.Application winword = null;
+            Application winword = null;
             bool res = false;
             string errorMsg = "";
             try
@@ -58,7 +58,11 @@ namespace KMPBookingCore
                 var rn = 8;
                 foreach (var svc in services)
                 {
-                    t.Cell(rn, 1).Range.Text = svc.Date.ToShortDateString();
+                    if (svc.Date.HasValue)
+                    {
+                        // TODO culture?
+                        t.Cell(rn, 1).Range.Text = svc.Date.Value.ToShortDateString();
+                    }
                     t.Cell(rn, 2).Range.Text = svc.Detail;
                     t.Cell(rn, 3).Range.Text = svc.Total.ToDecPlaces();
                     t.Cell(rn, 4).Range.Text = svc.Owing.ToDecPlaces();
