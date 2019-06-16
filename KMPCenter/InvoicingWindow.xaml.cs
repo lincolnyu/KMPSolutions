@@ -19,7 +19,7 @@ namespace KMPCenter
         private List<Booking> _existingBookings = new List<Booking>();
         private Dictionary<int, Booking> _bookingCache = new Dictionary<int, Booking>();
         private Service _currentService;
-        private List<Service> _invoicedServices = new List<Service>();
+        private readonly List<Service> _invoicedServices = new List<Service>();
 
         public InvoicingWindow(MainWindow mw)
         {
@@ -39,6 +39,29 @@ namespace KMPCenter
 
             AttachBookingChk.Checked += AttachBookingCheckedUnchecked;
             AttachBookingChk.Unchecked += AttachBookingCheckedUnchecked;
+
+            AddingChk.Checked += AddingServiceCheckedUnchecked;
+            AddingChk.Unchecked += AddingServiceCheckedUnchecked;
+            EditingChk.Checked += EditingServiceCheckedUnchecked;
+            EditingChk.Unchecked += EditingServiceCheckedUnchecked;
+        }
+
+        private void EditingServiceCheckedUnchecked(object sender, RoutedEventArgs e)
+        {
+            if (EditingChk.IsChecked == true)
+            {
+                AddingChk.IsChecked = false;
+                UpdateServiceBtn.Content = "Update Service";
+            }
+        }
+
+        private void AddingServiceCheckedUnchecked(object sender, RoutedEventArgs e)
+        {
+            if (AddingChk.IsChecked == true)
+            {
+                EditingChk.IsChecked = false;
+                UpdateServiceBtn.Content = "Add Service";
+            }
         }
 
         private void OnActiveClientChanged()
@@ -201,6 +224,8 @@ namespace KMPCenter
             if (_currentService == null)
             {
                 _currentService = new Service();
+                EditingChk.IsEnabled = false;
+                AddingChk.IsChecked = true;
             }
             return _currentService;
         }
@@ -221,6 +246,47 @@ namespace KMPCenter
                     }
                 }
             }
+        }
+
+        private void UpdateServiceClick(object sender, RoutedEventArgs e)
+        {
+            if (_currentService == null)
+            {
+                // TODO Error msg...
+                return;
+            }
+            if (AddingChk.IsChecked == true)
+            {
+                AddService();
+            }
+            else if (EditingChk.IsChecked == true)
+            {
+                EditService();
+            }
+        }
+
+        private void AddService()
+        {
+            _invoicedServices.Add(_currentService);
+            var sb = new StringBuilder();
+            InvoicedServices.Items.Add($"{_currentService.Date?.ToShortDateString()??"Unspecified date"}: '{_currentService.Detail}' ${_currentService.Total.ToDecPlaces()}");
+            ResetCurrentService();
+        }
+
+        private void ResetCurrentService()
+        {
+            InvoicedServices.SelectedIndex = -1;
+            _currentService = null;
+            ServiceDesc.Text = "";
+            ServiceDate.SelectedDate = null;
+            ServiceTotal.Text = "";
+            ServiceBenefit.Text = "";
+            ServiceDiscount.Text = "";
+            ServiceCharge.Text = "";
+        }
+
+        private void EditService()
+        {
         }
     }
 }

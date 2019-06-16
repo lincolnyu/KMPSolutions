@@ -61,7 +61,8 @@ namespace KMPControls
         private Dictionary<string, List<ClientRecord>> _mediToClients;
         private Dictionary<string, List<ClientRecord>> _phoneToClients;
         private Dictionary<string, ClientRecord> _idToClient;
-        AutoResetSuppressor _suppressSearch = new AutoResetSuppressor();
+        private AutoResetSuppressor _suppressSearch = new AutoResetSuppressor();
+        private AutoResetSuppressor _addEditSuprressor = new AutoResetSuppressor();
         public Action<string> ErrorReporter { private get; set; }
 
         public enum UpdateMode
@@ -142,20 +143,27 @@ namespace KMPControls
 
         private void IsAddingCheckedUnchecked(object sender, RoutedEventArgs e)
         {
-            if (IsAdding.IsChecked == true)
+            _addEditSuprressor.Run(() =>
             {
-                IsEditing.IsChecked = false;
-            }
-            UpdateUIOnAddingStatusChanged();
+                if (IsAdding.IsChecked == true)
+                {
+                    IsEditing.IsChecked = false;
+                }
+                UpdateUIOnAddingStatusChanged();
+
+            });
         }
 
         private void IsEditingCheckedUnchecked(object sender, RoutedEventArgs e)
         {
-            if (IsEditing.IsChecked == true)
+            _addEditSuprressor.Run(() =>
             {
-                IsAdding.IsChecked = false;
-            }
-            UpdateUIOnAddingStatusChanged();
+                if (IsEditing.IsChecked == true)
+                {
+                    IsAdding.IsChecked = false;
+                }
+                UpdateUIOnAddingStatusChanged();
+            });
         }
 
         private void UpdateUIOnAddingStatusChanged()
