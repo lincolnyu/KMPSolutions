@@ -16,10 +16,14 @@ namespace KMPCenter
     public partial class InvoicingWindow : Window
     {
         private MainWindow MainWindow => (MainWindow)Owner;
-        private List<Booking> _existingBookings = new List<Booking>();
-        private Dictionary<int, Booking> _bookingCache = new Dictionary<int, Booking>();
+        private readonly List<Booking> _existingBookings = new List<Booking>();
+        private readonly Dictionary<int, Booking> _bookingCache = new Dictionary<int, Booking>();
         private Service _currentService;
         private readonly List<Service> _invoicedServices = new List<Service>();
+
+        private readonly HashSet<Service> _servicesToAdd = new HashSet<Service>();
+        private readonly Dictionary<int, Service> _servicesToUpdate = new Dictionary<int, Service>();
+        private Receipt _currentReceipt;
 
         public InvoicingWindow(MainWindow mw)
         {
@@ -223,7 +227,10 @@ namespace KMPCenter
         {
             if (_currentService == null)
             {
-                _currentService = new Service();
+                _currentService = new Service
+                {
+                    Receipt = CreateOrGetCurrentReceipt()
+                };
                 EditingChk.IsEnabled = false;
                 AddingChk.IsChecked = true;
             }
@@ -268,9 +275,70 @@ namespace KMPCenter
         private void AddService()
         {
             _invoicedServices.Add(_currentService);
-            var sb = new StringBuilder();
             InvoicedServices.Items.Add($"{_currentService.Date?.ToShortDateString()??"Unspecified date"}: '{_currentService.Detail}' ${_currentService.Total.ToDecPlaces()}");
+
+            _servicesToAdd.Add(_currentService);
+
             ResetCurrentService();
+        }
+
+        private void UpdateToDb()
+        {
+            var cmdreceipts = AccessUtils.CreateInsert("Receipts", new (string, string)[]{
+                // TODO
+            });
+            MainWindow.Connection.RunNonQuery(cmdreceipts);
+
+            foreach (var sa in _servicesToAdd)
+            {
+                var cmdsvc = AccessUtils.CreateInsert("Services", new (string, string)[]{
+                    ("Service", sa.Detail.ToDbString()),
+                    ("Receipt ID", sa.Receipt.Id.ToString()),
+                    ("Booking ID", sa.Booking?.Id.ToString()),
+                    ("Service Date", sa.Date.ToDbDate()),
+                    ("Total Fee", sa.Total.ToDecPlaces()),
+                    ("Owing", sa.Owing.ToDecPlaces()),
+                    ("Benefit", sa.Benefit.ToDecPlaces()),
+                    ("Gap", sa.Gap.ToDecPlaces()),
+                    ("Discount", sa.Discount.ToDecPlaces()),
+                    ("Balance", sa.Balance.ToDecPlaces())
+                });
+                MainWindow.Connection.RunNonQuery(cmdsvc);
+            }
+
+            foreach (var kvp in _servicesToUpdate)
+            {
+                var suid = kvp.Key;
+                var su = kvp.Value;
+                var cmdsvc = AccessUtils.CreateUpdate("Services", new (string, string)[]
+                {
+                    ("Service", su.Detail.ToDbString()),
+                    ("Receipt ID", su.Receipt.Id.ToString()),
+                    ("Booking ID", su.Booking?.Id.ToString()),
+                    ("Service Date", su.Date.ToDbDate()),
+                    ("Total Fee", su.Total.ToDecPlaces()),
+                    ("Owing", su.Owing.ToDecPlaces()),
+                    ("Benefit", su.Benefit.ToDecPlaces()),
+                    ("Gap", su.Gap.ToDecPlaces()),
+                    ("Discount", su.Discount.ToDecPlaces()),
+                    ("Balance", su.Balance.ToDecPlaces())
+                }, $"ID = {suid}");
+                MainWindow.Connection.RunNonQuery(cmdsvc);
+            }
+        }
+
+        private Receipt CreateOrGetCurrentReceipt()
+        {
+            if (_currentReceipt == null)
+            {
+                _currentReceipt = new Receipt();
+            }
+            return _currentReceipt;
+        }
+
+        private void EditService()
+        {
+
         }
 
         private void ResetCurrentService()
@@ -283,10 +351,6 @@ namespace KMPCenter
             ServiceBenefit.Text = "";
             ServiceDiscount.Text = "";
             ServiceCharge.Text = "";
-        }
-
-        private void EditService()
-        {
         }
     }
 }

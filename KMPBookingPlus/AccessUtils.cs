@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
+using System.Text;
+using KMPBookingCore;
 
 namespace KMPBookingPlus
 {
@@ -28,6 +31,54 @@ namespace KMPBookingPlus
             {
                 return null;
             }
+        }
+
+        public static string CreateInsert(string tableName, IList<(string, string)> fieldValuePairs)
+        {
+            var sbFields = new StringBuilder();
+            var sbValues = new StringBuilder();
+            foreach (var fvp in fieldValuePairs)
+            {
+                var fn = fvp.Item1;
+                var fieldName = (fn.Contains(" ") && !fn.StartsWith("[")) ?
+                    '[' + fn + ']' : fn;
+                sbFields.Append(fieldName);
+                sbFields.Append(",");
+
+                var v = fvp.Item2;
+                sbValues.Append(v);
+                sbValues.Append(",");
+            }
+            if (sbFields.Length > 0)
+            {
+                sbFields.Remove(sbFields.Length - 1, 1);
+                sbValues.Remove(sbValues.Length - 1, 1);
+            }
+
+            var cmd = $"insert into {tableName} ({sbFields.ToString()}) values ({sbValues.ToString()})";
+            return cmd;
+        }
+
+        public static string CreateUpdate(string tableName, IList<(string, string)> fieldValuePairs, string cond)
+        {
+            var sbSetters = new StringBuilder();
+            foreach (var fvp in fieldValuePairs)
+            {
+                var fn = fvp.Item1;
+                var v = fvp.Item2;
+                var fieldName = (fn.Contains(" ") && !fn.StartsWith("[")) ?
+                    '[' + fn + ']' : fn;
+                sbSetters.Append(fieldName);
+                sbSetters.Append("=");
+                sbSetters.Append(v);
+                sbSetters.Append(",");
+            }
+            if (sbSetters.Length > 0)
+            {
+                sbSetters.Remove(sbSetters.Length - 1, 1);
+            }
+            var cmd = $"update {tableName} set {sbSetters.ToString()} where {cond}";
+            return cmd;
         }
 
         public static OleDbDataReader RunReaderQuery(this OleDbConnection conn, string query, bool closeConnectionOnComplete = true)

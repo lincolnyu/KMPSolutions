@@ -4,6 +4,8 @@ namespace KMPBookingCore
 {
     public class Service
     {
+        public int Id;
+        public Receipt Receipt;
         public DateTime? Date;
         public string Detail;
         public decimal Total;
