@@ -44,5 +44,11 @@
     <Compile Include="AccessUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KMPBookingCore\KMPBookingCore.csproj">
+      <Project>{bd71ad02-3fbd-4730-baf0-493f640ce316}</Project>
+      <Name>KMPBookingCore</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
