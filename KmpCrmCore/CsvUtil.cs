@@ -1,4 +1,7 @@
-﻿using System.Text.Json;
+﻿using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace KmpCrmCore
 {
@@ -107,6 +110,71 @@ namespace KmpCrmCore
                 comment = comment.Trim();
             }
             return new CommentedValue<bool>(yes, comment);
+        }
+
+        public static string CsvEscape(this string original)
+        {
+            if (original.Contains(',') || original.Contains('"'))
+            {
+                var n = original.Replace("\"", "\"\"");
+                return $"\"{n}\"";
+            }
+            return original;
+        }
+
+        public static string ToCsvField(this CommentedValue<bool> value, bool omitFalse)
+        {
+            if (value.HasComments)
+            {
+                var s = value.Value ? "Y - " : "N - ";
+                s += value.Comments;
+                return s.CsvEscape();
+            }
+            else
+            {
+                if (value.Value || !omitFalse)
+                {
+                    return value.Value ? "Y" : "N";
+                }
+                return "";
+            }
+        }
+
+        public static string VisitsToCsvField(this List<CommentedValue<VisitBatch>> visitBatches)
+        {
+            var sb = new StringBuilder();
+            foreach (var cvb in visitBatches)
+            {
+                var vb = cvb.Value;
+                sb.Append($"{vb.ExpectedVisits}EVs:");
+                var notFirst = false;
+                foreach (var vm in vb.VisitsMade)
+                {
+                    if (notFirst)
+                    {
+                        sb.Append("; ");
+                    }
+                    sb.Append($"{vm.Value.DateToString()}");
+                    if (vm.HasComments)
+                    {
+                        sb.Append("-");
+                        sb.Append(vm.Comments);
+                    }
+                    notFirst = true;
+                }
+                if (cvb.HasComments)
+                {
+                    sb.Append(":");
+                    sb.Append(cvb.Comments);
+                }
+                sb.AppendLine();
+            }
+            return sb.ToString().CsvEscape();
+        }
+
+        public static string DateToString(this DateOnly date)
+        {
+            return date.ToShortDateString();
         }
     }
 }

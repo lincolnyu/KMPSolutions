@@ -10,5 +10,7 @@
 
         public T Value { get; set; }
         public string Comments { get; set; }
+
+        public bool HasComments => !string.IsNullOrEmpty(Comments);
     }
 }

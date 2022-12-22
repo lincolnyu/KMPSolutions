@@ -63,6 +63,7 @@ namespace KmpCrmCore
                 ExpectedVisits = expectedServicesCount.Value
             };
 
+            // Would put all info in comments for convenience
             var sb = new StringBuilder("[2020 legacy data]");
             sb.Append("EV: (");
             if (expectedServicesCount.Value.HasValue)
@@ -79,8 +80,7 @@ namespace KmpCrmCore
             sb.Append(",");
             sb.Append($"{currentCount.Comments}");
             sb.Append($"SeenOn: {seenOn}");
-            visitBatch.Remarks = sb.ToString();
-            customer.VisitBatches.Add(visitBatch);
+            customer.VisitBatches.Add(new CommentedValue<VisitBatch>(visitBatch, sb.ToString()));
         }
     }
 }

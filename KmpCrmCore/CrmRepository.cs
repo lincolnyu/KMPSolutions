@@ -26,7 +26,7 @@
             }
             gp = new Gp
             {
-                ProviderNumber = providerNumber
+                ProviderId = providerNumber
             };
             return false;
         }
