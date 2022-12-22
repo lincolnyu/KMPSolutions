@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.572
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPBooking", "KMPBooking\KMPBooking.csproj", "{09D7C833-6AA1-4D55-9F67-C830BCC4F9EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPBookingCore", "KMPBookingCore\KMPBookingCore.csproj", "{BD71AD02-3FBD-4730-BAF0-493F640CE316}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KMPBookingCore", "KMPBookingCore\KMPBookingCore.csproj", "{BD71AD02-3FBD-4730-BAF0-493F640CE316}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KmpCrmCore", "KmpCrmCore\KmpCrmCore.csproj", "{364BFC06-639B-400A-AC94-B2E5A3254623}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{BD71AD02-3FBD-4730-BAF0-493F640CE316}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD71AD02-3FBD-4730-BAF0-493F640CE316}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD71AD02-3FBD-4730-BAF0-493F640CE316}.Release|Any CPU.Build.0 = Release|Any CPU
+		{364BFC06-639B-400A-AC94-B2E5A3254623}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{364BFC06-639B-400A-AC94-B2E5A3254623}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{364BFC06-639B-400A-AC94-B2E5A3254623}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{364BFC06-639B-400A-AC94-B2E5A3254623}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
