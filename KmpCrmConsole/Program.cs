@@ -9,4 +9,6 @@ var v1 = new CsvSerializerV1();
 using var sr = new StreamReader(src);
 using var sw = new StreamWriter(dst);
 
-v1.Deserialize(sr);
+var crm = v1.Deserialize(sr);
+var vc = new CsvSerializer();
+vc.Serialize(crm, sw);

@@ -15,6 +15,7 @@
             {
                 MedicareId = medicareNumber
             };
+            Customers[medicareNumber] = customer;
             return false;
         }
 
@@ -28,6 +29,7 @@
             {
                 ProviderId = providerNumber
             };
+            Gps[providerNumber] = gp;
             return false;
         }
     }

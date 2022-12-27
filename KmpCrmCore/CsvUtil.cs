@@ -7,7 +7,7 @@ namespace KmpCrmCore
 {
     public static class CsvUtil
     {
-        enum BreakLineStatus
+        public enum BreakLineStatus
         {
             Normal,
             InQuote,
@@ -15,9 +15,60 @@ namespace KmpCrmCore
             NormalAfterQuote
         }
 
-        public static IEnumerable<string> BreakLine(this string line, bool trim = false)
+        public static IEnumerable<string> GetAndBreakRow(this StreamReader sr, bool trim=false)
         {
-            BreakLineStatus status = BreakLineStatus.Normal;
+            var done = false;
+            string lastVal = null;
+            var status = BreakLineStatus.Normal;
+            while (!done)
+            {
+                var line = sr.ReadLine();
+                if (line == null)
+                {
+                    break;
+                }
+                var fieldVals = line.BreakLine(trim, status);
+                var first = true;
+                done = true;
+                foreach (var val in fieldVals)
+                {
+                    if (first)
+                    {
+                        if (lastVal != null)
+                        {
+                            lastVal = lastVal + val;
+                        }
+                        else
+                        {
+                            lastVal = val;
+                        }
+                        first = false;
+                    }
+                    else
+                    {
+                        if (val == null)
+                        {
+                            done = false;
+                            status = BreakLineStatus.InQuote;
+                            break;
+                        }
+                        else
+                        {
+                            yield return lastVal;
+                            lastVal = val;
+                        }
+                    }
+                }
+            }
+            if (lastVal != null)
+            {
+                yield return lastVal;
+            }
+        }
+
+        public static IEnumerable<string> BreakLine(this string line, bool trim = false, BreakLineStatus initialStatus = BreakLineStatus.Normal)
+        {
+            BreakLineStatus status = initialStatus;
             string lastItem = "";
             foreach (var ch in line)
             {
@@ -25,7 +76,7 @@ namespace KmpCrmCore
                 {
                     if (ch == ',')
                     {
-                        yield return trim ? lastItem : lastItem.Trim();
+                        yield return trim ? lastItem.Trim() : lastItem;
                         lastItem = "";
                         status = BreakLineStatus.Normal;
                     }
@@ -58,7 +109,7 @@ namespace KmpCrmCore
                     }
                     else if (ch == ',')
                     {
-                        yield return trim ? lastItem : lastItem.Trim();
+                        yield return trim ? lastItem.Trim(): lastItem;
                         lastItem = "";
                         status = BreakLineStatus.Normal;
                     }
@@ -71,7 +122,11 @@ namespace KmpCrmCore
             }
             if (lastItem != "")
             {
-                yield return trim ? lastItem : lastItem.Trim();
+                yield return trim ? lastItem.Trim() : lastItem;
+            }
+            if (status == BreakLineStatus.InQuote)
+            {
+                yield return null;
             }
         }
 
@@ -152,7 +207,7 @@ namespace KmpCrmCore
                 {
                     if (notFirst)
                     {
-                        sb.Append("; ");
+                        sb.Append(";");
                     }
                     sb.Append($"{vm.Value.DateToString()}");
                     if (vm.HasComments)
@@ -167,7 +222,6 @@ namespace KmpCrmCore
                     sb.Append(":");
                     sb.Append(cvb.Comments);
                 }
-                sb.AppendLine();
             }
             return sb.ToString().CsvEscape();
         }
