@@ -13,5 +13,6 @@
         public List<CommentedValue<VisitBatch>> VisitBatches { get; private set; } = new List<CommentedValue<VisitBatch>>();
         public Gp ReferingGP { get; set; }
         public DateOnly? ReferringDate { get; set; }
+        public string LegacyData { get; set; }
     }
 }

@@ -11,7 +11,7 @@ namespace KmpCrmCore
 
         public void Serialize(CrmRepository crm, StreamWriter sw)
         {
-            sw.WriteLine("Medicare Id,First Name,Surname,Gender,DOB,Phone,Address,Initial Letter,Visits,GP Name,GP Provider Id,Referring Date,");
+            sw.WriteLine("Medicare Id,First Name,Surname,Gender,DOB,Phone,Address,Initial Letter,Visits,GP Name,GP Provider Id,Referring Date,Legacy Data");
             var sb = new StringBuilder();
             foreach (var (_,customer) in crm.Customers)
             {
@@ -27,6 +27,7 @@ namespace KmpCrmCore
                 sb.Append(customer.ReferingGP?.Name?? ""); sb.Append(",");
                 sb.Append(customer.ReferingGP?.ProviderId?? ""); sb.Append(",");
                 sb.Append(customer.ReferringDate?.DateToString()?? ""); sb.Append(",");
+                sb.Append(customer.LegacyData); sb.Append(",");
                 sw.WriteLine(sb.ToString());
                 sb.Clear();
             }

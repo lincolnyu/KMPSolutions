@@ -69,13 +69,31 @@ namespace KmpCrmCore
 
         void ParseSeenOn(CommentedValue<int?> expectedServicesCount, CommentedValue<int?> currentCount, string seenOn, Customer customer)
         {
-            seenOn = seenOn.Replace('\n', ';');
-            var visitBatch = new VisitBatch
-            {
-                ExpectedVisits = expectedServicesCount.Value
-            };
+            //seenOn = seenOn.Replace('\n', ';');
+            //var visitBatch = new VisitBatch
+            //{
+            //    ExpectedVisits = expectedServicesCount.Value
+            //};
 
-            // Would put all info in comments for convenience
+            //// Would put all info in comments for convenience
+            //var sb = new StringBuilder("[2020 legacy data]");
+            //sb.Append("EV:(");
+            //if (expectedServicesCount.Value.HasValue)
+            //{
+            //    sb.Append($"{expectedServicesCount.Value.Value}");
+            //}
+            //sb.Append("|");
+            //sb.Append($"{expectedServicesCount.Comments}");
+            //sb.Append(")AV:(");
+            //if (currentCount.Value.HasValue)
+            //{
+            //    sb.Append($"{currentCount.Value.Value}");
+            //}
+            //sb.Append("|");
+            //sb.Append($"{currentCount.Comments}");
+            //sb.Append($")SeenOn:{seenOn}");
+            //customer.VisitBatches.Add(new CommentedValue<VisitBatch>(visitBatch, sb.ToString()));
+
             var sb = new StringBuilder("[2020 legacy data]");
             sb.Append("EV:(");
             if (expectedServicesCount.Value.HasValue)
@@ -92,7 +110,7 @@ namespace KmpCrmCore
             sb.Append("|");
             sb.Append($"{currentCount.Comments}");
             sb.Append($")SeenOn:{seenOn}");
-            customer.VisitBatches.Add(new CommentedValue<VisitBatch>(visitBatch, sb.ToString()));
+            customer.LegacyData = sb.ToString();
         }
     }
 }
