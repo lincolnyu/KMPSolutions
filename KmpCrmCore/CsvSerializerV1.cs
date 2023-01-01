@@ -27,7 +27,7 @@ namespace KmpCrmCore
                 {
                     throw new ArgumentException($"Duplicate customer not supported, medicare number: {medicareNumber}.");
                 }
-                customer.MedicareId = medicareNumber;
+                customer.MedicareNumber = medicareNumber;
                 customer.FirstName = split[1];
                 customer.Surname = split[2];
                 customer.Gender= split[3];

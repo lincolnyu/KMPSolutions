@@ -2,7 +2,7 @@
 {
     public class Customer
     {
-        public string MedicareId { get; set; }
+        public string MedicareNumber { get; set; }
         public string FirstName { get; set; }
         public string Surname { get; set; }
         public string Gender { get; set; }

@@ -13,7 +13,7 @@
             }
             customer = new Customer
             {
-                MedicareId = medicareNumber
+                MedicareNumber = medicareNumber
             };
             Customers[medicareNumber] = customer;
             return false;
@@ -27,7 +27,7 @@
             }
             gp = new Gp
             {
-                ProviderId = providerNumber
+                ProviderNumber = providerNumber
             };
             Gps[providerNumber] = gp;
             return false;

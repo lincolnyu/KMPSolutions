@@ -201,7 +201,7 @@ namespace KmpCrmCore
             foreach (var cvb in visitBatches)
             {
                 var vb = cvb.Value;
-                sb.Append($"{vb.ExpectedVisits}EVs:");
+                sb.Append($"{vb.ExpectedVisits}|");
                 var notFirst = false;
                 foreach (var vm in vb.VisitsMade)
                 {
@@ -219,11 +219,52 @@ namespace KmpCrmCore
                 }
                 if (cvb.HasComments)
                 {
-                    sb.Append(":");
+                    sb.Append("|");
                     sb.Append(cvb.Comments);
                 }
+                sb.AppendLine();
             }
             return sb.ToString().CsvEscape();
+        }
+
+        public static IEnumerable<CommentedValue<VisitBatch>> CsvFieldToVisits(this string visitsField)
+        {
+            var sr = new StringReader(visitsField);
+            while (true)
+            {
+                var line = sr.ReadLine();
+                if (line == null) break;
+                var split = line.Split('|');
+                if (split.Length != 3)
+                {
+                    // TODO: Report error.
+                    continue;
+                }
+                if (!int.TryParse(split[0], out var expectedVisits))
+                {
+                    // TODO: Report error.
+                    continue;
+                }
+                var comments = split[2];
+                var vb = new CommentedValue<VisitBatch>(new VisitBatch { ExpectedVisits = expectedVisits }, comments);
+                var visitsSplit = split[1].Split(';');
+                foreach (var visitStr in visitsSplit)
+                {
+                    var visitStrSplit = visitStr.Split('-');
+                    if (!DateOnly.TryParse(visitStrSplit[0], out var date))
+                    {
+                        // TODO: handle it..
+                    }
+                    var visit = new CommentedValue<DateOnly>(date);
+                    if (visitStrSplit.Length > 1)
+                    {
+                        visit.Comments = visitsSplit[1];
+                    }
+                    vb.Value.VisitsMade.Add(visit);
+                }
+                yield return vb;
+            }
+
         }
 
         public static string DateToString(this DateOnly date)

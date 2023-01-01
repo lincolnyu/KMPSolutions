@@ -2,7 +2,7 @@
 {
     public class Gp
     {
-        public string ProviderId { get; set; }
+        public string ProviderNumber { get; set; }
         public string Name { get; set; }
     }
 }
