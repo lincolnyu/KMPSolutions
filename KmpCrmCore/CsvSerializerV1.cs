@@ -40,6 +40,7 @@ namespace KmpCrmCore
                 var expectedServicesCount = split[7].ParseInt();
                 var currentCount = split[8].ParseInt();
                 customer.InitialLetter = split[9].ParseYes();
+                customer.InitialLetter.Comments = customer.InitialLetter.Comments.TrimStart(' ', ':', '-');
                 ParseSeenOn(expectedServicesCount, currentCount, split[10], customer);
                 var gpName = split[11];
                 var gpProviderNumber = split[12];

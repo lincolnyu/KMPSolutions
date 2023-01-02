@@ -217,6 +217,20 @@ namespace KmpCrmCore
                     }
                     notFirst = true;
                 }
+                foreach (var cm in vb.ClaimsMade)
+                {
+                    if (notFirst)
+                    {
+                        sb.Append(";");
+                    }
+                    sb.Append($"{cm.Value.DateToString()}");
+                    if (cm.HasComments)
+                    {
+                        sb.Append("-");
+                        sb.Append(cm.Comments);
+                    }
+                    notFirst = true;
+                }
                 if (cvb.HasComments)
                 {
                     sb.Append("|");
@@ -245,26 +259,44 @@ namespace KmpCrmCore
                     // TODO: Report error.
                     continue;
                 }
-                var comments = split[2];
+                var comments = split[3];
                 var vb = new CommentedValue<VisitBatch>(new VisitBatch { ExpectedVisits = expectedVisits }, comments);
                 var visitsSplit = split[1].Split(';');
-                foreach (var visitStr in visitsSplit)
+                foreach (var visit in visitsSplit.StringsToEnumerableOfCommented<DateOnly>(DateOnly.TryParse))
                 {
-                    var visitStrSplit = visitStr.Split('-');
-                    if (!DateOnly.TryParse(visitStrSplit[0], out var date))
-                    {
-                        // TODO: handle it..
-                    }
-                    var visit = new CommentedValue<DateOnly>(date);
-                    if (visitStrSplit.Length > 1)
-                    {
-                        visit.Comments = visitsSplit[1];
-                    }
                     vb.Value.VisitsMade.Add(visit);
+                }
+                var claimsSplit = split[2].Split(";");
+                foreach (var claim in claimsSplit.StringsToEnumerableOfCommented<DateOnly>(DateOnly.TryParse))
+                {
+                    vb.Value.ClaimsMade.Add(claim);
                 }
                 yield return vb;
             }
+        }
 
+        public delegate bool TryParse<T>(string arg1, out T arg2);
+        public static IEnumerable<CommentedValue<T>> StringsToEnumerableOfCommented<T>(this IEnumerable<string> strings, TryParse<T> tryParse, char commentSeparator='-', bool ignoreError=true)
+        {
+            var hasError = false;
+            foreach (var str in strings)
+            {
+                var split = str.Split(commentSeparator);
+                if (!tryParse(split[0], out T val))
+                {
+                    hasError = true;
+                }
+                var item = new CommentedValue<T>(val);
+                if (split.Length > 1)
+                {
+                    item.Comments = split[1];
+                }
+                yield return item;
+            }
+            if (!ignoreError && hasError)
+            {
+                throw new ArgumentException("Bad input strings to convert to enumerable of commented.");
+            }
         }
 
         public static string DateToString(this DateOnly date)
