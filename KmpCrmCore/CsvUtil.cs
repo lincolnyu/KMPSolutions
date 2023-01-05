@@ -159,17 +159,28 @@ namespace KmpCrmCore
 
             var yes = field.Length > 0 && char.ToUpper(field[0]) == 'Y'
                 && (field.Length == 1 || !char.IsLetter(field[1]));
-            var comment = field.Substring(yes ? 1 : 0);
+            var explicitNo = field.Length > 0 && char.ToUpper(field[0]) == 'N'
+                && (field.Length == 1 || !char.IsLetter(field[1]));
+            var hasYesOrNo = yes || explicitNo;
+            var comment = field.Substring(hasYesOrNo ? 1 : 0);
             if (trimComment)
             {
                 comment = comment.Trim();
+            }
+            else if (hasYesOrNo)
+            {
+                comment = comment.TrimStart();
+            }
+            if (comment.StartsWith('-'))
+            {
+                comment = comment.Substring(1);
             }
             return new CommentedValue<bool>(yes, comment);
         }
 
         public static string CsvEscape(this string original)
         {
-            if (original.Contains(',') || original.Contains('"'))
+            if (original.Contains(',') || original.Contains('"') || original.Contains('\n'))
             {
                 var n = original.Replace("\"", "\"\"");
                 return $"\"{n}\"";
@@ -198,14 +209,20 @@ namespace KmpCrmCore
         public static string VisitsToCsvField(this List<CommentedValue<VisitBatch>> visitBatches)
         {
             var sb = new StringBuilder();
+            var ftt = true;
             foreach (var cvb in visitBatches)
             {
+                if (!ftt)
+                {
+                    sb.AppendLine();
+                }
+                ftt = false;
                 var vb = cvb.Value;
                 sb.Append($"{vb.ExpectedVisits}|");
-                var notFirst = false;
-                foreach (var vm in vb.VisitsMade)
+                var ftt2 = true;
+                foreach (var vm in vb.VisitsMade.OrderBy(x=>x.Value))
                 {
-                    if (notFirst)
+                    if (!ftt2)
                     {
                         sb.Append(";");
                     }
@@ -215,11 +232,13 @@ namespace KmpCrmCore
                         sb.Append("-");
                         sb.Append(vm.Comments);
                     }
-                    notFirst = true;
+                    ftt2 = false;
                 }
-                foreach (var cm in vb.ClaimsMade)
+                sb.Append("|");
+                ftt2 = true;
+                foreach (var cm in vb.ClaimsMade.OrderBy(x => x.Value))
                 {
-                    if (notFirst)
+                    if (!ftt2)
                     {
                         sb.Append(";");
                     }
@@ -229,14 +248,14 @@ namespace KmpCrmCore
                         sb.Append("-");
                         sb.Append(cm.Comments);
                     }
-                    notFirst = true;
+                    ftt2 = false;
                 }
+                sb.Append("|");
                 if (cvb.HasComments)
                 {
                     sb.Append("|");
                     sb.Append(cvb.Comments);
                 }
-                sb.AppendLine();
             }
             return sb.ToString().CsvEscape();
         }
@@ -249,24 +268,29 @@ namespace KmpCrmCore
                 var line = sr.ReadLine();
                 if (line == null) break;
                 var split = line.Split('|');
-                if (split.Length != 3)
+                if (split.Length != 4)
                 {
                     // TODO: Report error.
                     continue;
                 }
-                if (!int.TryParse(split[0], out var expectedVisits))
+                int? expectedVisits = null;
+                if (!string.IsNullOrEmpty(split[0]))
                 {
-                    // TODO: Report error.
-                    continue;
+                    if (!int.TryParse(split[0], out var ev))
+                    {
+                        // TODO: Report error.
+                        continue;
+                    }
+                    expectedVisits = ev;
                 }
                 var comments = split[3];
                 var vb = new CommentedValue<VisitBatch>(new VisitBatch { ExpectedVisits = expectedVisits }, comments);
-                var visitsSplit = split[1].Split(';');
+                var visitsSplit = split[1].Split(";", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                 foreach (var visit in visitsSplit.StringsToEnumerableOfCommented<DateOnly>(DateOnly.TryParse))
                 {
                     vb.Value.VisitsMade.Add(visit);
                 }
-                var claimsSplit = split[2].Split(";");
+                var claimsSplit = split[2].Split(";", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                 foreach (var claim in claimsSplit.StringsToEnumerableOfCommented<DateOnly>(DateOnly.TryParse))
                 {
                     vb.Value.ClaimsMade.Add(claim);

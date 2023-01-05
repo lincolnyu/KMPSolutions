@@ -1,5 +1,6 @@
 ﻿using System.Reflection.Metadata;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace KmpCrmCore
 {
@@ -68,32 +69,84 @@ namespace KmpCrmCore
             return crm;
         }
 
+        static IEnumerable<DateOnly> GetDates(string input, int defaultYear=2020)
+        {
+            var rexDate = new Regex(@"\d+(\s*/\s*\d+){1,2}");
+            var matches = rexDate.Matches(input);
+            foreach (Match match in matches)
+            {
+                var split = match.Value.Split('/', StringSplitOptions.TrimEntries);
+                if (split.Length == 3)
+                {
+                    if (DateOnly.TryParse(match.Value, out var date))
+                    {
+                        yield return date;
+                    }
+                }
+                else
+                {
+                    // Date format dependent
+                    var dayStr = split[0];
+                    var monthStr = split[1];
+                    if (int.TryParse(dayStr, out var day) && int.TryParse(monthStr, out var month))
+                    {
+                        yield return new DateOnly(defaultYear, month, day);
+                    }
+                }
+            }
+        }
+
         void ParseSeenOn(CommentedValue<int?> expectedServicesCount, CommentedValue<int?> currentCount, string seenOn, Customer customer)
         {
-            //seenOn = seenOn.Replace('\n', ';');
-            //var visitBatch = new VisitBatch
-            //{
-            //    ExpectedVisits = expectedServicesCount.Value
-            //};
+            var rexSeenOnKeyword = new Regex("(?i)seen[ ]*on");
+            var rexClaimKeyword = new Regex("(?i)claim[ ]*on");
 
-            //// Would put all info in comments for convenience
-            //var sb = new StringBuilder("[2020 legacy data]");
-            //sb.Append("EV:(");
-            //if (expectedServicesCount.Value.HasValue)
-            //{
-            //    sb.Append($"{expectedServicesCount.Value.Value}");
-            //}
-            //sb.Append("|");
-            //sb.Append($"{expectedServicesCount.Comments}");
-            //sb.Append(")AV:(");
-            //if (currentCount.Value.HasValue)
-            //{
-            //    sb.Append($"{currentCount.Value.Value}");
-            //}
-            //sb.Append("|");
-            //sb.Append($"{currentCount.Comments}");
-            //sb.Append($")SeenOn:{seenOn}");
-            //customer.VisitBatches.Add(new CommentedValue<VisitBatch>(visitBatch, sb.ToString()));
+            var matchSeenOn = rexSeenOnKeyword.Match(seenOn);
+            var matchClaim = rexClaimKeyword.Match(seenOn);
+
+            int? indexSeenOn = null;
+            int? indexClaim = null;
+            if (matchSeenOn.Success)
+            {
+                indexSeenOn = matchSeenOn.Index + matchSeenOn.Length;
+            }
+            if (matchClaim.Success)
+            {
+                indexClaim = matchClaim.Index + matchClaim.Length;
+            }
+
+            var visitBatch = new VisitBatch
+            {
+                ExpectedVisits = expectedServicesCount.Value
+            };
+
+            if (indexSeenOn.HasValue && indexClaim.HasValue)
+            {
+                if (indexSeenOn.Value < indexClaim.Value)
+                {
+                    GetDates(seenOn[indexSeenOn.Value..indexClaim.Value]).ToList().ForEach(x => visitBatch.VisitsMade.Add(new CommentedValue<DateOnly>(x)));
+                    GetDates(seenOn[indexClaim.Value..]).ToList().ForEach(x => visitBatch.ClaimsMade.Add(new CommentedValue<DateOnly>(x)));
+                }
+                else
+                {
+                    GetDates(seenOn[indexClaim.Value..indexSeenOn.Value]).ToList().ForEach(x => visitBatch.ClaimsMade.Add(new CommentedValue<DateOnly>(x)));
+                    GetDates(seenOn[indexSeenOn.Value..]).ToList().ForEach(x => visitBatch.VisitsMade.Add(new CommentedValue<DateOnly>(x)));
+                }
+            }
+            else if (indexSeenOn.HasValue)
+            {
+                GetDates(seenOn[indexSeenOn.Value..]).ToList().ForEach(x => visitBatch.VisitsMade.Add(new CommentedValue<DateOnly>(x)));
+            }
+            else if (indexClaim.HasValue)
+            {
+                GetDates(seenOn[indexClaim.Value..]).ToList().ForEach(x => visitBatch.ClaimsMade.Add(new CommentedValue<DateOnly>(x)));
+                GetDates(seenOn[0..indexClaim.Value]).ToList().ForEach(x => visitBatch.VisitsMade.Add(new CommentedValue<DateOnly>(x)));
+            }
+            else
+            {
+                GetDates(seenOn).ToList().ForEach(x => visitBatch.VisitsMade.Add(new CommentedValue<DateOnly>(x)));
+            }
+            customer.VisitBatches.Add(new CommentedValue<VisitBatch>(visitBatch));
 
             var sb = new StringBuilder("[2020 legacy data]");
             sb.Append("EV:(");
@@ -115,3 +168,4 @@ namespace KmpCrmCore
         }
     }
 }
+
