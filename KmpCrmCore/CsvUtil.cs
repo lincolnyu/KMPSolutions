@@ -36,7 +36,7 @@ namespace KmpCrmCore
                     {
                         if (lastVal != null)
                         {
-                            lastVal = lastVal + val;
+                            lastVal = lastVal + '\n' + val;
                         }
                         else
                         {
@@ -253,7 +253,6 @@ namespace KmpCrmCore
                 sb.Append("|");
                 if (cvb.HasComments)
                 {
-                    sb.Append("|");
                     sb.Append(cvb.Comments);
                 }
             }

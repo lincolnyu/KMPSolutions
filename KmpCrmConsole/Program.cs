@@ -103,7 +103,7 @@ static CommentedValue<VisitBatch> UpdateVisitBatch(Customer customer, bool isExi
 
     while (true)
     {
-        var visitDate = GetYesOrNo("Is visit date or claim date? (Y/N)>");
+        var visitDate = GetYesOrNo("Is visit date? (Y for visit date or N for claim date)>");
         var date = GetDateInput(visitDate ? "Visit Date>" : "Claim Date>", false);
 
         var comments = GetStringInput("Comments>", true);
@@ -117,7 +117,12 @@ static CommentedValue<VisitBatch> UpdateVisitBatch(Customer customer, bool isExi
         {
             vb.Value.ClaimsMade.Add(commentedDate);
         }
+        if (!GetYesOrNo("Add more dates? (Y/N)"))
+        {
+            break;
+        }
     }
+    return vb;
 }
 
 if (args.Length == 3 && args[0] == "upgrade")
