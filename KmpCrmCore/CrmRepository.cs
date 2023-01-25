@@ -1,4 +1,6 @@
-﻿namespace KmpCrmCore
+﻿using System.Collections.Generic;
+
+namespace KmpCrmCore
 {
     public class CrmRepository
     {

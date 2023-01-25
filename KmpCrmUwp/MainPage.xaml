@@ -1,0 +1,23 @@
+﻿<Page
+    x:Class="KmpCrmUwp.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:KmpCrmUwp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Resources>
+    </Page.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            
+        </Grid.RowDefinitions>
+        <Button Style="{StaticResource LargeFontButton}" Content="List Customers" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Click="ListCustomers_Click"/>
+        <Button Style="{StaticResource LargeFontButton}" Content="Edit Customer" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Click="EditCustomer_Click"/>
+    </Grid>
+</Page>

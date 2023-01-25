@@ -1,10 +1,11 @@
-﻿using System.Net.WebSockets;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace KmpCrmCore
 {
+    using DateOnly = System.DateTime;
+
     public static class CsvUtil
     {
         public enum BreakLineStatus
@@ -145,12 +146,12 @@ namespace KmpCrmCore
                     res += ch - '0';
                 }
             }
-            var comment = field[i..];
+            var comment = field.Substring(i);
             if (trimComment)
             {
                 comment = comment.Trim();
             }
-            return new CommentedValue<int?>(i > 0 ? res : null, comment);
+            return new CommentedValue<int?>(i > 0 ? res : (int?)null, comment);
         }
 
         public static CommentedValue<bool>  ParseYes(this string field, bool trimComment = false)
@@ -169,7 +170,7 @@ namespace KmpCrmCore
 
         public static string CsvEscape(this string original)
         {
-            if (original.Contains(',') || original.Contains('"'))
+            if (original.Contains(",") || original.Contains("\""))
             {
                 var n = original.Replace("\"", "\"\"");
                 return $"\"{n}\"";

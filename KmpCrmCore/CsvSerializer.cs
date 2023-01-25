@@ -1,7 +1,12 @@
-﻿using System.Text;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace KmpCrmCore
 {
+    using DateOnly = DateTime;
+
     public class CsvSerializer
     {
         public CrmRepository Deserialize(StreamReader sr)
@@ -75,8 +80,9 @@ namespace KmpCrmCore
         {
             sw.WriteLine("Medicare Number,First Name,Surname,Gender,DOB,Phone,Address,Initial Letter,Visits,GP Name,GP Provider Number,Referring Date,Legacy Data");
             var sb = new StringBuilder();
-            foreach (var (_,customer) in crm.Customers)
+            foreach (var kvp in crm.Customers)
             {
+                var customer = kvp.Value;
                 sb.Append(customer.MedicareNumber); sb.Append(","); 
                 sb.Append(customer.FirstName); sb.Append(",");
                 sb.Append(customer.Surname); sb.Append(",");
@@ -96,5 +102,3 @@ namespace KmpCrmCore
         }
     }
 }
-
-

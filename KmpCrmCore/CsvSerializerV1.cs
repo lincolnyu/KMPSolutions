@@ -1,8 +1,12 @@
-﻿using System.Reflection.Metadata;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace KmpCrmCore
 {
+    using DateOnly = DateTime;
+
     public class CsvSerializerV1
     {
         public CrmRepository Deserialize(StreamReader sr)
