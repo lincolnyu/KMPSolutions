@@ -41,7 +41,7 @@ namespace KmpCrmCore
                 }
                 customer.PhoneNumber = split[5];
                 customer.Address = split[6];
-                customer.InitialLetter = split[7].ParseYes();
+                customer.InitialLetter = split[7].ParseYes(true);
 
                 foreach (var vb in split[8].CsvFieldToVisits())
                 {
@@ -95,7 +95,7 @@ namespace KmpCrmCore
                 sb.Append(customer.ReferingGP?.Name?? ""); sb.Append(",");
                 sb.Append(customer.ReferingGP?.ProviderNumber?? ""); sb.Append(",");
                 sb.Append(customer.ReferringDate?.DateToString()?? ""); sb.Append(",");
-                sb.Append(customer.LegacyData); sb.Append(",");
+                sb.Append(customer.LegacyData?.CsvEscape()?? ""); sb.Append(",");
                 sw.WriteLine(sb.ToString());
                 sb.Clear();
             }

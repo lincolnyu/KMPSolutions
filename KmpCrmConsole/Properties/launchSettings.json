@@ -2,7 +2,7 @@
   "profiles": {
     "KmpCrmConsole": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\Users\\quanb\\OneDrive\\temp\\kmptest\\KMPCustomers.csv C:\\Users\\quanb\\OneDrive\\temp\\kmptest\\KMPCustomers_out.csv "
+      "commandLineArgs": "C:\\Users\\LYu\\Documents\\pgit\\temp\\kmptest\\KMPCustomers_working.csv "
     }
   }
 }
