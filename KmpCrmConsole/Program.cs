@@ -3,6 +3,8 @@
 using KmpCrmCore;
 using System.Text.RegularExpressions;
 
+using DateOnly = System.DateTime;
+
 const string CancelSymbol = "^c";
 
 static string GetStringInput(string prompt, bool allowEmpty,  string? expectedPattern = null)

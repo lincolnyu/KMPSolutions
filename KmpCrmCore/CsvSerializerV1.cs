@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -79,7 +80,7 @@ namespace KmpCrmCore
             var matches = rexDate.Matches(input);
             foreach (Match match in matches)
             {
-                var split = match.Value.Split('/', StringSplitOptions.TrimEntries);
+                var split = match.Value.Split('/');
                 if (split.Length == 3)
                 {
                     if (DateOnly.TryParse(match.Value, out var date))
@@ -90,8 +91,8 @@ namespace KmpCrmCore
                 else
                 {
                     // Date format dependent
-                    var dayStr = split[0];
-                    var monthStr = split[1];
+                    var dayStr = split[0].Trim();
+                    var monthStr = split[1].Trim();
                     if (int.TryParse(dayStr, out var day) && int.TryParse(monthStr, out var month))
                     {
                         yield return new DateOnly(defaultYear, month, day);
@@ -128,23 +129,24 @@ namespace KmpCrmCore
             {
                 if (indexSeenOn.Value < indexClaim.Value)
                 {
-                    GetDates(seenOn[indexSeenOn.Value..indexClaim.Value]).ToList().ForEach(x => visitBatch.VisitsMade.Add(new CommentedValue<DateOnly>(x)));
-                    GetDates(seenOn[indexClaim.Value..]).ToList().ForEach(x => visitBatch.ClaimsMade.Add(new CommentedValue<DateOnly>(x)));
+                   
+                    GetDates(seenOn.Substring(indexSeenOn.Value, indexClaim.Value - indexSeenOn.Value)).ToList().ForEach(x => visitBatch.VisitsMade.Add(new CommentedValue<DateOnly>(x)));
+                    GetDates(seenOn.Substring(indexClaim.Value)).ToList().ForEach(x => visitBatch.ClaimsMade.Add(new CommentedValue<DateOnly>(x)));
                 }
                 else
                 {
-                    GetDates(seenOn[indexClaim.Value..indexSeenOn.Value]).ToList().ForEach(x => visitBatch.ClaimsMade.Add(new CommentedValue<DateOnly>(x)));
-                    GetDates(seenOn[indexSeenOn.Value..]).ToList().ForEach(x => visitBatch.VisitsMade.Add(new CommentedValue<DateOnly>(x)));
+                    GetDates(seenOn.Substring(indexClaim.Value, indexSeenOn.Value - indexClaim.Value)).ToList().ForEach(x => visitBatch.ClaimsMade.Add(new CommentedValue<DateOnly>(x)));
+                    GetDates(seenOn.Substring(indexSeenOn.Value)).ToList().ForEach(x => visitBatch.VisitsMade.Add(new CommentedValue<DateOnly>(x)));
                 }
             }
             else if (indexSeenOn.HasValue)
             {
-                GetDates(seenOn[indexSeenOn.Value..]).ToList().ForEach(x => visitBatch.VisitsMade.Add(new CommentedValue<DateOnly>(x)));
+                GetDates(seenOn.Substring(indexSeenOn.Value)).ToList().ForEach(x => visitBatch.VisitsMade.Add(new CommentedValue<DateOnly>(x)));
             }
             else if (indexClaim.HasValue)
             {
-                GetDates(seenOn[indexClaim.Value..]).ToList().ForEach(x => visitBatch.ClaimsMade.Add(new CommentedValue<DateOnly>(x)));
-                GetDates(seenOn[0..indexClaim.Value]).ToList().ForEach(x => visitBatch.VisitsMade.Add(new CommentedValue<DateOnly>(x)));
+                GetDates(seenOn.Substring(indexClaim.Value)).ToList().ForEach(x => visitBatch.ClaimsMade.Add(new CommentedValue<DateOnly>(x)));
+                GetDates(seenOn.Substring(0, indexClaim.Value)).ToList().ForEach(x => visitBatch.VisitsMade.Add(new CommentedValue<DateOnly>(x)));
             }
             else
             {
