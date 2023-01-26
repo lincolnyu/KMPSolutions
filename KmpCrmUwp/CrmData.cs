@@ -1,34 +1,37 @@
 ﻿using KmpCrmCore;
+using System;
 using System.IO;
 
 namespace KmpCrmUwp
 {
     internal class CrmData
     {
-        public static CrmData Instance { get; } = new CrmData();
+        public static CrmData Instance { get; private set; }
 
-        public CrmRepository _crmRepo;
+        public static bool Initialized => Instance != null;
+
+        private CrmRepository _crmRepo;
         public CrmRepository CrmRepo
         {
             get
             {
-                LoadIfNot();
                 return _crmRepo;
             }
         }
 
-        public CrmData()
+        private CrmData(StreamReader sr)
         {
+            var ser = new CsvSerializer();
+            _crmRepo = ser.Deserialize(sr);
         }
 
-        private void LoadIfNot()
+        public static void Initialize(StreamReader sr)
         {
-            if (_crmRepo == null)
+            if (Initialized)
             {
-                var ser = new CsvSerializer();
-                var sr = new StreamReader("C:\\Users\\quanb\\OneDrive\\temp\\kmptest");
-                _crmRepo = ser.Deserialize(sr);
+                throw new InvalidOperationException("CrmData already initialized.");
             }
+            Instance = new CrmData(sr);
         }
     }
 }

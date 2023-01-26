@@ -15,9 +15,20 @@
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            
+            <RowDefinition Height="40"></RowDefinition>
+            <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
-        <Button Style="{StaticResource LargeFontButton}" Content="List Customers" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Click="ListCustomers_Click"/>
-        <Button Style="{StaticResource LargeFontButton}" Content="Edit Customer" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Click="EditCustomer_Click"/>
+        <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150"></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition Width="50"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">CRM Data File Path:</TextBlock>
+            <TextBox Grid.Column="1" IsReadOnly="True" Name="DataFileName"></TextBox>
+            <Button Grid.Column="2" HorizontalAlignment="Stretch" Click="BrowseDataFile_Click" Name="BrowseDataFile">...</Button>
+        </Grid>
+        <Button Name="ListCustomers" Style="{StaticResource LargeFontButton}" Content="List Customers" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Click="ListCustomers_Click"/>
+        <Button Name="EditCustomer" Style="{StaticResource LargeFontButton}" Content="Edit Customer" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Click="EditCustomer_Click"/>
     </Grid>
 </Page>

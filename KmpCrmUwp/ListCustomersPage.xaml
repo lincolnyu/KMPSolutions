@@ -10,6 +10,44 @@
 
     <Grid>
         <Button Content="Home" Margin="10,10,0,0" Click="Home_Click" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <ListBox Margin="10,46,10,10" Name="CustomerList"/>
+        <ListView Margin="10,46,10,10" Name="CustomerList">
+            <ListView.HeaderTemplate>
+                <DataTemplate>
+                    <Grid Padding="12" Background="{ThemeResource SystemBaseLowColor}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="2*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Medicare Number"/>
+                        <TextBlock Grid.Column="1" Text="First Name"/>
+                        <TextBlock Grid.Column="2" Text="Surname"/>
+                        <TextBlock Grid.Column="3" Text="Date of Birth"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.HeaderTemplate>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Height="50">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="2*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="medicareNumber" Grid.Column="0" Text="{Binding MedicareNumber}" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="firstName" Grid.Column="1" Text="{Binding FirstName}" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="surname" Grid.Column="2" Text="{Binding Surname}"  VerticalAlignment="Center"/>
+                        <TextBlock x:Name="dob" Grid.Column="3" Text="{Binding DateOfBirth, Converter={StaticResource DateConverter}}"  VerticalAlignment="Center" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
     </Grid>
 </Page>

@@ -37,7 +37,7 @@ namespace KmpCrmUwp
         {
             foreach (var customer in CrmData.Instance.CrmRepo.Customers)
             {
-                CustomerList.Items.Add(customer.Value.FirstName);
+                CustomerList.Items.Add(customer.Value);
             }
         }
     }
