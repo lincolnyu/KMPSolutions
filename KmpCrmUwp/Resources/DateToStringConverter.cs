@@ -16,7 +16,6 @@ namespace KmpCrmUwp.Resources
             return theDate.ToString("d/MMM/yyyy");
         }
 
-
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             throw new NotImplementedException();

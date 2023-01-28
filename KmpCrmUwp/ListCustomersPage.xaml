@@ -8,9 +8,10 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+    <Grid Margin="10,10,10,10">
         <Button Content="Home" Margin="10,10,0,0" Click="Home_Click" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <ListView Margin="10,46,10,10" Name="CustomerList">
+        <Button Content="Edit" Margin="0,10,10,0" Click="Edit_Click" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+        <ListView Margin="10,46,10,10" Name="CustomerList" SelectionChanged="CustomerList_SelectionChanged">
             <ListView.HeaderTemplate>
                 <DataTemplate>
                     <Grid Padding="12" Background="{ThemeResource SystemBaseLowColor}">

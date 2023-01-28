@@ -1,6 +1,7 @@
 ﻿using KmpCrmCore;
 using System;
 using System.IO;
+using Windows.UI.Xaml.Documents;
 
 namespace KmpCrmUwp
 {
@@ -9,6 +10,9 @@ namespace KmpCrmUwp
         public static CrmData Instance { get; private set; }
 
         public static bool Initialized => Instance != null;
+
+        public static Customer FocusedCustomer { get; set; }
+        public static bool HasFocusedCustomer => FocusedCustomer != null;
 
         private CrmRepository _crmRepo;
         public CrmRepository CrmRepo

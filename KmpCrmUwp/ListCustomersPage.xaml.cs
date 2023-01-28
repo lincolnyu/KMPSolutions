@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KmpCrmCore;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -33,12 +34,26 @@ namespace KmpCrmUwp
             this.Frame.Navigate(typeof(MainPage));
         }
 
+        private void Edit_Click(object sender, RoutedEventArgs e)
+        {
+            // todo implement it..
+            if (CustomerList.SelectedItem != null)
+            {
+                this.Frame.Navigate(typeof(EditCustomerPage));
+            }
+        }
+
         private void LoadList()
         {
             foreach (var customer in CrmData.Instance.CrmRepo.Customers)
             {
                 CustomerList.Items.Add(customer.Value);
             }
+        }
+
+        private void CustomerList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            CrmData.FocusedCustomer = (Customer)CustomerList.SelectedItem;
         }
     }
 }

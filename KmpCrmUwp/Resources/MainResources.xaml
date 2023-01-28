@@ -17,5 +17,8 @@
             <Setter Property="FontSize" Value="32" />
         </Style.Setters>
     </Style>
+    <Style TargetType="TextBlock">
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
     <resources:DateToStringConverter x:Key="DateConverter"/>
 </ResourceDictionary>

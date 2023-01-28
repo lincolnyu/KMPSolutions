@@ -7,8 +7,72 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
-    <Grid>
+    <Grid Margin="10,10,10,10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
         <Button Content="Home" Margin="10,10,0,0" Click="Home_Click" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <Grid Grid.Row="1" Name="DataEntryGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"></ColumnDefinition>
+                <ColumnDefinition Width="7*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock>Medicare Number</TextBlock>
+            <TextBox Grid.Column="1" Text="{Binding Path=MedicareNumber}"></TextBox>
+            <TextBlock Grid.Row="1">Surname</TextBlock>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Path=Surname}"></TextBox>
+            <TextBlock Grid.Row="2">Given Name</TextBlock>
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Path=FirstName}"></TextBox>
+            <TextBlock Grid.Row="3">Gender</TextBlock>
+            <ComboBox Grid.Row="3" Grid.Column="1" IsEditable="True"
+                      ItemsSource="{Binding Items}"
+                      DataContext="{Binding Gender}"
+                      SelectedItem="{Binding SelectedItem}" 
+                      Text="{Binding NewItem, UpdateSourceTrigger=LostFocus}">
+            </ComboBox>
+            <TextBlock Grid.Row="4">Date of Birth</TextBlock>
+            <CalendarDatePicker Grid.Row="4" Grid.Column="1"></CalendarDatePicker>
+            <TextBlock Grid.Row="5">Phone Number</TextBlock>
+            <TextBox Grid.Row="5" Grid.Column="1"></TextBox>
+            <TextBlock Grid.Row="6">Address</TextBlock>
+            <TextBox Grid.Row="6" Grid.Column="1"></TextBox>
+            <TextBlock Grid.Row="7">Referring GP</TextBlock>
+            <TextBox Grid.Row="7" Grid.Column="1"></TextBox>
+            <TextBlock Grid.Row="8">Referring Date</TextBlock>
+            <CalendarDatePicker Grid.Row="8" Grid.Column="1"></CalendarDatePicker>
+            <TextBlock Grid.Row="9">Initial Letter</TextBlock>
+            <Grid Grid.Row="9" Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" MinWidth="100" MaxWidth="120"/>
+                    <ColumnDefinition Width="1*" MinWidth="80" MaxWidth="100"/>
+                    <ColumnDefinition Width="8*"/>
+                </Grid.ColumnDefinitions>
+                <CheckBox Grid.Column="0">Available</CheckBox>
+                <TextBlock Grid.Column="1">Comments</TextBlock>
+                <TextBox Grid.Column="2"></TextBox>
+            </Grid>
+            <TextBlock Grid.Row="10">Visits</TextBlock>
+            <ListBox Grid.Row="10" Grid.Column="1">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
     </Grid>
 </Page>
