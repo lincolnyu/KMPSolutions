@@ -1,7 +1,6 @@
 ﻿using KmpCrmCore;
 using System;
 using System.IO;
-using Windows.UI.Xaml.Documents;
 
 namespace KmpCrmUwp
 {
