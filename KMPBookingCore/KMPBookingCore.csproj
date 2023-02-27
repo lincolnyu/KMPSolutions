@@ -11,9 +11,6 @@
     <AssemblyName>KMPBookingCore</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="ClientRecords.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Microsoft.Office.Interop.Word" Version="15.0.4797.1003" />
   </ItemGroup>
 </Project>
