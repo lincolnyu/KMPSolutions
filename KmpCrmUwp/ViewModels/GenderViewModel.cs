@@ -7,7 +7,7 @@ namespace KmpCrmUwp.ViewModels
     internal class GenderViewModel
     {
         //https://stackoverflow.com/questions/3373239/wpf-editable-combobox
-        private readonly ObservableCollection<string> _items = new ObservableCollection<string>
+        private static readonly ObservableCollection<string> _items = new ObservableCollection<string>
         {
             "Female",
             "Male",

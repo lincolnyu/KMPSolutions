@@ -25,5 +25,11 @@ namespace KmpCrmUwp.ViewModels
         }
 
         public List<EventType> TypeOptions { get; set; } = new List<EventType> { EventType.Visit, EventType.Claim };
+
+        public string Comments
+        {
+            get { return Model.Comments; }
+            set { Model.Comments = value; }
+        }
     }
 }
