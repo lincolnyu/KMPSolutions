@@ -28,10 +28,15 @@ namespace KmpCrmUwp
             this.Frame.Navigate(typeof(MainPage));
         }
 
+        private void Back_Click(object sender, RoutedEventArgs e)
+        {
+            var rootFrame = Window.Current.Content as Frame;
+            rootFrame.GoBack();
+        }
+
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             base.OnNavigatedFrom(e);
-            CrmData.FocusedCustomer = null;
         }
     }
 }

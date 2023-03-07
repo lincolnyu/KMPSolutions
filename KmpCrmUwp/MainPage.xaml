@@ -29,6 +29,6 @@
             <Button Grid.Column="2" HorizontalAlignment="Stretch" Click="BrowseDataFile_Click" Name="BrowseDataFile">...</Button>
         </Grid>
         <Button Name="ListCustomers" Style="{StaticResource LargeFontButton}" Content="List Customers" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Click="ListCustomers_Click"/>
-        <Button Name="EditCustomer" Style="{StaticResource LargeFontButton}" Content="Edit Customer" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Click="EditCustomer_Click"/>
+        <Button Name="EditCustomer" Style="{StaticResource LargeFontButton}" Content="Add/Edit Customer" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Click="EditCustomer_Click"/>
     </Grid>
 </Page>

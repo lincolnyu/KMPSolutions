@@ -12,7 +12,10 @@
             <RowDefinition Height="40"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Button Content="Home" Margin="10,10,0,0" Click="Home_Click" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <StackPanel Orientation="Horizontal">
+            <Button Style="{StaticResource NavigationBackButtonNormalStyle}" VerticalContentAlignment="Center" Margin="10,10,0,0" Click="Back_Click" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <Button Content="Home" Margin="10,10,0,0" Click="Home_Click" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        </StackPanel>
         <Grid Grid.Row="1" Name="DataEntryGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="40"/>
@@ -35,28 +38,28 @@
             <TextBlock>Medicare Number</TextBlock>
             <TextBox Grid.Column="1" Text="{Binding Path=MedicareNumber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="1">Surname</TextBlock>
-            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Path=Surname}"></TextBox>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Path=Surname, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="2">Given Name</TextBlock>
-            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Path=FirstName}"></TextBox>
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Path=FirstName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="3">Gender</TextBlock>
             <ComboBox Grid.Row="3" Grid.Column="1" IsEditable="True"
                       ItemsSource="{Binding Items}"
                       DataContext="{Binding Gender}"
-                      SelectedItem="{Binding SelectedItem}" 
-                      Text="{Binding NewItem, UpdateSourceTrigger=LostFocus}">
+                      SelectedItem="{Binding SelectedItem, Mode=TwoWay}" 
+                      Text="{Binding NewItem, Mode=TwoWay, UpdateSourceTrigger=LostFocus}">
             </ComboBox>
             <TextBlock Grid.Row="4">Date of Birth</TextBlock>
-            <CalendarDatePicker Grid.Row="4" Grid.Column="1"></CalendarDatePicker>
+            <CalendarDatePicker Grid.Row="4" Grid.Column="1" Date="{Binding Path=DateOfBirth, Mode=TwoWay}"></CalendarDatePicker>
             <TextBlock Grid.Row="5">Phone Number</TextBlock>
-            <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding PhoneNumber}"></TextBox>
+            <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="6">Address</TextBlock>
-            <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Address}"></TextBox>
+            <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="7">Referring GP Provider Number</TextBlock>
-            <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding GpProviderNumber}"></TextBox>
+            <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding GpProviderNumber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="8">Referring GP Name</TextBlock>
-            <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding GpName}"></TextBox>
+            <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding GpName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="9">Referring Date</TextBlock>
-            <CalendarDatePicker Grid.Row="9" Grid.Column="1"></CalendarDatePicker>
+            <CalendarDatePicker Grid.Row="9" Grid.Column="1" Date="{Binding Path=ReferringDate, Mode=TwoWay}"></CalendarDatePicker>
             <TextBlock Grid.Row="10">Initial Letter</TextBlock>
             <Grid Grid.Row="10" Grid.Column="1">
                 <Grid.ColumnDefinitions>
@@ -64,18 +67,53 @@
                     <ColumnDefinition Width="1*" MinWidth="80" MaxWidth="100"/>
                     <ColumnDefinition Width="8*"/>
                 </Grid.ColumnDefinitions>
-                <CheckBox Grid.Column="0">Available</CheckBox>
+                <CheckBox Grid.Column="0" IsChecked="{Binding HasInitialLetter, Mode=TwoWay}">Available</CheckBox>
                 <TextBlock Grid.Column="1">Comments</TextBlock>
-                <TextBox Grid.Column="2"></TextBox>
+                <TextBox Grid.Column="2" Text="{Binding InitialLetterComments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             </Grid>
             <TextBlock Grid.Row="11">Visits</TextBlock>
-            <ListBox Grid.Row="11" Grid.Column="1">
-                <ListBox.ItemTemplate>
+            <ListView Grid.Row="11" Grid.Column="1" ItemsSource="{Binding VisitBatches}" HorizontalContentAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
                     <DataTemplate>
-                        
+                        <StackPanel HorizontalAlignment="Stretch">
+                            <TextBlock>Comments</TextBlock>
+                            <TextBox Text="{Binding Comments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+                            <ListView ItemsSource="{Binding Events}" HorizontalContentAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid HorizontalAlignment="Stretch">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="80"></ColumnDefinition>
+                                                <ColumnDefinition Width="120"></ColumnDefinition>
+                                                <ColumnDefinition></ColumnDefinition>
+                                            </Grid.ColumnDefinitions>
+                                            <ComboBox ItemsSource="{Binding Path=TypeOptions, Mode=OneTime}" SelectedItem="{Binding Type, Mode=TwoWay}" HorizontalAlignment="Stretch">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Converter={StaticResource EventTypeConverter}}"></TextBlock>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                            <CalendarDatePicker Grid.Column="1" Date="{Binding Path=Date, Mode=TwoWay}" HorizontalAlignment="Stretch"></CalendarDatePicker>
+                                            <TextBox Grid.Column="2" Text="{Binding Comments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" HorizontalAlignment="Stretch"></TextBox>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
                     </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                </ListView.ItemTemplate>
+            </ListView>
         </Grid>
     </Grid>
 </Page>

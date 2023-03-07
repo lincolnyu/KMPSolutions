@@ -20,5 +20,10 @@
     <Style TargetType="TextBlock">
         <Setter Property="VerticalAlignment" Value="Center"></Setter>
     </Style>
+    <Style TargetType="TextBox">
+        <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
     <resources:DateToStringConverter x:Key="DateConverter"/>
+    <resources:EventTypeConverter x:Key="EventTypeConverter"/>
 </ResourceDictionary>

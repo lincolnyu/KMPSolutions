@@ -131,6 +131,10 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\DateToStringConverter.cs" />
+    <Compile Include="Resources\EventTypeConverter.cs" />
+    <Compile Include="ViewModels\BaseViewModel.cs" />
+    <Compile Include="ViewModels\EventViewModel.cs" />
+    <Compile Include="ViewModels\CommentedVisitBatchViewModel.cs" />
     <Compile Include="ViewModels\CustomerViewModel.cs" />
     <Compile Include="ViewModels\GenderViewModel.cs" />
     <Compile Include="ViewModels\Util.cs" />

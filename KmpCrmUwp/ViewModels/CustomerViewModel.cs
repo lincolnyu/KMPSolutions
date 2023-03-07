@@ -1,13 +1,15 @@
 ﻿using KmpCrmCore;
-using System.ComponentModel;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace KmpCrmUwp.ViewModels
 {
-    internal class CustomerViewModel : INotifyPropertyChanged
+    internal class CustomerViewModel : BaseViewModel<Customer>
     {
         public bool CustomerAdded { get; private set; }
 
-        public CustomerViewModel(Customer customer)
+        public CustomerViewModel(Customer customer) : base(customer)
         {
             CustomerAdded = customer != null;
             if (customer == null)
@@ -16,14 +18,17 @@ namespace KmpCrmUwp.ViewModels
                 // todo
             }
 
-            _model = customer;
+            Model = customer;
 
-            Gender.SelectOrAdd(_model.Gender);
-            Gender.SelectedItemChanged += (selectedItem)=> { _model.Gender = selectedItem ?? ""; };
+            Gender.SelectOrAdd(Model.Gender);
+            Gender.SelectedItemChanged += (selectedItem)=> { Model.Gender = selectedItem ?? ""; };
+
+            InitializeVisitBatches();
+            VisitBatches.CollectionChanged += VisitBatches_CollectionChanged;
         }
 
         public string MedicareNumber { 
-            get { return _model.MedicareNumber; } 
+            get { return Model.MedicareNumber; } 
             set
             {
                 if (!CustomerAdded)
@@ -31,62 +36,80 @@ namespace KmpCrmUwp.ViewModels
                     // todo check if the customer exists
                     if (CrmData.Instance.CrmRepo.Customers.TryGetValue(value, out var customer))
                     {
-                        _model = customer;
+                        Model = customer;
                         CustomerAdded = true;
                         OnAllPropertiesChanged();
                         return;
                     }
                 }
                 // todo conflict management.
-                _model.MedicareNumber = value; 
+                Model.MedicareNumber = value; 
             } 
         }
-        public string FirstName { get { return _model.FirstName; } set { _model.FirstName = value; } }
-        public string Surname { get { return _model.Surname; } set { _model.Surname = value; } }
+        public string FirstName { get { return Model.FirstName; } set { Model.FirstName = value; } }
+        public string Surname { get { return Model.Surname; } set { Model.Surname = value; } }
         // TODO Name?
 
-        public string DateOfBirth
+        public string DateOfBirthStr
         {
-            get { return _model.DateOfBirth?.DateToString(); }
-            set { _model.DateOfBirth = value.StringToDate(); }
+            get { return Model.DateOfBirth?.DateToString(); }
+            set { Model.DateOfBirth = value.StringToDate(); }
         }
 
-        public string PhoneNumber { get { return _model.PhoneNumber; } set { _model.PhoneNumber = value; } }
-        public string Address { get { return _model.Address; } set { _model.Address = value; } }
+        public DateTimeOffset? DateOfBirth
+        {
+            get { return Model.DateOfBirth != null?new DateTimeOffset(Model.DateOfBirth.Value) : (DateTimeOffset?)null; }
+            set { Model.DateOfBirth = value?.Date; }
+        }
 
+        public DateTimeOffset? ReferringDate
+        {
+            get { return Model.ReferringDate != null ? new DateTimeOffset(Model.ReferringDate.Value) : (DateTimeOffset?)null; }
+            set { Model.ReferringDate = value?.Date; }
+        }
+
+        public string PhoneNumber { get { return Model.PhoneNumber; } set { Model.PhoneNumber = value; } }
+        public string Address { get { return Model.Address; } set { Model.Address = value; } }
 
         public GenderViewModel Gender { get; private set; } = new GenderViewModel();
 
         public string GpName 
         {
-            get { return _model.ReferingGP?.Name??""; } 
+            get { return Model.ReferingGP?.Name??""; } 
             set 
             { 
                 // TODO warning to change existing gp name
-                _model.ReferingGP.Name = value; 
+                Model.ReferingGP.Name = value; 
             }
         }
         public string GpProviderNumber
         { 
-            get { return _model.ReferingGP?.ProviderNumber??"n/a"; } 
+            get { return Model.ReferingGP?.ProviderNumber??"n/a"; } 
             set 
             {
-                throw new System.NotImplementedException("Add or pick existing gp");
+                throw new NotImplementedException("Add or pick existing gp");
             } 
         }
 
-        private Customer _model;
-
-        #region INotifyPropertyChanged
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion
-
-        protected void OnPropertyChanged(string propertyName)
+        public bool HasInitialLetter
         {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            get { return Model.InitialLetter.Value; }
+            set
+            {
+                Model.InitialLetter.Value = value;
+            }
         }
+
+        public string InitialLetterComments
+        {
+            get { return Model.InitialLetter.Comments; }
+            set
+            {
+                Model.InitialLetter.Comments = value;
+            }
+        }
+
+        public ObservableCollection<CommentedVisitBatchViewModel> VisitBatches { get; set; }
 
         private void OnAllPropertiesChanged()
         {
@@ -97,6 +120,40 @@ namespace KmpCrmUwp.ViewModels
             OnPropertyChanged("Gender");
             OnPropertyChanged("GpName");
             OnPropertyChanged("GpProviderNumber");
+        }
+
+        private void InitializeVisitBatches()
+        {
+            VisitBatches = new ObservableCollection<CommentedVisitBatchViewModel>();
+            foreach (var vb in Model.VisitBatches)
+            {
+                VisitBatches.Add(new CommentedVisitBatchViewModel(vb));
+            }
+        }
+
+        private void VisitBatches_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    {
+                        var newRange = new List<CommentedValue<VisitBatch>>();
+                        foreach (var ni in e.NewItems)
+                        {
+                            var vm = (CommentedVisitBatchViewModel)ni;
+                            newRange.Add(vm.Model);
+                        }
+                        Model.VisitBatches.InsertRange(e.NewStartingIndex, newRange);
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    {
+                        throw new NotImplementedException();
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
