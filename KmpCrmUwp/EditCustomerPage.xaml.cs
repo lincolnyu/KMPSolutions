@@ -37,7 +37,6 @@ namespace KmpCrmUwp
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             base.OnNavigatedFrom(e);
-            CrmData.FocusedCustomer = null;
         }
     }
 }
