@@ -8,7 +8,7 @@ namespace KmpCrmUwp.Resources
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            EventViewModel.EventType type = (EventViewModel.EventType)value;
+            var type = (EventViewModel.EventType)value;
             switch (type)
             {
                 case EventViewModel.EventType.Visit:
@@ -16,12 +16,12 @@ namespace KmpCrmUwp.Resources
                 case EventViewModel.EventType.Claim:
                     return "Claim";
             }
-            return "";
+            throw new ArgumentException("Unexpected event type");
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("This conversion is not expected to be used");
         }
     }
 }

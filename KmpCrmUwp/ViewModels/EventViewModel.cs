@@ -6,6 +6,8 @@ namespace KmpCrmUwp.ViewModels
 {
     internal class EventViewModel : BaseViewModel<CommentedValue<DateTime>>
     {
+        private EventType _type;
+
         public EventViewModel(CommentedValue<DateTime> model) : base(model)
         {
         }
@@ -16,7 +18,18 @@ namespace KmpCrmUwp.ViewModels
             Claim
         }
 
-        public EventType Type { get; set; }
+        public EventType Type
+        {
+            get
+            {
+                return _type;
+            }
+            set
+            {
+                _type = value;
+                OnPropertyChanged("Type");
+            }
+        }
 
         public DateTimeOffset? Date
         {

@@ -97,7 +97,7 @@
                                                 <ColumnDefinition Width="120"></ColumnDefinition>
                                                 <ColumnDefinition></ColumnDefinition>
                                             </Grid.ColumnDefinitions>
-                                            <ComboBox ItemsSource="{Binding Path=TypeOptions, Mode=OneTime}" SelectedItem="{Binding Type}" HorizontalAlignment="Stretch">
+                                            <ComboBox ItemsSource="{Binding Path=TypeOptions, Mode=OneTime}" SelectedItem="{Binding Type, Mode=TwoWay}" HorizontalAlignment="Stretch">
                                                 <ComboBox.ItemTemplate>
                                                     <DataTemplate>
                                                         <TextBlock Text="{Binding Converter={StaticResource EventTypeConverter}}"></TextBlock>
