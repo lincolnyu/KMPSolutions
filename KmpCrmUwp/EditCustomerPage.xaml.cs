@@ -38,5 +38,11 @@ namespace KmpCrmUwp
         {
             base.OnNavigatedFrom(e);
         }
+
+        private void AddVisitBatch_Click(object sender, RoutedEventArgs e)
+        {
+            var vm = (CustomerViewModel)DataEntryGrid.DataContext;
+            vm.AddEmptyVisitBatch();
+        }
     }
 }

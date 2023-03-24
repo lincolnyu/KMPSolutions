@@ -23,7 +23,7 @@ namespace KmpCrmUwp.ViewModels
             Gender.SelectOrAdd(Model.Gender);
             Gender.SelectedItemChanged += (selectedItem)=> { Model.Gender = selectedItem ?? ""; };
 
-            InitializeVisitBatches();
+            LoadVisitBatchViewModels();
             VisitBatches.CollectionChanged += VisitBatches_CollectionChanged;
         }
 
@@ -109,7 +109,7 @@ namespace KmpCrmUwp.ViewModels
             }
         }
 
-        public ObservableCollection<CommentedVisitBatchViewModel> VisitBatches { get; set; }
+        public ObservableCollection<BaseVisitBatchViewModel> VisitBatches { get; set; }
 
         private void OnAllPropertiesChanged()
         {
@@ -122,38 +122,31 @@ namespace KmpCrmUwp.ViewModels
             OnPropertyChanged("GpProviderNumber");
         }
 
-        private void InitializeVisitBatches()
+        private void LoadVisitBatchViewModels()
         {
-            VisitBatches = new ObservableCollection<CommentedVisitBatchViewModel>();
+            if (VisitBatches == null)
+            {
+                VisitBatches = new ObservableCollection<BaseVisitBatchViewModel>();
+            }
+            else
+            {
+                VisitBatches.Clear();
+            }
             foreach (var vb in Model.VisitBatches)
             {
                 VisitBatches.Add(new CommentedVisitBatchViewModel(vb));
             }
+            VisitBatches.Add(new AddVisitBatchViewModel());
         }
 
         private void VisitBatches_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            switch (e.Action)
-            {
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
-                    {
-                        var newRange = new List<CommentedValue<VisitBatch>>();
-                        foreach (var ni in e.NewItems)
-                        {
-                            var vm = (CommentedVisitBatchViewModel)ni;
-                            newRange.Add(vm.Model);
-                        }
-                        Model.VisitBatches.InsertRange(e.NewStartingIndex, newRange);
-                    }
-                    break;
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
-                    {
-                        throw new NotImplementedException();
-                    }
-                    break;
-                default:
-                    break;
-            }
+        }
+
+        public void AddEmptyVisitBatch()
+        {
+            Model.VisitBatches.Add(new CommentedValue<VisitBatch>(new VisitBatch()));
+            LoadVisitBatchViewModels();
         }
     }
 }

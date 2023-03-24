@@ -1,13 +1,11 @@
 ﻿using KmpCrmCore;
-using System.Collections.Generic;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Linq.Expressions;
 
 namespace KmpCrmUwp.ViewModels
 {
-    internal class CommentedVisitBatchViewModel : BaseViewModel<CommentedValue<VisitBatch>>
+    internal class CommentedVisitBatchViewModel : BaseVisitBatchViewModel
     {
         public CommentedVisitBatchViewModel(CommentedValue<VisitBatch> model) : base(model)
         {
@@ -19,6 +17,10 @@ namespace KmpCrmUwp.ViewModels
                 e.PropertyChanged += Event_PropertyChanged;
             }
             Events.CollectionChanged += Events_CollectionChanged;
+        }
+
+        public CommentedVisitBatchViewModel() : this(new CommentedValue<VisitBatch>(new VisitBatch()))
+        {
         }
 
         private void Event_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
