@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace KmpCrmUwp.ViewModels
 {
-    internal class EventViewModel : BaseViewModel<CommentedValue<DateTime>>
+    internal class EventViewModel : BaseEventViewModel
     {
         private EventType _type;
 

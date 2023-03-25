@@ -8,6 +8,8 @@ namespace KmpCrmUwp.Resources
     {
         public DataTemplate CommentedVisitBatchDataTemplate { get; set; }
         public DataTemplate AddVisitBatchDataTemplate { get; set; }
+        public DataTemplate EventDataTemplate { get; set; }
+        public DataTemplate AddEventDataTemplate { get; set; }
 
         protected override DataTemplate SelectTemplateCore(object item)
         {
@@ -18,6 +20,14 @@ namespace KmpCrmUwp.Resources
             else if (item is AddVisitBatchViewModel)
             {
                 return AddVisitBatchDataTemplate;
+            }
+            else if (item is EventViewModel)
+            {
+                return EventDataTemplate;
+            }
+            else if (item is AddEventViewModel)
+            {
+                return AddEventDataTemplate;
             }
             else
             {

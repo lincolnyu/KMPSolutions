@@ -44,5 +44,17 @@ namespace KmpCrmUwp
             var vm = (CustomerViewModel)DataEntryGrid.DataContext;
             vm.AddEmptyVisitBatch();
         }
+
+        private void AddVisit_Click(object sender, RoutedEventArgs e)
+        {
+            var vm = ((AddEventViewModel)((Button)sender).DataContext).Parent;
+            vm.AddEmptyVisit();
+        }
+
+        private void AddClaim_Click(object sender, RoutedEventArgs e)
+        {
+            var vm = ((AddEventViewModel)((Button)sender).DataContext).Parent;
+            vm.AddEmptyClaim();
+        }
     }
 }

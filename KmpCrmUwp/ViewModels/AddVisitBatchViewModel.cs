@@ -4,7 +4,6 @@
     {
         public AddVisitBatchViewModel() : base(null)
         {
-
         }
     }
 }
