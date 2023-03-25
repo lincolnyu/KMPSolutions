@@ -1,6 +1,5 @@
 ﻿using KmpCrmCore;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace KmpCrmUwp.ViewModels
@@ -134,7 +133,7 @@ namespace KmpCrmUwp.ViewModels
             }
             foreach (var vb in Model.VisitBatches)
             {
-                VisitBatches.Add(new CommentedVisitBatchViewModel(vb));
+                VisitBatches.Add(new CommentedVisitBatchViewModel(vb, this));
             }
             VisitBatches.Add(new AddVisitBatchViewModel());
         }
@@ -146,6 +145,12 @@ namespace KmpCrmUwp.ViewModels
         public void AddEmptyVisitBatch()
         {
             Model.VisitBatches.Add(new CommentedValue<VisitBatch>(new VisitBatch()));
+            LoadVisitBatchViewModels();
+        }
+
+        internal void RemoveVisitBatch(CommentedVisitBatchViewModel commentedVisitBatchViewModel)
+        {
+            Model.VisitBatches.Remove(commentedVisitBatchViewModel.Model);
             LoadVisitBatchViewModels();
         }
     }

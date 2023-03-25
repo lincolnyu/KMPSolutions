@@ -8,8 +8,9 @@ namespace KmpCrmUwp.ViewModels
     {
         private EventType _type;
 
-        public EventViewModel(CommentedValue<DateTime> model) : base(model)
+        public EventViewModel(CommentedValue<DateTime> model, CommentedVisitBatchViewModel parent) : base(model)
         {
+            Parent = parent;
         }
 
         public enum EventType
@@ -17,6 +18,8 @@ namespace KmpCrmUwp.ViewModels
             Visit,
             Claim
         }
+
+        public CommentedVisitBatchViewModel Parent { get; }
 
         public EventType Type
         {
@@ -43,6 +46,11 @@ namespace KmpCrmUwp.ViewModels
         {
             get { return Model.Comments; }
             set { Model.Comments = value; }
+        }
+
+        internal void RemoveSelf()
+        {
+            Parent.RemoveEvent(this);
         }
     }
 }

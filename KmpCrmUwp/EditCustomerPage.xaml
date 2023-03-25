@@ -10,6 +10,11 @@
     <Page.Resources>
         <DataTemplate x:DataType="viewmodels:EventViewModel" x:Key="EventDataTemplate">
             <Grid HorizontalAlignment="Stretch">
+                <Grid.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Remove" Click="RemoveEvent_Click"></MenuFlyoutItem>
+                    </MenuFlyout>
+                </Grid.ContextFlyout>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="80"></ColumnDefinition>
                     <ColumnDefinition Width="120"></ColumnDefinition>
@@ -34,6 +39,11 @@
         </DataTemplate>
         <DataTemplate x:DataType="viewmodels:CommentedVisitBatchViewModel" x:Key="CommentedVisitBatchDataTemplate">
             <StackPanel HorizontalAlignment="Stretch">
+                <StackPanel.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Remove" Click="RemoveVisitBatch_Click"></MenuFlyoutItem>
+                    </MenuFlyout>
+                </StackPanel.ContextFlyout>
                 <TextBlock>Comments</TextBlock>
                 <TextBox Text="{Binding Comments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
                 <ListView ItemsSource="{Binding Events}" HorizontalContentAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Auto" ItemTemplateSelector="{StaticResource selector}">
