@@ -33,8 +33,8 @@
         </DataTemplate>
         <DataTemplate x:DataType="viewmodels:AddEventViewModel" x:Key="AddEventDataTemplate">
             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                <Button Click="AddVisit_Click">+Visit</Button>
-                <Button Click="AddClaim_Click">+Claim</Button>
+                <Button Click="AddVisit_Click">Add Visit</Button>
+                <Button Click="AddClaim_Click">Add Claim</Button>
             </StackPanel>
         </DataTemplate>
         <DataTemplate x:DataType="viewmodels:CommentedVisitBatchViewModel" x:Key="CommentedVisitBatchDataTemplate">
@@ -56,7 +56,7 @@
             </StackPanel>
         </DataTemplate>
         <DataTemplate x:DataType="viewmodels:AddVisitBatchViewModel" x:Key="AddVisitBatchDataTemplate">
-            <Button HorizontalAlignment="Center" Click="AddVisitBatch_Click">+</Button>
+            <Button HorizontalAlignment="Center" Click="AddVisitBatch_Click">Add Visit Batch</Button>
         </DataTemplate>
         <resources:MainTemplateSelector x:Key="selector" CommentedVisitBatchDataTemplate="{StaticResource CommentedVisitBatchDataTemplate}" AddVisitBatchDataTemplate="{StaticResource AddVisitBatchDataTemplate}" EventDataTemplate="{StaticResource EventDataTemplate}" AddEventDataTemplate="{StaticResource AddEventDataTemplate}"></resources:MainTemplateSelector>
     </Page.Resources>
@@ -102,7 +102,10 @@
                       Text="{Binding NewItem, Mode=TwoWay, UpdateSourceTrigger=LostFocus}">
             </ComboBox>
             <TextBlock Grid.Row="4">Date of Birth</TextBlock>
-            <CalendarDatePicker Grid.Row="4" Grid.Column="1" Date="{Binding Path=DateOfBirth, Mode=TwoWay}"></CalendarDatePicker>
+            <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal">
+                <CheckBox IsChecked="{Binding HasDateOfBirth, Mode=TwoWay}"></CheckBox>
+                <CalendarDatePicker Date="{Binding DateOfBirth, Mode=TwoWay}" IsEnabled="{Binding HasDateOfBirth}"></CalendarDatePicker>
+            </StackPanel>
             <TextBlock Grid.Row="5">Phone Number</TextBlock>
             <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="6">Address</TextBlock>
@@ -112,7 +115,10 @@
             <TextBlock Grid.Row="8">Referring GP Name</TextBlock>
             <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding GpName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="9">Referring Date</TextBlock>
-            <CalendarDatePicker Grid.Row="9" Grid.Column="1" Date="{Binding Path=ReferringDate, Mode=TwoWay}"></CalendarDatePicker>
+            <StackPanel Grid.Row="9" Grid.Column="1" Orientation="Horizontal">
+                <CheckBox IsChecked="{Binding HasReferringDate, Mode=TwoWay}"></CheckBox>
+                <CalendarDatePicker Date="{Binding ReferringDate, Mode=TwoWay}" IsEnabled="{Binding HasReferringDate}"></CalendarDatePicker>
+            </StackPanel>
             <TextBlock Grid.Row="10">Initial Letter</TextBlock>
             <Grid Grid.Row="10" Grid.Column="1">
                 <Grid.ColumnDefinitions>
