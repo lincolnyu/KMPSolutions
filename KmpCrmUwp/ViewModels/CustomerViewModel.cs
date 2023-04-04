@@ -9,6 +9,7 @@ namespace KmpCrmUwp.ViewModels
     internal class CustomerViewModel : BaseViewModel<Customer>
     {
         public bool CustomerAdded { get; private set; }
+        public static readonly DateOnly DefaultDate = new DateOnly(1923, 1, 1);
 
         public CustomerViewModel(Customer customer) : base(customer)
         {
@@ -81,7 +82,7 @@ namespace KmpCrmUwp.ViewModels
                     }
                     else
                     {
-                        DateOfBirth = default(DateOnly);
+                        DateOfBirth = DefaultDate;
                     }
                 }
                 else
@@ -119,7 +120,7 @@ namespace KmpCrmUwp.ViewModels
                     }
                     else
                     {
-                        ReferringDate = default(DateOnly);
+                        ReferringDate = DefaultDate;
                     }
                 }
                 else
