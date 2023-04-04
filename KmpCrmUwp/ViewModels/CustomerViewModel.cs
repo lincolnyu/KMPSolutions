@@ -1,13 +1,15 @@
 ﻿using KmpCrmCore;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace KmpCrmUwp.ViewModels
 {
+    using DateOnly = DateTime;
+
     internal class CustomerViewModel : BaseViewModel<Customer>
     {
         public bool CustomerAdded { get; private set; }
+        public static readonly DateOnly DefaultDate = new DateOnly(1923, 1, 1);
 
         public CustomerViewModel(Customer customer) : base(customer)
         {
@@ -23,7 +25,7 @@ namespace KmpCrmUwp.ViewModels
             Gender.SelectOrAdd(Model.Gender);
             Gender.SelectedItemChanged += (selectedItem)=> { Model.Gender = selectedItem ?? ""; };
 
-            InitializeVisitBatches();
+            LoadVisitBatchViewModels();
             VisitBatches.CollectionChanged += VisitBatches_CollectionChanged;
         }
 
@@ -50,22 +52,87 @@ namespace KmpCrmUwp.ViewModels
         public string Surname { get { return Model.Surname; } set { Model.Surname = value; } }
         // TODO Name?
 
-        public string DateOfBirthStr
-        {
-            get { return Model.DateOfBirth?.DateToString(); }
-            set { Model.DateOfBirth = value.StringToDate(); }
-        }
+        private DateTimeOffset? _cachedDateOfBirth;
+        private DateTimeOffset? _cachedReferringDate;
 
         public DateTimeOffset? DateOfBirth
         {
-            get { return Model.DateOfBirth != null?new DateTimeOffset(Model.DateOfBirth.Value) : (DateTimeOffset?)null; }
-            set { Model.DateOfBirth = value?.Date; }
+            get { return Model.DateOfBirth != null ? new DateTimeOffset(Model.DateOfBirth.Value) : (DateTimeOffset?)null; }
+            set
+            {
+                Model.DateOfBirth = value?.Date;
+                if (value != null)
+                {
+                    _cachedDateOfBirth = value.Value;
+                }
+                OnPropertyChanged("DateOfBirth");
+            }
+        }
+
+        public bool? HasDateOfBirth
+        {
+            get { return DateOfBirth != null; }
+            set
+            {
+                if (value == true)
+                {
+                    if (_cachedDateOfBirth != null)
+                    {
+                        DateOfBirth = _cachedDateOfBirth;
+                    }
+                    else
+                    {
+                        DateOfBirth = DefaultDate;
+                    }
+                }
+                else
+                {
+                    if (DateOfBirth != null)
+                    {
+                        _cachedDateOfBirth = DateOfBirth;
+                    }
+                    DateOfBirth = null;
+                }
+                OnPropertyChanged("HasDateOfBirth");
+            }
         }
 
         public DateTimeOffset? ReferringDate
         {
             get { return Model.ReferringDate != null ? new DateTimeOffset(Model.ReferringDate.Value) : (DateTimeOffset?)null; }
-            set { Model.ReferringDate = value?.Date; }
+            set 
+            { 
+                Model.ReferringDate = value?.Date;
+                OnPropertyChanged("ReferringDate");
+            }
+        }
+
+        public bool? HasReferringDate
+        {
+            get { return ReferringDate != null; }
+            set
+            {
+                if (value == true)
+                {
+                    if (_cachedReferringDate != null)
+                    {
+                        ReferringDate = _cachedReferringDate;
+                    }
+                    else
+                    {
+                        ReferringDate = DefaultDate;
+                    }
+                }
+                else
+                {
+                    if (ReferringDate != null)
+                    {
+                        _cachedReferringDate = ReferringDate;
+                    }
+                    ReferringDate = null;
+                }
+                OnPropertyChanged("HasReferringDate");
+            }
         }
 
         public string PhoneNumber { get { return Model.PhoneNumber; } set { Model.PhoneNumber = value; } }
@@ -109,7 +176,7 @@ namespace KmpCrmUwp.ViewModels
             }
         }
 
-        public ObservableCollection<CommentedVisitBatchViewModel> VisitBatches { get; set; }
+        public ObservableCollection<BaseVisitBatchViewModel> VisitBatches { get; set; }
 
         private void OnAllPropertiesChanged()
         {
@@ -122,38 +189,37 @@ namespace KmpCrmUwp.ViewModels
             OnPropertyChanged("GpProviderNumber");
         }
 
-        private void InitializeVisitBatches()
+        private void LoadVisitBatchViewModels()
         {
-            VisitBatches = new ObservableCollection<CommentedVisitBatchViewModel>();
+            if (VisitBatches == null)
+            {
+                VisitBatches = new ObservableCollection<BaseVisitBatchViewModel>();
+            }
+            else
+            {
+                VisitBatches.Clear();
+            }
             foreach (var vb in Model.VisitBatches)
             {
-                VisitBatches.Add(new CommentedVisitBatchViewModel(vb));
+                VisitBatches.Add(new CommentedVisitBatchViewModel(vb, this));
             }
+            VisitBatches.Add(new AddVisitBatchViewModel());
         }
 
         private void VisitBatches_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            switch (e.Action)
-            {
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
-                    {
-                        var newRange = new List<CommentedValue<VisitBatch>>();
-                        foreach (var ni in e.NewItems)
-                        {
-                            var vm = (CommentedVisitBatchViewModel)ni;
-                            newRange.Add(vm.Model);
-                        }
-                        Model.VisitBatches.InsertRange(e.NewStartingIndex, newRange);
-                    }
-                    break;
-                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
-                    {
-                        throw new NotImplementedException();
-                    }
-                    break;
-                default:
-                    break;
-            }
+        }
+
+        public void AddEmptyVisitBatch()
+        {
+            Model.VisitBatches.Add(new CommentedValue<VisitBatch>(new VisitBatch()));
+            LoadVisitBatchViewModels();
+        }
+
+        internal void RemoveVisitBatch(CommentedVisitBatchViewModel commentedVisitBatchViewModel)
+        {
+            Model.VisitBatches.Remove(commentedVisitBatchViewModel.Model);
+            LoadVisitBatchViewModels();
         }
     }
 }

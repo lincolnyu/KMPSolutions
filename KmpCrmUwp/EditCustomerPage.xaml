@@ -4,9 +4,62 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:KmpCrmUwp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:viewmodels="using:KmpCrmUwp.ViewModels" xmlns:resources="using:KmpCrmUwp.Resources"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Resources>
+        <DataTemplate x:DataType="viewmodels:EventViewModel" x:Key="EventDataTemplate">
+            <Grid HorizontalAlignment="Stretch">
+                <Grid.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Remove" Click="RemoveEvent_Click"></MenuFlyoutItem>
+                    </MenuFlyout>
+                </Grid.ContextFlyout>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="120"></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <ComboBox ItemsSource="{Binding Path=TypeOptions, Mode=OneTime}" SelectedItem="{Binding Type, Mode=TwoWay}" HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource EventTypeConverter}}"></TextBlock>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <CalendarDatePicker Grid.Column="1" Date="{Binding Path=Date, Mode=TwoWay}" HorizontalAlignment="Stretch"></CalendarDatePicker>
+                <TextBox Grid.Column="2" Text="{Binding Comments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" HorizontalAlignment="Stretch"></TextBox>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:DataType="viewmodels:AddEventViewModel" x:Key="AddEventDataTemplate">
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                <Button Click="AddVisit_Click">Add Visit</Button>
+                <Button Click="AddClaim_Click">Add Claim</Button>
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:DataType="viewmodels:CommentedVisitBatchViewModel" x:Key="CommentedVisitBatchDataTemplate">
+            <StackPanel HorizontalAlignment="Stretch">
+                <StackPanel.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Remove" Click="RemoveVisitBatch_Click"></MenuFlyoutItem>
+                    </MenuFlyout>
+                </StackPanel.ContextFlyout>
+                <TextBlock>Comments</TextBlock>
+                <TextBox Text="{Binding Comments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+                <ListView ItemsSource="{Binding Events}" HorizontalContentAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Auto" ItemTemplateSelector="{StaticResource selector}">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                </ListView>
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:DataType="viewmodels:AddVisitBatchViewModel" x:Key="AddVisitBatchDataTemplate">
+            <Button HorizontalAlignment="Center" Click="AddVisitBatch_Click">Add Visit Batch</Button>
+        </DataTemplate>
+        <resources:MainTemplateSelector x:Key="selector" CommentedVisitBatchDataTemplate="{StaticResource CommentedVisitBatchDataTemplate}" AddVisitBatchDataTemplate="{StaticResource AddVisitBatchDataTemplate}" EventDataTemplate="{StaticResource EventDataTemplate}" AddEventDataTemplate="{StaticResource AddEventDataTemplate}"></resources:MainTemplateSelector>
+    </Page.Resources>
     <Grid Margin="10,10,10,10">
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
@@ -49,7 +102,10 @@
                       Text="{Binding NewItem, Mode=TwoWay, UpdateSourceTrigger=LostFocus}">
             </ComboBox>
             <TextBlock Grid.Row="4">Date of Birth</TextBlock>
-            <CalendarDatePicker Grid.Row="4" Grid.Column="1" Date="{Binding Path=DateOfBirth, Mode=TwoWay}"></CalendarDatePicker>
+            <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal">
+                <CheckBox IsChecked="{Binding HasDateOfBirth, Mode=TwoWay}"></CheckBox>
+                <CalendarDatePicker Date="{Binding DateOfBirth, Mode=TwoWay}" IsEnabled="{Binding HasDateOfBirth}"></CalendarDatePicker>
+            </StackPanel>
             <TextBlock Grid.Row="5">Phone Number</TextBlock>
             <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="6">Address</TextBlock>
@@ -59,7 +115,10 @@
             <TextBlock Grid.Row="8">Referring GP Name</TextBlock>
             <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding GpName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="9">Referring Date</TextBlock>
-            <CalendarDatePicker Grid.Row="9" Grid.Column="1" Date="{Binding Path=ReferringDate, Mode=TwoWay}"></CalendarDatePicker>
+            <StackPanel Grid.Row="9" Grid.Column="1" Orientation="Horizontal">
+                <CheckBox IsChecked="{Binding HasReferringDate, Mode=TwoWay}"></CheckBox>
+                <CalendarDatePicker Date="{Binding ReferringDate, Mode=TwoWay}" IsEnabled="{Binding HasReferringDate}"></CalendarDatePicker>
+            </StackPanel>
             <TextBlock Grid.Row="10">Initial Letter</TextBlock>
             <Grid Grid.Row="10" Grid.Column="1">
                 <Grid.ColumnDefinitions>
@@ -72,47 +131,12 @@
                 <TextBox Grid.Column="2" Text="{Binding InitialLetterComments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             </Grid>
             <TextBlock Grid.Row="11">Visits</TextBlock>
-            <ListView Grid.Row="11" Grid.Column="1" ItemsSource="{Binding VisitBatches}" HorizontalContentAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <ListView Grid.Row="11" Grid.Column="1" ItemsSource="{Binding VisitBatches}" HorizontalContentAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Auto" ItemTemplateSelector="{StaticResource selector}">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                     </Style>
                 </ListView.ItemContainerStyle>
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel HorizontalAlignment="Stretch">
-                            <TextBlock>Comments</TextBlock>
-                            <TextBox Text="{Binding Comments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
-                            <ListView ItemsSource="{Binding Events}" HorizontalContentAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Auto">
-                                <ListView.ItemContainerStyle>
-                                    <Style TargetType="ListViewItem">
-                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                    </Style>
-                                </ListView.ItemContainerStyle>
-                                <ListView.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid HorizontalAlignment="Stretch">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="80"></ColumnDefinition>
-                                                <ColumnDefinition Width="120"></ColumnDefinition>
-                                                <ColumnDefinition></ColumnDefinition>
-                                            </Grid.ColumnDefinitions>
-                                            <ComboBox ItemsSource="{Binding Path=TypeOptions, Mode=OneTime}" SelectedItem="{Binding Type, Mode=TwoWay}" HorizontalAlignment="Stretch">
-                                                <ComboBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding Converter={StaticResource EventTypeConverter}}"></TextBlock>
-                                                    </DataTemplate>
-                                                </ComboBox.ItemTemplate>
-                                            </ComboBox>
-                                            <CalendarDatePicker Grid.Column="1" Date="{Binding Path=Date, Mode=TwoWay}" HorizontalAlignment="Stretch"></CalendarDatePicker>
-                                            <TextBox Grid.Column="2" Text="{Binding Comments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" HorizontalAlignment="Stretch"></TextBox>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
             </ListView>
         </Grid>
     </Grid>

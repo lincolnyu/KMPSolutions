@@ -132,7 +132,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\DateToStringConverter.cs" />
     <Compile Include="Resources\EventTypeConverter.cs" />
+    <Compile Include="Resources\MainTemplateSelector.cs" />
+    <Compile Include="ViewModels\AddEventViewModel.cs" />
+    <Compile Include="ViewModels\AddVisitBatchViewModel.cs" />
+    <Compile Include="ViewModels\BaseEventViewModel.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
+    <Compile Include="ViewModels\BaseVisitBatchViewModel.cs" />
     <Compile Include="ViewModels\EventViewModel.cs" />
     <Compile Include="ViewModels\CommentedVisitBatchViewModel.cs" />
     <Compile Include="ViewModels\CustomerViewModel.cs" />
