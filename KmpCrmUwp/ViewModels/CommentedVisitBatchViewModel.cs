@@ -28,6 +28,14 @@ namespace KmpCrmUwp.ViewModels
             }
         }
 
+        protected override void OnIsReadOnlyChanged()
+        {
+            foreach (var v in Events)
+            {
+                v.IsNotReadOnly = IsNotReadOnly;
+            }
+        }
+
         public CustomerViewModel Parent { get; }
 
         public string Comments
