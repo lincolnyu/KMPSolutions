@@ -38,5 +38,35 @@ namespace KmpCrmUwp
         {
             base.OnNavigatedFrom(e);
         }
+
+        private void AddVisitBatch_Click(object sender, RoutedEventArgs e)
+        {
+            var vm = (CustomerViewModel)DataEntryGrid.DataContext;
+            vm.AddEmptyVisitBatch();
+        }
+
+        private void AddVisit_Click(object sender, RoutedEventArgs e)
+        {
+            var vm = ((AddEventViewModel)((Button)sender).DataContext).Parent;
+            vm.AddEmptyVisit();
+        }
+
+        private void AddClaim_Click(object sender, RoutedEventArgs e)
+        {
+            var vm = ((AddEventViewModel)((Button)sender).DataContext).Parent;
+            vm.AddEmptyClaim();
+        }
+
+        private void RemoveEvent_Click(object sender, RoutedEventArgs e)
+        {
+            var vm = (EventViewModel)((MenuFlyoutItem)sender).DataContext;
+            vm.RemoveSelf();
+        }
+
+        private void RemoveVisitBatch_Click(object sender, RoutedEventArgs e)
+        {
+            var vm = (CommentedVisitBatchViewModel)((MenuFlyoutItem)sender).DataContext;
+            vm.RemoveSelf();
+        }
     }
 }
