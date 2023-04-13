@@ -20,21 +20,21 @@
                     <ColumnDefinition Width="120"></ColumnDefinition>
                     <ColumnDefinition></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <ComboBox ItemsSource="{Binding Path=TypeOptions, Mode=OneTime}" SelectedItem="{Binding Type, Mode=TwoWay}" HorizontalAlignment="Stretch">
+                <ComboBox ItemsSource="{Binding Path=TypeOptions, Mode=OneTime}" SelectedItem="{Binding Type, Mode=TwoWay}" IsEnabled="{Binding IsNotReadOnly}" HorizontalAlignment="Stretch">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Converter={StaticResource EventTypeConverter}}"></TextBlock>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-                <CalendarDatePicker Grid.Column="1" Date="{Binding Path=Date, Mode=TwoWay}" HorizontalAlignment="Stretch"></CalendarDatePicker>
-                <TextBox Grid.Column="2" Text="{Binding Comments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" HorizontalAlignment="Stretch"></TextBox>
+                <CalendarDatePicker Grid.Column="1" Date="{Binding Path=Date, Mode=TwoWay}" IsEnabled="{Binding IsNotReadOnly}" HorizontalAlignment="Stretch"></CalendarDatePicker>
+                <TextBox Grid.Column="2" IsReadOnly="{Binding IsReadOnly}" Text="{Binding Comments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" HorizontalAlignment="Stretch"></TextBox>
             </Grid>
         </DataTemplate>
         <DataTemplate x:DataType="viewmodels:AddEventViewModel" x:Key="AddEventDataTemplate">
             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                <Button Click="AddVisit_Click">Add Visit</Button>
-                <Button Click="AddClaim_Click">Add Claim</Button>
+                <Button Click="AddVisit_Click" IsEnabled="{Binding IsNotReadOnly}">Add Visit</Button>
+                <Button Click="AddClaim_Click" IsEnabled="{Binding IsNotReadOnly}">Add Claim</Button>
             </StackPanel>
         </DataTemplate>
         <DataTemplate x:DataType="viewmodels:CommentedVisitBatchViewModel" x:Key="CommentedVisitBatchDataTemplate">
@@ -45,7 +45,7 @@
                     </MenuFlyout>
                 </StackPanel.ContextFlyout>
                 <TextBlock>Comments</TextBlock>
-                <TextBox Text="{Binding Comments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+                <TextBox Text="{Binding Comments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" IsReadOnly="{Binding IsReadOnly}"></TextBox>
                 <ListView ItemsSource="{Binding Events}" HorizontalContentAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Auto" ItemTemplateSelector="{StaticResource selector}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
@@ -56,11 +56,11 @@
             </StackPanel>
         </DataTemplate>
         <DataTemplate x:DataType="viewmodels:AddVisitBatchViewModel" x:Key="AddVisitBatchDataTemplate">
-            <Button HorizontalAlignment="Center" Click="AddVisitBatch_Click">Add Visit Batch</Button>
+            <Button HorizontalAlignment="Center" Click="AddVisitBatch_Click" IsEnabled="{Binding IsNotReadOnly}">Add Visit Batch</Button>
         </DataTemplate>
         <resources:MainTemplateSelector x:Key="selector" CommentedVisitBatchDataTemplate="{StaticResource CommentedVisitBatchDataTemplate}" AddVisitBatchDataTemplate="{StaticResource AddVisitBatchDataTemplate}" EventDataTemplate="{StaticResource EventDataTemplate}" AddEventDataTemplate="{StaticResource AddEventDataTemplate}"></resources:MainTemplateSelector>
     </Page.Resources>
-    <Grid Margin="10,10,10,10">
+    <Grid Margin="10,10,10,10" Name="DataEntryGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
             <RowDefinition/>
@@ -69,7 +69,8 @@
             <Button Style="{StaticResource NavigationBackButtonNormalStyle}" VerticalContentAlignment="Center" Margin="10,10,0,0" Click="Back_Click" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <Button Content="Home" Margin="10,10,0,0" Click="Home_Click" HorizontalAlignment="Left" VerticalAlignment="Top"/>
         </StackPanel>
-        <Grid Grid.Row="1" Name="DataEntryGrid">
+        <CheckBox Content="Edit" Margin="0,10,10,0" IsChecked="{Binding IsNotReadOnly, Mode=TwoWay}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+        <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="40"/>
                 <RowDefinition Height="40"/>
@@ -89,13 +90,15 @@
                 <ColumnDefinition Width="7*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <TextBlock>Medicare Number</TextBlock>
-            <TextBox Grid.Column="1" Text="{Binding Path=MedicareNumber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+            <TextBox Grid.Column="1" IsReadOnly="{Binding IsReadOnly}" Text="{Binding Path=MedicareNumber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="1">Surname</TextBlock>
-            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Path=Surname, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+            <TextBox Grid.Row="1" Grid.Column="1" IsReadOnly="{Binding IsReadOnly}" Text="{Binding Path=Surname, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="2">Given Name</TextBlock>
-            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Path=FirstName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+            <TextBox Grid.Row="2" Grid.Column="1" IsReadOnly="{Binding IsReadOnly}" Text="{Binding Path=FirstName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="3">Gender</TextBlock>
             <ComboBox Grid.Row="3" Grid.Column="1" IsEditable="True"
+                      Name="GenderComboBox"
+                      IsEnabled="{Binding IsNotReadOnly}"
                       ItemsSource="{Binding Items}"
                       DataContext="{Binding Gender}"
                       SelectedItem="{Binding SelectedItem, Mode=TwoWay}" 
@@ -103,21 +106,21 @@
             </ComboBox>
             <TextBlock Grid.Row="4">Date of Birth</TextBlock>
             <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal">
-                <CheckBox IsChecked="{Binding HasDateOfBirth, Mode=TwoWay}"></CheckBox>
-                <CalendarDatePicker Date="{Binding DateOfBirth, Mode=TwoWay}" IsEnabled="{Binding HasDateOfBirth}"></CalendarDatePicker>
+                <CheckBox IsChecked="{Binding HasDateOfBirth, Mode=TwoWay}" IsEnabled="{Binding IsNotReadOnly}"></CheckBox>
+                <CalendarDatePicker Date="{Binding DateOfBirth, Mode=TwoWay}" IsEnabled="{Binding DateOfBirthEnabled}"></CalendarDatePicker>
             </StackPanel>
             <TextBlock Grid.Row="5">Phone Number</TextBlock>
-            <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+            <TextBox Grid.Row="5" Grid.Column="1" IsReadOnly="{Binding IsReadOnly}" Text="{Binding PhoneNumber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="6">Address</TextBlock>
-            <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+            <TextBox Grid.Row="6" Grid.Column="1" IsReadOnly="{Binding IsReadOnly}" Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="7">Referring GP Provider Number</TextBlock>
-            <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding GpProviderNumber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+            <TextBox Grid.Row="7" Grid.Column="1" IsReadOnly="{Binding IsReadOnly}" Text="{Binding GpProviderNumber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="8">Referring GP Name</TextBlock>
-            <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding GpName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+            <TextBox Grid.Row="8" Grid.Column="1" IsReadOnly="{Binding IsReadOnly}" Text="{Binding GpName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             <TextBlock Grid.Row="9">Referring Date</TextBlock>
             <StackPanel Grid.Row="9" Grid.Column="1" Orientation="Horizontal">
-                <CheckBox IsChecked="{Binding HasReferringDate, Mode=TwoWay}"></CheckBox>
-                <CalendarDatePicker Date="{Binding ReferringDate, Mode=TwoWay}" IsEnabled="{Binding HasReferringDate}"></CalendarDatePicker>
+                <CheckBox IsChecked="{Binding HasReferringDate, Mode=TwoWay}" IsEnabled="{Binding IsNotReadOnly}"></CheckBox>
+                <CalendarDatePicker Date="{Binding ReferringDate, Mode=TwoWay}" IsEnabled="{Binding ReferringDateEnabled}"></CalendarDatePicker>
             </StackPanel>
             <TextBlock Grid.Row="10">Initial Letter</TextBlock>
             <Grid Grid.Row="10" Grid.Column="1">
@@ -126,12 +129,12 @@
                     <ColumnDefinition Width="1*" MinWidth="80" MaxWidth="100"/>
                     <ColumnDefinition Width="8*"/>
                 </Grid.ColumnDefinitions>
-                <CheckBox Grid.Column="0" IsChecked="{Binding HasInitialLetter, Mode=TwoWay}">Available</CheckBox>
+                <CheckBox Grid.Column="0" IsChecked="{Binding HasInitialLetter, Mode=TwoWay}" IsEnabled="{Binding IsNotReadOnly}">Available</CheckBox>
                 <TextBlock Grid.Column="1">Comments</TextBlock>
-                <TextBox Grid.Column="2" Text="{Binding InitialLetterComments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+                <TextBox Grid.Column="2" IsReadOnly="{Binding IsReadOnly}" Text="{Binding InitialLetterComments, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
             </Grid>
             <TextBlock Grid.Row="11">Visits</TextBlock>
-            <ListView Grid.Row="11" Grid.Column="1" ItemsSource="{Binding VisitBatches}" HorizontalContentAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Auto" ItemTemplateSelector="{StaticResource selector}">
+            <ListView Name="EventListView" Grid.Row="11" Grid.Column="1" ItemsSource="{Binding VisitBatches}" HorizontalContentAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Auto" ItemTemplateSelector="{StaticResource selector}">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
