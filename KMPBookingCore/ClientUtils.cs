@@ -11,26 +11,17 @@ namespace KMPBookingCore
             return $"{id:00000000}";
         }
 
-        public static int ClientIdFromStr(this string idstr)
-        {
-            return int.Parse(idstr);
-        }
-
-        public static string ClientFormalName(this ClientRecord client)
+        public static string ClientFormalName(this Client client)
             => BookingIcs.FormCommaSeparateName(client.FirstName, client.Surname);
 
-        public static IEnumerable<ClientRecord> FindByMedicareNumberContaining(
-            this IEnumerable<ClientRecord> clients, string medSubstr)
+        public static IEnumerable<Client> FindByMedicareNumberContaining(
+            this IEnumerable<Client> clients, string medSubstr)
             => clients.Where(x => x.MedicareNumber.Contains(medSubstr));
 
-        public static IEnumerable<ClientRecord> FindByIdContaining(
-            this IEnumerable<ClientRecord> clients, string idSubstr)
-            => clients.Where(x => x.Id.Contains(idSubstr));
-
-        public static IEnumerable<ClientRecord> FindByName(this IEnumerable<ClientRecord> clients, string firstName, string surname)
+        public static IEnumerable<Client> FindByName(this IEnumerable<Client> clients, string firstName, string surname)
             => clients.Where(x => x.FirstName == firstName && x.Surname == surname);
 
-        public static IEnumerable<ClientRecord> FindNameContaining(this IEnumerable<ClientRecord> clients, string nameSubstr)
+        public static IEnumerable<Client> FindNameContaining(this IEnumerable<Client> clients, string nameSubstr)
         {
             if (nameSubstr.Contains(','))
             {
@@ -45,7 +36,7 @@ namespace KMPBookingCore
             }
         }
 
-        public static IEnumerable<ClientRecord> FindByPhoneNumberContaining(this IEnumerable<ClientRecord> clients, string numberSubstr)
+        public static IEnumerable<Client> FindByPhoneNumberContaining(this IEnumerable<Client> clients, string numberSubstr)
             => clients.Where(x => x.PhoneNumber.Contains(numberSubstr));
 
     }

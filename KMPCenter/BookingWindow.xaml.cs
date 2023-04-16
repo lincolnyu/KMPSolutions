@@ -177,7 +177,7 @@ namespace KMPCenter
             var fields = new StringBuilder();
             var values= new StringBuilder();
             fields.Append("[Client ID], ");
-            values.Append($"{Clients.ActiveClient.Id}, ");
+            values.Append($"{Clients.ActiveClient.MedicareNumber}, ");
             var (bookingTime, dur) = GetBookingTemporalInfo();
             fields.Append("[Booking Date], ");
             values.Append($"{bookingTime.ToDbDateTime()}, ");

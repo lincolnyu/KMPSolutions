@@ -25,7 +25,7 @@ namespace KMPCenter
         private InvoicingWindow _invoicing;
         private ClientsWindow _clientsWindow;
         private string _loadedExcel;
-        private readonly List<ClientRecord> _excelRecords = new List<ClientRecord>();
+        private readonly List<Client> _excelRecords = new List<Client>();
 
         public MainWindow()
         {
@@ -190,7 +190,7 @@ namespace KMPCenter
                 try
                 {
                     App.ShowMessage($"{_excelRecords.Count} client records found in Excel. Syncing to the database.");
-                    var dbClients = new Dictionary<string, ClientRecord>();
+                    var dbClients = new Dictionary<string, Client>();
                     using (var r = Connection.RunReaderQuery("select [Client Name], [DOB], [Gender], [Medicare], [Phone], [Address] from Clients"))
                     {
                         var sb = new StringBuilder();
@@ -198,20 +198,20 @@ namespace KMPCenter
                         {
                             var name = r.GetString(0);
                             var (fn, sn) = BookingIcs.SmartParseName(name);
-                            var cr = new ClientRecord
+                            var cr = new Client
                             {
                                 FirstName = fn,
                                 Surname = sn,
                                 DOB = r.TryGetDateTime(1),
-                                Gender = ClientRecord.ParseGender(r.TryGetString(2)),
+                                Gender = Client.ParseGender(r.TryGetString(2)),
                                 MedicareNumber = r.TryGetString(3),
                                 PhoneNumber = r.TryGetString(4),
                                 Address = r.TryGetString(5)
                             };
                             dbClients[cr.MedicareNumber] = cr;
                         }
-                        var modRecords = new List<ClientRecord>();
-                        var newRecords = new List<ClientRecord>();
+                        var modRecords = new List<Client>();
+                        var newRecords = new List<Client>();
                         foreach (var er in _excelRecords)
                         {
                             if (dbClients.TryGetValue(er.MedicareNumber, out var dr))
@@ -231,7 +231,7 @@ namespace KMPCenter
                             var sbSql = new StringBuilder($"update Clients set ");
                             sbSql.Append($"[Client Name] = '{mr.ClientFormalName()}',");
                             sbSql.Append($"[DOB] = {mr.DOB.ToDbDate()},");
-                            sbSql.Append($"[Gender] = '{ClientRecord.ToString(mr.Gender)}',");
+                            sbSql.Append($"[Gender] = '{Client.ToString(mr.Gender)}',");
                             sbSql.Append($"[Phone] = '{mr.PhoneNumber}',");
                             sbSql.Append($"[Address] = '{mr.Address}'");
                             sbSql.Append($" where [Medicare] = '{mr.MedicareNumber}'");
@@ -242,7 +242,7 @@ namespace KMPCenter
                             var sbSql = new StringBuilder("insert into Clients([Client Name], [DOB], [Gender], [Medicare], [Phone], [Address]) values(");
                             sbSql.Append($"'{nr.ClientFormalName()}',");
                             sbSql.Append($"{nr.DOB.ToDbDate()},");
-                            sbSql.Append($"'{ClientRecord.ToString(nr.Gender)}',");
+                            sbSql.Append($"'{Client.ToString(nr.Gender)}',");
                             sbSql.Append($"'{nr.MedicareNumber}',");
                             sbSql.Append($"'{nr.PhoneNumber}',");
                             sbSql.Append($"'{nr.Address}')");
@@ -333,14 +333,14 @@ namespace KMPCenter
                         var dob = ws.Cells[i, 5].Text.Trim();
                         var gen = ws.Cells[i, 4].Text.Trim();
                         var addr = ws.Cells[i, 7].Text.Trim();
-                        var client = new ClientRecord
+                        var client = new Client
                         {
                             FirstName = firstName,
                             Surname = surname,
                             MedicareNumber = medi,
                             PhoneNumber = phone,
                             Address = addr,
-                            Gender = ClientRecord.ParseGender(gen)
+                            Gender = Client.ParseGender(gen)
                         };
                         CultureInfo cultureinfo = new CultureInfo("en-AU");
                         if (DateTime.TryParse(dob, cultureinfo, DateTimeStyles.AssumeLocal, out var dt))

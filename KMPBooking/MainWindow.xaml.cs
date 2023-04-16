@@ -392,13 +392,13 @@ namespace KMPBooking
 
                         var dob = ws.Cells[i, 5].Text.Trim();
                         var gen = ws.Cells[i, 4].Text.Trim();
-                        var client = new ClientRecord
+                        var client = new Client
                         {
                             FirstName = firstName,
                             Surname = surname,
                             MedicareNumber = medi,
                             PhoneNumber = phone,
-                            Gender = ClientRecord.ParseGender(gen),
+                            Gender = Client.ParseGender(gen),
                         };
                         if (DateTime.TryParse(dob, out var dt))
                         {
@@ -486,7 +486,7 @@ namespace KMPBooking
             }
         }
 
-        private IEnumerable<string> RecordsToStrings(IList<ClientRecord> clients)
+        private IEnumerable<string> RecordsToStrings(IList<Client> clients)
         {
             foreach (var c in clients)
             {
@@ -505,7 +505,7 @@ namespace KMPBooking
                 }
                 else
                 {
-                    ClientRecord client = null;
+                    Client client = null;
                     if (clients.Count > 1)
                     {
                         var dc = new DuplicateClients($"Multiple clients found with name containing '{name}'", RecordsToStrings(clients))
@@ -543,7 +543,7 @@ namespace KMPBooking
                 {
                     MessageBox.Show("Error: Client not found.", Title);
                 }
-                ClientRecord client = null;
+                Client client = null;
                 if (clients.Count > 1)
                 {
                     var dc = new DuplicateClients($"Multiple clients found with medicare number containing '{medi}'", RecordsToStrings(clients))
@@ -581,7 +581,7 @@ namespace KMPBooking
                 }
                 else
                 {
-                    ClientRecord client;
+                    Client client;
                     if (clients.Count > 1)
                     {
                         var dc = new DuplicateClients($"Multiple clients found with phone number containing '{phone}'", RecordsToStrings(clients))

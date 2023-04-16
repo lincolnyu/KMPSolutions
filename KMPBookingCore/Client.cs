@@ -10,16 +10,15 @@ namespace KMPBookingCore
         Nonbinary
     }
 
-    public class ClientRecord : IEquatable<ClientRecord>
+    public class Client : IEquatable<Client>
     {
-        public ClientRecord()
+        public Client()
         {
         }
-        public string Id { get; set; }
 
+        public string MedicareNumber { get; set; }
         public string FirstName { get; set; }
         public string Surname { get; set; }
-        public string MedicareNumber { get; set; }
         public DateTime? DOB { get; set; }
         public Gender Gender { get; set; }
         public string PhoneNumber { get; set; }
@@ -44,7 +43,7 @@ namespace KMPBookingCore
             }
         }
 
-        public bool Equals(ClientRecord other)
+        public bool Equals(Client other)
             => FirstName == other.FirstName
             && Surname == other.Surname
             && MedicareNumber == other.MedicareNumber

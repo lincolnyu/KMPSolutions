@@ -5,7 +5,7 @@ namespace KMPBookingCore
     public class Booking
     {
         public int Id;
-        public ClientRecord Client;
+        public Client Client;
         public DateTime? DateTime;
         public TimeSpan Duration;
     }

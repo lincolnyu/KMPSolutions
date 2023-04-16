@@ -15,12 +15,6 @@
                 <Button Name="SearchByIdBtn" Click="SearchByIdClick" ToolTip="Find the client whose IDs that contain this text">Find</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Label>Medicare Number</Label>
-                <ComboBox MinWidth="120" IsEditable="True" Name="ClientMedicare"
-                          KeyDown="ClientMediKeyDown" SelectionChanged="ClientMediSelChanged"></ComboBox>
-                <Button Name="SearchByMediBtn" Click="SearchByMediClick" ToolTip="Find the clients whose medicare numbers contain this text">Find</Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
                 <Label>Client Name</Label>
                 <ComboBox MinWidth="120" IsEditable="True" Name="ClientName"
                           KeyDown="ClientNameKeyDown" SelectionChanged="ClientNameSelChanged"></ComboBox>

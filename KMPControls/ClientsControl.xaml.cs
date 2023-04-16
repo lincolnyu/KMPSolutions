@@ -57,10 +57,10 @@ namespace KMPControls
         public bool IsUpdating => CurrentUpdateMode == UpdateMode.Adding || CurrentUpdateMode == UpdateMode.Editing;
 
         public OleDbConnection Connection { get; private set; }
-        private Dictionary<string, List<ClientRecord>> _nameToClients;
-        private Dictionary<string, List<ClientRecord>> _mediToClients;
-        private Dictionary<string, List<ClientRecord>> _phoneToClients;
-        private Dictionary<string, ClientRecord> _idToClient;
+        private Dictionary<string, List<Client>> _nameToClients;
+        private Dictionary<string, List<Client>> _mediToClients;
+        private Dictionary<string, List<Client>> _phoneToClients;
+        private Dictionary<string, Client> _idToClient;
         private AutoResetSuppressor _suppressSearch = new AutoResetSuppressor();
         private AutoResetSuppressor _addEditSuprressor = new AutoResetSuppressor();
         public Action<string> ErrorReporter { private get; set; }
@@ -91,8 +91,8 @@ namespace KMPControls
             }
         }
 
-        private ClientRecord _activeClient;
-        public ClientRecord ActiveClient
+        private Client _activeClient;
+        public Client ActiveClient
         {
             get => _activeClient;
             private set
@@ -105,9 +105,9 @@ namespace KMPControls
             }
         }
 
-        public bool TrySetActiveClient(ClientRecord client)
+        public bool TrySetActiveClient(Client client)
         {
-            if (_idToClient[client.Id] == client)
+            if (_idToClient[client.MedicareNumber] == client)
             {
                 SearchBy(new[] { client }, "");
                 return true;
@@ -127,7 +127,6 @@ namespace KMPControls
             IsAdding.Unchecked += IsAddingCheckedUnchecked;
             IsEditing.Checked += IsEditingCheckedUnchecked;
             IsEditing.Unchecked += IsEditingCheckedUnchecked;
-            ClientMedicare.DropDownOpened += ClientFieldDropDownOpened;
             ClientName.DropDownOpened += ClientFieldDropDownOpened;
             ClientNumber.DropDownOpened += ClientFieldDropDownOpened;
         }
@@ -150,7 +149,6 @@ namespace KMPControls
                     IsEditing.IsChecked = false;
                 }
                 UpdateUIOnAddingStatusChanged();
-
             });
         }
 
@@ -171,9 +169,7 @@ namespace KMPControls
             var isUpdating = IsUpdating;
             var visible = isUpdating ? Visibility.Collapsed : Visibility.Visible;
             SearchByNameBtn.Visibility = visible;
-            SearchByMediBtn.Visibility = visible;
             SearchByPhoneBtn.Visibility = visible;
-            ClientMedicare.IsTextSearchEnabled = !isUpdating;
             ClientName.IsTextSearchEnabled = !isUpdating;
             ClientNumber.IsTextSearchEnabled = !isUpdating;
             ClientAddress.IsReadOnly = !isUpdating;
@@ -195,13 +191,13 @@ namespace KMPControls
                     SearchByIdBtn.Visibility = Visibility.Visible;
                     ClientId.IsEnabled = true;
                     UpdateBtn.Content = "Update";
-                    ClientId.Text = ActiveClient?.Id ?? "";
+                    ClientId.Text = ActiveClient?.MedicareNumber ?? "";
                     break;
                 default:
                     SearchByIdBtn.Visibility = Visibility.Visible;
                     ClientId.IsEnabled = true;
                     UpdateBtn.Content = "Update";
-                    ClientId.Text = ActiveClient?.Id ?? "";
+                    ClientId.Text = ActiveClient?.MedicareNumber ?? "";
                     break;
             }
         }
@@ -216,35 +212,42 @@ namespace KMPControls
         {
             if (Connection != null)
             {
-                var query = "select ID, [Client Name], [DOB], [Gender], [Medicare], [Phone], [Address] from Clients";
-                _nameToClients = new Dictionary<string, List<ClientRecord>>();
-                _mediToClients = new Dictionary<string, List<ClientRecord>>();
-                _phoneToClients = new Dictionary<string, List<ClientRecord>>();
-                _idToClient = new Dictionary<string, ClientRecord>();
+                var query = "select [Medicare Number], [First Name], [Surname], [DOB], [Gender], [Phone], [Address] from Client";
+                _nameToClients = new Dictionary<string, List<Client>>();
+                _mediToClients = new Dictionary<string, List<Client>>();
+                _phoneToClients = new Dictionary<string, List<Client>>();
+                _idToClient = new Dictionary<string, Client>();
+
+                var clientNames = new List<string>();
+                var clientIds = new List<string>();
+                var clientNumbers = new List<string>();
 
                 using (var r = Connection.RunReaderQuery(query))
                 {
                     while (r.Read())
                     {
-                        var name = r.GetString(1);
-                        var (fn, sn) = BookingIcs.SmartParseName(name);
-                        var id = r.GetInt32(0);
-                        var idstr = id.ClientIdToStr();
-                        var cr = new ClientRecord
+                        var medicareNumber = r.GetString(0);
+                        var firstName = r.TryGetString(1).Trim();
+                        var surname = r.TryGetString(2).Trim();
+                        var name = $"{surname}, {firstName}";
+                        var dob = r.TryGetDateTime(3);
+                        var gender = Client.ParseGender(r.TryGetString(4));
+                        var phone = r.TryGetString(5);
+                        var address = r.TryGetString(6);
+                        var cr = new Client
                         {
-                            Id = idstr,
-                            FirstName = fn,
-                            Surname = sn,
-                            DOB = r.TryGetDateTime(2),
-                            Gender = ClientRecord.ParseGender(r.TryGetString(3)),
-                            MedicareNumber = r.TryGetString(4),
-                            PhoneNumber = r.TryGetString(5),
-                            Address = r.TryGetString(6)
+                            MedicareNumber = medicareNumber,
+                            FirstName = firstName,
+                            Surname = surname,
+                            DOB = dob,
+                            Gender = gender,
+                            PhoneNumber = phone,
+                            Address = address
                         };
-                        if (!_idToClient.ContainsKey(idstr))
+                        if (!_idToClient.ContainsKey(medicareNumber))
                         {
-                            _idToClient[idstr] = cr;
-                            ClientId.Items.Add(idstr);
+                            _idToClient[medicareNumber] = cr;
+                            clientIds.Add(medicareNumber);
                         }
                         else
                         {
@@ -252,31 +255,19 @@ namespace KMPControls
                         }
                         if (!_nameToClients.TryGetValue(name, out var namelist))
                         {
-                            _nameToClients.Add(name, new List<ClientRecord> { cr });
-                            ClientName.Items.Add(name);
+                            _nameToClients.Add(name, new List<Client> { cr });
+                            clientNames.Add(name);
                         }
                         else
                         {
                             namelist.Add(cr);
                         }
-                        if (!string.IsNullOrWhiteSpace(cr.MedicareNumber))
-                        {
-                            if (!_mediToClients.TryGetValue(cr.MedicareNumber, out var medilist))
-                            {
-                                _mediToClients.Add(cr.MedicareNumber, new List<ClientRecord> { cr });
-                                ClientMedicare.Items.Add(cr.MedicareNumber);
-                            }
-                            else
-                            {
-                                medilist.Add(cr);
-                            }
-                        }
                         if (!string.IsNullOrWhiteSpace(cr.PhoneNumber))
                         {
                             if (!_phoneToClients.TryGetValue(cr.PhoneNumber, out var phonelist))
                             {
-                                _phoneToClients.Add(cr.PhoneNumber, new List<ClientRecord> { cr });
-                                ClientNumber.Items.Add(cr.PhoneNumber);
+                                _phoneToClients.Add(cr.PhoneNumber, new List<Client> { cr });
+                                clientNumbers.Add(cr.PhoneNumber);
                             }
                             else
                             {
@@ -284,15 +275,23 @@ namespace KMPControls
                             }
                         }
                     }
-                }
-            }
-        }
 
-        private void ClientMediKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                SearchByMedi(ClientMedicare.Text);
+                    clientIds.Sort();
+                    clientNames.Sort();
+                    clientNumbers.Sort();
+                    foreach (var n in clientNumbers)
+                    {
+                        ClientNumber.Items.Add(n);
+                    }
+                    foreach (var id in clientIds)
+                    {
+                        ClientId.Items.Add(id);
+                    }
+                    foreach (var n in clientNames)
+                    {
+                        ClientName.Items.Add(n);
+                    }
+                }
             }
         }
 
@@ -300,15 +299,10 @@ namespace KMPControls
         {
             if (e.AddedItems.Count > 0)
             {
-                SearchByMedi(e.AddedItems[0].ToString());
+                SearchByMedicareNumber(e.AddedItems[0].ToString());
             }
         }
-
-        private void SearchByMediClick(object sender, RoutedEventArgs e)
-        {
-            SearchByMedi(ClientMedicare.Text);
-        }
-
+        
         private void ClientNameKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -355,7 +349,7 @@ namespace KMPControls
         {
             if (e.Key == Key.Enter)
             {
-                SearchById(ClientId.Text);
+                SearchByMedicareNumber(ClientId.Text);
             }
         }
 
@@ -363,24 +357,24 @@ namespace KMPControls
         {
             if (e.AddedItems.Count > 0)
             {
-                SearchById(e.AddedItems[0].ToString());
+                SearchByMedicareNumber(e.AddedItems[0].ToString());
             }
         }
 
         private void SearchByIdClick(object sender, RoutedEventArgs e)
         {
-            SearchById(ClientId.Text);
+            SearchByMedicareNumber(ClientId.Text);
         }
 
-        private IEnumerable<string> RecordsToStrings(IList<ClientRecord> clients)
+        private IEnumerable<string> RecordsToStrings(IList<Client> clients)
         {
             foreach (var c in clients)
             {
-                yield return $"#{c.Id}: {c.ClientFormalName()} (Medicare#{c.MedicareNumber}, Phone#{c.PhoneNumber})";
+                yield return $"#{c.MedicareNumber}: {c.ClientFormalName()} (Medicare#{c.MedicareNumber}, Phone#{c.PhoneNumber})";
             }
         }
 
-        private void SearchBy(IList<ClientRecord> foundClients, string duplicateMessage)
+        private void SearchBy(IList<Client> foundClients, string duplicateMessage)
         {
             _suppressSearch.Run(() =>
             {
@@ -408,9 +402,7 @@ namespace KMPControls
                 }
                 if (ActiveClient != null)
                 {
-                    ClientId.Text = CurrentUpdateMode == UpdateMode.Adding ?
-                        "(Adding ...)" : ActiveClient.Id;
-                    ClientMedicare.Text = ActiveClient.MedicareNumber;
+                    ClientId.Text = CurrentUpdateMode == UpdateMode.Adding ? "(Adding ...)" : ActiveClient.MedicareNumber;
                     ClientName.Text = ActiveClient.ClientFormalName();
                     ClientNumber.Text = ActiveClient.PhoneNumber;
                     if (InputMode == Mode.Input)
@@ -429,31 +421,24 @@ namespace KMPControls
             });
         }
 
-        private void SearchByMedi(string medi)
+        private void SearchByMedicareNumber(string medi)
         {
             SearchBy(_idToClient.Values.FindByMedicareNumberContaining(medi)
                     .OrderBy(x => x.MedicareNumber).ToList(),
                     $"Multiple clients found with medicare number containing '{medi}'");
         }
 
-        private void SearchById(string id)
-        {
-            SearchBy(_idToClient.Values.FindByIdContaining(id)
-                    .OrderBy(x => x.Id).ToList(),
-                    $"Multiple clients found with ID containing '{id}'");
-        }
-
         private void SearchByName(string name)
         {
             SearchBy(_idToClient.Values.FindNameContaining(name)
-                    .OrderBy(x => x.Id).ToList(),
+                    .OrderBy(x => x.MedicareNumber).ToList(),
                     $"Multiple clients found with name containing '{name}'");
         }
 
         private void SearchByPhone(string phone)
-        {
+        {   
             SearchBy(_idToClient.Values.FindByPhoneNumberContaining(phone)
-                    .OrderBy(x => x.Id).ToList(),
+                    .OrderBy(x => x.MedicareNumber).ToList(),
                     $"Multiple clients found with phone number containing '{phone}'");
         }
 
@@ -471,12 +456,12 @@ namespace KMPControls
 
         private void Add()
         {
-            ActiveClient = new ClientRecord();
+            ActiveClient = new Client();
             UpdateUiToActive();
             var sbSql = new StringBuilder("insert into Clients([Client Name], [DOB], [Gender], [Medicare], [Phone], [Address]) values(");
             sbSql.Append($"'{ActiveClient.ClientFormalName()}',");
             sbSql.Append($"{ActiveClient.DOB.ToDbDate()},");
-            sbSql.Append($"'{ClientRecord.ToString(ActiveClient.Gender)}',");
+            sbSql.Append($"'{Client.ToString(ActiveClient.Gender)}',");
             sbSql.Append($"'{ActiveClient.MedicareNumber}',");
             sbSql.Append($"'{ActiveClient.PhoneNumber}',");
             sbSql.Append($"'{ActiveClient.Address}')");
@@ -496,10 +481,10 @@ namespace KMPControls
             sbSql.Append($"[Client Name] = '{ActiveClient.ClientFormalName()}',");
             sbSql.Append($"[DOB] = {ActiveClient.DOB.ToDbDate()},");
             sbSql.Append($"[Medicare] = {ActiveClient.MedicareNumber}, ");
-            sbSql.Append($"[Gender] = '{ClientRecord.ToString(ActiveClient.Gender)}',");
+            sbSql.Append($"[Gender] = '{Client.ToString(ActiveClient.Gender)}',");
             sbSql.Append($"[Phone] = '{ActiveClient.PhoneNumber}',");
             sbSql.Append($"[Address] = '{ActiveClient.Address}'");
-            sbSql.Append($" where ID = {ActiveClient.Id.ClientIdFromStr()}");
+            sbSql.Append($" where ID = {ActiveClient.MedicareNumber}");
             Connection.RunNonQuery(sbSql.ToString());
 
             //TODO Successful message
@@ -508,7 +493,7 @@ namespace KMPControls
         private void UpdateUiToActive()
         {
             ActiveClient.DOB = ClientDob.SelectedDate;
-            ActiveClient.MedicareNumber = ClientMedicare.Text.Trim();
+            ActiveClient.MedicareNumber = ClientId.Text.Trim();
             ActiveClient.Gender = (Gender)ClientGender.SelectedIndex;
             ActiveClient.PhoneNumber = ClientNumber.Text;
             ActiveClient.Address = ClientAddress.Text;
@@ -521,7 +506,6 @@ namespace KMPControls
             if (CurrentUpdateMode == UpdateMode.Adding)
             {
                 ClientName.Text = "";
-                ClientMedicare.Text = "";
                 ClientNumber.Text = "";
                 ClientGender.SelectedIndex = (int)Gender.Unspecified;
                 ClientDob.SelectedDate = null;
@@ -530,7 +514,6 @@ namespace KMPControls
             else if (CurrentUpdateMode == UpdateMode.Editing && ActiveClient != null)
             {
                 ClientName.Text = ActiveClient.ClientFormalName();
-                ClientMedicare.Text = ActiveClient.MedicareNumber;
                 ClientNumber.Text = ActiveClient.PhoneNumber;
                 ClientGender.SelectedIndex = (int)ActiveClient.Gender;
                 ClientDob.SelectedDate = ActiveClient.DOB;

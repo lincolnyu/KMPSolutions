@@ -130,7 +130,7 @@ namespace KMPCenter
             _existingBookings.Clear();
             if (Clients.ActiveClient != null && MainWindow.Connection != null)
             {
-                var query = $"select ID, [Booking Date], Duration from Bookings where [Client ID]={Clients.ActiveClient.Id.ClientIdFromStr()} order by Bookings.[Booking Date]";
+                var query = $"select ID, [Booking Date], Duration from Bookings where [Client ID]={Clients.ActiveClient.MedicareNumber} order by Bookings.[Booking Date]";
                 using (var r = MainWindow.Connection.RunReaderQuery(query))
                 {
                     while (r.Read())
