@@ -11,13 +11,56 @@ namespace KmpCrmUwp.ViewModels
         public bool CustomerAdded { get; private set; }
         public static readonly DateOnly DefaultDate = new DateOnly(1923, 1, 1);
 
+        private bool _isReadOnly;
+        public bool IsReadOnly
+        { 
+            get
+            {
+                return _isReadOnly;
+            }
+            set
+            {
+                _isReadOnly = value;
+                OnPropertyChanged("IsNotReadOnly");
+                OnPropertyChanged("IsReadOnly");
+                OnPropertyChanged("ReferringDateEnabled");
+                OnPropertyChanged("DateOfBirthEnabled");
+                OnIsReadOnlyChanged();
+            }
+        }
+
+        public bool IsNotReadOnly
+        {
+            get
+            {
+                return !_isReadOnly;
+            }
+            set
+            {
+                _isReadOnly = !value;
+                OnPropertyChanged("IsNotReadOnly");
+                OnPropertyChanged("IsReadOnly");
+                OnPropertyChanged("ReferringDateEnabled");
+                OnPropertyChanged("DateOfBirthEnabled");
+                OnIsReadOnlyChanged();
+            }
+        }
+
+        private void OnIsReadOnlyChanged()
+        {
+            foreach (var vb in VisitBatches)
+            {
+                vb.IsNotReadOnly = IsNotReadOnly;
+            }
+        }
+
         public CustomerViewModel(Customer customer) : base(customer)
         {
             CustomerAdded = customer != null;
             if (customer == null)
             {
                 customer = new Customer(); // tentative
-                // todo
+                // todo...
             }
 
             Model = customer;
@@ -69,6 +112,11 @@ namespace KmpCrmUwp.ViewModels
             }
         }
 
+        public bool DateOfBirthEnabled
+        {
+            get { return HasDateOfBirth == true && IsNotReadOnly; }
+        }
+
         public bool? HasDateOfBirth
         {
             get { return DateOfBirth != null; }
@@ -94,6 +142,7 @@ namespace KmpCrmUwp.ViewModels
                     DateOfBirth = null;
                 }
                 OnPropertyChanged("HasDateOfBirth");
+                OnPropertyChanged("DateOfBirthEnabled");
             }
         }
 
@@ -107,9 +156,20 @@ namespace KmpCrmUwp.ViewModels
             }
         }
 
+        public bool ReferringDateEnabled
+        {
+            get
+            {
+                return HasReferringDate==true && IsNotReadOnly;
+            }
+        }
+
         public bool? HasReferringDate
         {
-            get { return ReferringDate != null; }
+            get 
+            {
+                return ReferringDate != null;
+            }
             set
             {
                 if (value == true)
@@ -132,6 +192,7 @@ namespace KmpCrmUwp.ViewModels
                     ReferringDate = null;
                 }
                 OnPropertyChanged("HasReferringDate");
+                OnPropertyChanged("ReferringDateEnabled");
             }
         }
 

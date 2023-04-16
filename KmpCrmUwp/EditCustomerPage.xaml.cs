@@ -1,4 +1,5 @@
 ﻿using KmpCrmUwp.ViewModels;
+using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -18,9 +19,30 @@ namespace KmpCrmUwp
             this.PopulateDataIfFocused();
         }
 
+        private CustomerViewModel _focusedCustomerVm;
+
         private void PopulateDataIfFocused()
         {
             DataEntryGrid.DataContext = new CustomerViewModel(CrmData.FocusedCustomer);
+            var vm = (CustomerViewModel)DataEntryGrid.DataContext;
+            
+            GenderComboBox.IsEnabled = vm.IsNotReadOnly;
+            vm.PropertyChanged += Vm_PropertyChanged;
+            IsNotReadOnlyChanged();
+        }
+
+        private void Vm_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "IsNotReadOnly")
+            {
+                IsNotReadOnlyChanged();
+            }
+        }
+
+        private void IsNotReadOnlyChanged()
+        {
+            var vm = (CustomerViewModel)DataEntryGrid.DataContext;
+            GenderComboBox.IsEnabled = vm.IsNotReadOnly;
         }
 
         private void Home_Click(object sender, RoutedEventArgs e)
@@ -37,6 +59,13 @@ namespace KmpCrmUwp
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             base.OnNavigatedFrom(e);
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            var vm = (CustomerViewModel)DataEntryGrid.DataContext;
+            vm.IsReadOnly = true;
+            base.OnNavigatedTo(e);
         }
 
         private void AddVisitBatch_Click(object sender, RoutedEventArgs e)
