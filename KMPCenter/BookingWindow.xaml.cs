@@ -126,17 +126,18 @@ namespace KMPCenter
             var (start, dur) = GetBookingTemporalInfo();
             if (!start.HasValue) return false;
             var end = start.Value + (dur.HasValue? dur.Value : TimeSpan.Zero);
-            var query = "select Clients.ID, Clients.[Client Name], Bookings.[Booking Date], Bookings.Duration from Bookings inner join Clients on Bookings.[Client ID] = Clients.ID order by Bookings.[Booking Date]";
+            var query = "select Client.[Medicare Number], Client.[First Name], Client.[Surname], Booking.[Booking Date], Booking.Duration from Booking inner join Clients on Booking.[Client ID] = Client.[Medicare Number] order by Booking.[Booking Date]";
             var sb = new StringBuilder("Has clash with:\n");
             var hasClash = false;
             using (var r = MainWindow.Connection.RunReaderQuery(query))
             {
                 while (r.Read())
                 {
-                    var cid = r.GetInt32(0).ClientIdToStr();
-                    var cname = r.GetString(1);
-                    var estart = r.TryGetDateTime(2);
-                    var nummins = r.GetInt32(3);
+                    var cid = r.GetInt32(0);
+                    var cfirstname = r.GetString(1);
+                    var csurname = r.GetString(2);
+                    var estart = r.TryGetDateTime(3);
+                    var nummins = r.GetInt32(4);
                     var edur = TimeSpan.FromMinutes(nummins);
                     if (estart > end)
                     {
@@ -160,7 +161,7 @@ namespace KMPCenter
                     }
                     if (clash)
                     {
-                        sb.AppendLine($"#{cid}: {cname} at {estart.ToString()} for {edur.TotalMinutes} mins");
+                        sb.AppendLine($"#{cid}: {cfirstname} {csurname} at {estart.ToString()} for {edur.TotalMinutes} mins");
                         hasClash = true;
                     }
                 }
@@ -188,7 +189,7 @@ namespace KMPCenter
             }
             fields.Append($"[SMS Date]");
             values.Append($"{GetSmsTime().ToDbDateTime()}");
-            var cmd = $"insert into Bookings ({fields}) values ({values})";
+            var cmd = $"insert into Booking ({fields}) values ({values})";
             MainWindow.Connection.RunNonQuery(cmd.ToString());
         }
 

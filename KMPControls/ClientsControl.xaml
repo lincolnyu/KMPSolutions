@@ -32,13 +32,7 @@
             </StackPanel>
             <StackPanel Name="ClientGenderSection" Orientation="Horizontal">
                 <Label>Client Gender</Label>
-                <ComboBox Name="ClientGender">
-                    <ComboBox.Items>
-                        <ComboBoxItem>Unspecified</ComboBoxItem>
-                        <ComboBoxItem>Male</ComboBoxItem>
-                        <ComboBoxItem>Female</ComboBoxItem>
-                        <ComboBoxItem>Nonbinary</ComboBoxItem>
-                    </ComboBox.Items>
+                <ComboBox Name="ClientGender" IsEditable="True">
                 </ComboBox>
             </StackPanel>
             <StackPanel Name="ClientDobSection" Orientation="Horizontal">

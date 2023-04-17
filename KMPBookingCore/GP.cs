@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace KMPBookingCore
+﻿namespace KMPBookingCore
 {
-    internal class GP
+    public class GP
     {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Address { get; set; }
+        public string Phone { get; set; }
+        public string Fax { get; set; }
     }
 }

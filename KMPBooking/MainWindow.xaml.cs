@@ -398,7 +398,7 @@ namespace KMPBooking
                             Surname = surname,
                             MedicareNumber = medi,
                             PhoneNumber = phone,
-                            Gender = Client.ParseGender(gen),
+                            Gender = gen,
                         };
                         if (DateTime.TryParse(dob, out var dt))
                         {

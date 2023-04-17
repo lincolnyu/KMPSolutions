@@ -203,7 +203,7 @@ namespace KMPCenter
                                 FirstName = fn,
                                 Surname = sn,
                                 DOB = r.TryGetDateTime(1),
-                                Gender = Client.ParseGender(r.TryGetString(2)),
+                                Gender = r.TryGetString(2),
                                 MedicareNumber = r.TryGetString(3),
                                 PhoneNumber = r.TryGetString(4),
                                 Address = r.TryGetString(5)
@@ -231,7 +231,7 @@ namespace KMPCenter
                             var sbSql = new StringBuilder($"update Clients set ");
                             sbSql.Append($"[Client Name] = '{mr.ClientFormalName()}',");
                             sbSql.Append($"[DOB] = {mr.DOB.ToDbDate()},");
-                            sbSql.Append($"[Gender] = '{Client.ToString(mr.Gender)}',");
+                            sbSql.Append($"[Gender] = '{mr.Gender}',");
                             sbSql.Append($"[Phone] = '{mr.PhoneNumber}',");
                             sbSql.Append($"[Address] = '{mr.Address}'");
                             sbSql.Append($" where [Medicare] = '{mr.MedicareNumber}'");
@@ -242,7 +242,7 @@ namespace KMPCenter
                             var sbSql = new StringBuilder("insert into Clients([Client Name], [DOB], [Gender], [Medicare], [Phone], [Address]) values(");
                             sbSql.Append($"'{nr.ClientFormalName()}',");
                             sbSql.Append($"{nr.DOB.ToDbDate()},");
-                            sbSql.Append($"'{Client.ToString(nr.Gender)}',");
+                            sbSql.Append($"'{nr.Gender}',");
                             sbSql.Append($"'{nr.MedicareNumber}',");
                             sbSql.Append($"'{nr.PhoneNumber}',");
                             sbSql.Append($"'{nr.Address}')");
@@ -340,7 +340,7 @@ namespace KMPCenter
                             MedicareNumber = medi,
                             PhoneNumber = phone,
                             Address = addr,
-                            Gender = Client.ParseGender(gen)
+                            Gender = gen
                         };
                         CultureInfo cultureinfo = new CultureInfo("en-AU");
                         if (DateTime.TryParse(dob, cultureinfo, DateTimeStyles.AssumeLocal, out var dt))

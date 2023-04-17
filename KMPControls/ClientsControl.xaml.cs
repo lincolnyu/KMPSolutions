@@ -121,6 +121,7 @@ namespace KMPControls
         public ClientsControl()
         {
             InitializeComponent();
+            InitializeGenderUi();
             InputMode = Mode.Simple;
             UpdateUIOnAddingStatusChanged();
             IsAdding.Checked += IsAddingCheckedUnchecked;
@@ -170,6 +171,7 @@ namespace KMPControls
             var visible = isUpdating ? Visibility.Collapsed : Visibility.Visible;
             SearchByNameBtn.Visibility = visible;
             SearchByPhoneBtn.Visibility = visible;
+            ClientId.IsTextSearchEnabled = !isUpdating;
             ClientName.IsTextSearchEnabled = !isUpdating;
             ClientNumber.IsTextSearchEnabled = !isUpdating;
             ClientAddress.IsReadOnly = !isUpdating;
@@ -183,9 +185,9 @@ namespace KMPControls
             {
                 case UpdateMode.Adding:
                     SearchByIdBtn.Visibility = Visibility.Collapsed;
-                    ClientId.IsEnabled = false;
+                    ClientId.IsEnabled = true;
                     UpdateBtn.Content = "Add";
-                    ClientId.Text = "(Adding ...)";
+                    ClientId.Text = "";
                     break;
                 case UpdateMode.Editing:
                     SearchByIdBtn.Visibility = Visibility.Visible;
@@ -231,7 +233,7 @@ namespace KMPControls
                         var surname = r.TryGetString(2).Trim();
                         var name = $"{surname}, {firstName}";
                         var dob = r.TryGetDateTime(3);
-                        var gender = Client.ParseGender(r.TryGetString(4));
+                        var gender = r.TryGetString(4);
                         var phone = r.TryGetString(5);
                         var address = r.TryGetString(6);
                         var cr = new Client
@@ -402,12 +404,12 @@ namespace KMPControls
                 }
                 if (ActiveClient != null)
                 {
-                    ClientId.Text = CurrentUpdateMode == UpdateMode.Adding ? "(Adding ...)" : ActiveClient.MedicareNumber;
+                    ClientId.Text = ActiveClient.MedicareNumber;
                     ClientName.Text = ActiveClient.ClientFormalName();
                     ClientNumber.Text = ActiveClient.PhoneNumber;
                     if (InputMode == Mode.Input)
                     {
-                        ClientGender.SelectedIndex = (int)ActiveClient.Gender;
+                        ConvertGenderToUi(ActiveClient.Gender);
                         if (ActiveClient.DOB.HasValue)
                         {
                             ClientDob.SelectedDate = ActiveClient.DOB.Value;
@@ -461,7 +463,7 @@ namespace KMPControls
             var sbSql = new StringBuilder("insert into Clients([Client Name], [DOB], [Gender], [Medicare], [Phone], [Address]) values(");
             sbSql.Append($"'{ActiveClient.ClientFormalName()}',");
             sbSql.Append($"{ActiveClient.DOB.ToDbDate()},");
-            sbSql.Append($"'{Client.ToString(ActiveClient.Gender)}',");
+            sbSql.Append($"'{ActiveClient.Gender}',");
             sbSql.Append($"'{ActiveClient.MedicareNumber}',");
             sbSql.Append($"'{ActiveClient.PhoneNumber}',");
             sbSql.Append($"'{ActiveClient.Address}')");
@@ -481,7 +483,7 @@ namespace KMPControls
             sbSql.Append($"[Client Name] = '{ActiveClient.ClientFormalName()}',");
             sbSql.Append($"[DOB] = {ActiveClient.DOB.ToDbDate()},");
             sbSql.Append($"[Medicare] = {ActiveClient.MedicareNumber}, ");
-            sbSql.Append($"[Gender] = '{Client.ToString(ActiveClient.Gender)}',");
+            sbSql.Append($"[Gender] = '{ActiveClient.Gender}',");
             sbSql.Append($"[Phone] = '{ActiveClient.PhoneNumber}',");
             sbSql.Append($"[Address] = '{ActiveClient.Address}'");
             sbSql.Append($" where ID = {ActiveClient.MedicareNumber}");
@@ -494,7 +496,7 @@ namespace KMPControls
         {
             ActiveClient.DOB = ClientDob.SelectedDate;
             ActiveClient.MedicareNumber = ClientId.Text.Trim();
-            ActiveClient.Gender = (Gender)ClientGender.SelectedIndex;
+            ActiveClient.Gender = ConvertUiToGender();
             ActiveClient.PhoneNumber = ClientNumber.Text;
             ActiveClient.Address = ClientAddress.Text;
             var name = ClientName.Text;
@@ -507,7 +509,7 @@ namespace KMPControls
             {
                 ClientName.Text = "";
                 ClientNumber.Text = "";
-                ClientGender.SelectedIndex = (int)Gender.Unspecified;
+                ClientGender.SelectedItem = "";
                 ClientDob.SelectedDate = null;
                 ClientAddress.Text = "";
             }
@@ -515,9 +517,60 @@ namespace KMPControls
             {
                 ClientName.Text = ActiveClient.ClientFormalName();
                 ClientNumber.Text = ActiveClient.PhoneNumber;
-                ClientGender.SelectedIndex = (int)ActiveClient.Gender;
+                ConvertGenderToUi(ActiveClient.Gender);
                 ClientDob.SelectedDate = ActiveClient.DOB;
                 ClientAddress.Text = ActiveClient.Address;
+            }
+        }
+
+        private void InitializeGenderUi()
+        {
+            ClientGender.Items.Add("Unspecified");
+            ClientGender.Items.Add("Female");
+            ClientGender.Items.Add("Male");
+        }
+
+        string ConvertUiToGender()
+        {
+            var s = (string)ClientGender.SelectedItem;
+            if (s == "Male")
+            {
+                s = "M";
+            }
+            else if (s == "Female")
+            {
+                s = "F";
+            }
+            else if (s == "Unspecified")
+            {
+                s = "U";
+            }
+            return s;
+        }
+
+        void ConvertGenderToUi(string gender)
+        {
+            if (gender == "M")
+            {
+                gender = "Male";
+            }
+            else if (gender == "F")
+            {
+                gender = "Female";
+            }
+            else if (gender == "U")
+            {
+                gender = "Unspecified";
+            }
+            var i = ClientGender.Items.IndexOf(gender);
+            if (i >= 0)
+            {
+                ClientGender.SelectedIndex = i;
+            }
+            else
+            {
+                ClientGender.Items.Add(gender);
+                ClientGender.SelectedIndex = ClientGender.Items.Count - 1;
             }
         }
 
