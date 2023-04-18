@@ -191,22 +191,22 @@ namespace KMPCenter
                 {
                     App.ShowMessage($"{_excelRecords.Count} client records found in Excel. Syncing to the database.");
                     var dbClients = new Dictionary<string, Client>();
-                    using (var r = Connection.RunReaderQuery("select [Client Name], [DOB], [Gender], [Medicare], [Phone], [Address] from Clients"))
+                    using (var r = Connection.RunReaderQuery("select [Medicare Number], [First Name], [Surname], [DOB], [Gender], [Phone], [Address] from Client"))
                     {
                         var sb = new StringBuilder();
                         while (r.Read())
                         {
                             var name = r.GetString(0);
-                            var (fn, sn) = BookingIcs.SmartParseName(name);
+                            
                             var cr = new Client
                             {
-                                FirstName = fn,
-                                Surname = sn,
-                                DOB = r.TryGetDateTime(1),
-                                Gender = r.TryGetString(2),
-                                MedicareNumber = r.TryGetString(3),
-                                PhoneNumber = r.TryGetString(4),
-                                Address = r.TryGetString(5)
+                                MedicareNumber = r.TryGetString(0),
+                                FirstName = r.TryGetString(1),
+                                Surname = r.TryGetString(2),
+                                DOB = r.TryGetDateTime(3),
+                                Gender = r.TryGetString(4),
+                                PhoneNumber = r.TryGetString(5),
+                                Address = r.TryGetString(6)
                             };
                             dbClients[cr.MedicareNumber] = cr;
                         }
@@ -229,21 +229,23 @@ namespace KMPCenter
                         foreach (var mr in modRecords)
                         {
                             var sbSql = new StringBuilder($"update Clients set ");
-                            sbSql.Append($"[Client Name] = '{mr.ClientFormalName()}',");
+                            sbSql.Append($"[First Name] = '{mr.FirstName}',");
+                            sbSql.Append($"[Surname] = '{mr.Surname}',");
                             sbSql.Append($"[DOB] = {mr.DOB.ToDbDate()},");
                             sbSql.Append($"[Gender] = '{mr.Gender}',");
                             sbSql.Append($"[Phone] = '{mr.PhoneNumber}',");
                             sbSql.Append($"[Address] = '{mr.Address}'");
-                            sbSql.Append($" where [Medicare] = '{mr.MedicareNumber}'");
+                            sbSql.Append($" where [Medicare Number] = '{mr.MedicareNumber}'");
                             Connection.RunNonQuery(sbSql.ToString(), false);
                         }
                         foreach (var nr in newRecords)
                         {
-                            var sbSql = new StringBuilder("insert into Clients([Client Name], [DOB], [Gender], [Medicare], [Phone], [Address]) values(");
-                            sbSql.Append($"'{nr.ClientFormalName()}',");
+                            var sbSql = new StringBuilder("insert into Client([Medicare Number], [First Name], [Surname], [DOB], [Gender], [Phone], [Address]) values(");
+                            sbSql.Append($"'{nr.MedicareNumber}',");
+                            sbSql.Append($"'{nr.FirstName}',");
+                            sbSql.Append($"'{nr.Surname}',");
                             sbSql.Append($"{nr.DOB.ToDbDate()},");
                             sbSql.Append($"'{nr.Gender}',");
-                            sbSql.Append($"'{nr.MedicareNumber}',");
                             sbSql.Append($"'{nr.PhoneNumber}',");
                             sbSql.Append($"'{nr.Address}')");
                             Connection.RunNonQuery(sbSql.ToString(), false);
