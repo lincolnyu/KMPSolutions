@@ -4,9 +4,39 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:KMPControls"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-            
-    </Grid>
+             mc:Ignorable="d" d:DesignWidth="400" Height="158">
+    <StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label>GP Provider Number</Label>
+            <ComboBox MinWidth="120" IsEditable="True" Name="GPId"
+                        KeyDown="GPId_KeyDown"  SelectionChanged="GPId_SelectionChanged"></ComboBox>
+            <Button Name="SearchByIdBtn" Click="SearchByIdBtn_Click" ToolTip="Find the GP whose Prover Number contain this text">Find</Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label>GP Name</Label>
+            <ComboBox MinWidth="120" IsEditable="True" Name="GPName"
+                        KeyDown="GPName_KeyDown" SelectionChanged="GPName_SelectionChanged"></ComboBox>
+            <Button Name="SearchByNameBtn" Click="SearchByNameBtn_Click" ToolTip="Find all clients whose names contain this text">
+                Find
+            </Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label>GP Phone Number</Label>
+            <ComboBox MinWidth="120" IsEditable="True"  Name="GPPhoneNumber" 
+                        KeyDown="GPPhoneNumber_KeyDown" SelectionChanged="GPPhoneNumber_SelectionChanged"></ComboBox>
+            <Button Name="SearchByPhoneBtn" Click="SearchByPhoneBtn_Click" ToolTip="Find all clients whose phone numbers contain this text">
+                Find
+            </Button>
+        </StackPanel>
+        <StackPanel Name="GPAddressSection" Orientation="Horizontal">
+            <Label>GP Address</Label>
+            <TextBox Name="GPAddress" MinWidth="360"></TextBox>
+        </StackPanel>
+        <StackPanel Name="AddGPControl" Orientation="Horizontal">
+            <CheckBox Name="IsAdding">Adding</CheckBox>
+            <CheckBox Name="IsEditing">Editing</CheckBox>
+            <Button Width="90" Name="ResetBtn" Click="ResetBtn_Click">Reset</Button>
+            <Button Width="80" Name="UpdateBtn" Click="UpdateBtn_Click">Update</Button>
+        </StackPanel>
+    </StackPanel>
 </UserControl>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace KMPBookingCore
 {
@@ -24,6 +25,8 @@ namespace KMPBookingCore
             && Gender == other.Gender
             && PhoneNumber == other.PhoneNumber
             && Address == other.Address;
+
+        public List<Event> Events = new List<Event>();
     }
 }
 

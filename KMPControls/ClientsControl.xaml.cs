@@ -58,7 +58,6 @@ namespace KMPControls
 
         public OleDbConnection Connection { get; private set; }
         private Dictionary<string, List<Client>> _nameToClients;
-        private Dictionary<string, List<Client>> _mediToClients;
         private Dictionary<string, List<Client>> _phoneToClients;
         private Dictionary<string, Client> _idToClient;
         private AutoResetSuppressor _suppressSearch = new AutoResetSuppressor();
@@ -214,85 +213,22 @@ namespace KMPControls
         {
             if (Connection != null)
             {
-                var query = "select [Medicare Number], [First Name], [Surname], [DOB], [Gender], [Phone], [Address] from Client";
-                _nameToClients = new Dictionary<string, List<Client>>();
-                _mediToClients = new Dictionary<string, List<Client>>();
-                _phoneToClients = new Dictionary<string, List<Client>>();
-                _idToClient = new Dictionary<string, Client>();
+                var clientData = Connection.LoadClientData();
+                _nameToClients = clientData.NameToClients;
+                _idToClient = clientData.IdToClient;
+                _phoneToClients = clientData.PhoneToClients;
 
-                var clientNames = new List<string>();
-                var clientIds = new List<string>();
-                var clientNumbers = new List<string>();
-
-                using (var r = Connection.RunReaderQuery(query))
+                foreach (var n in clientData.PhoneNumbers)
                 {
-                    while (r.Read())
-                    {
-                        var medicareNumber = r.GetString(0);
-                        var firstName = r.TryGetString(1).Trim();
-                        var surname = r.TryGetString(2).Trim();
-                        var name = $"{surname}, {firstName}";
-                        var dob = r.TryGetDateTime(3);
-                        var gender = r.TryGetString(4);
-                        var phone = r.TryGetString(5);
-                        var address = r.TryGetString(6);
-                        var cr = new Client
-                        {
-                            MedicareNumber = medicareNumber,
-                            FirstName = firstName,
-                            Surname = surname,
-                            DOB = dob,
-                            Gender = gender,
-                            PhoneNumber = phone,
-                            Address = address
-                        };
-                        if (!_idToClient.ContainsKey(medicareNumber))
-                        {
-                            _idToClient[medicareNumber] = cr;
-                            clientIds.Add(medicareNumber);
-                        }
-                        else
-                        {
-                            //TODO it's an error
-                        }
-                        if (!_nameToClients.TryGetValue(name, out var namelist))
-                        {
-                            _nameToClients.Add(name, new List<Client> { cr });
-                            clientNames.Add(name);
-                        }
-                        else
-                        {
-                            namelist.Add(cr);
-                        }
-                        if (!string.IsNullOrWhiteSpace(cr.PhoneNumber))
-                        {
-                            if (!_phoneToClients.TryGetValue(cr.PhoneNumber, out var phonelist))
-                            {
-                                _phoneToClients.Add(cr.PhoneNumber, new List<Client> { cr });
-                                clientNumbers.Add(cr.PhoneNumber);
-                            }
-                            else
-                            {
-                                phonelist.Add(cr);
-                            }
-                        }
-                    }
-
-                    clientIds.Sort();
-                    clientNames.Sort();
-                    clientNumbers.Sort();
-                    foreach (var n in clientNumbers)
-                    {
-                        ClientNumber.Items.Add(n);
-                    }
-                    foreach (var id in clientIds)
-                    {
-                        ClientId.Items.Add(id);
-                    }
-                    foreach (var n in clientNames)
-                    {
-                        ClientName.Items.Add(n);
-                    }
+                    ClientNumber.Items.Add(n);
+                }
+                foreach (var id in clientData.Ids)
+                {
+                    ClientId.Items.Add(id);
+                }
+                foreach (var n in clientData.Names)
+                {
+                    ClientName.Items.Add(n);
                 }
             }
         }

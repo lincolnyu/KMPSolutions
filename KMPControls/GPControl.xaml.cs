@@ -24,5 +24,60 @@ namespace KMPControls
         {
             InitializeComponent();
         }
+
+        private void GPId_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void GPId_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void SearchByIdBtn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void GPName_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void GPName_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void SearchByNameBtn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void GPPhoneNumber_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void GPPhoneNumber_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void SearchByPhoneBtn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ResetBtn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void UpdateBtn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
