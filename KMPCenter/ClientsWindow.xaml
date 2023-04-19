@@ -7,9 +7,13 @@
         xmlns:kmpcontrols="clr-namespace:KMPControls;assembly=KMPControls"
         mc:Ignorable="d"
         WindowStartupLocation="CenterOwner"
-        Title="ClientsWindow" Height="450" Width="800">
+        Title="KMP Clients" Height="450" Width="800">
     <Grid>
-        <StackPanel>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="59*"/>
+            <ColumnDefinition Width="741*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.ColumnSpan="2">
             <kmpcontrols:ClientsControl Name="Clients"></kmpcontrols:ClientsControl>
         </StackPanel>
     </Grid>

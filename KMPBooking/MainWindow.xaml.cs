@@ -15,6 +15,7 @@ using System.Text;
 using System.Diagnostics;
 using System.Windows.Navigation;
 using System.Deployment.Application;
+using KMPControls;
 
 namespace KMPBooking
 {

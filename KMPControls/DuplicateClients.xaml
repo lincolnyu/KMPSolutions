@@ -5,9 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KMPControls"
         mc:Ignorable="d"
-        Title="window" Height="450" Width="800">
+        Title="Duplicate Clients" Height="450" Width="800">
     <Grid>
-        <DockPanel LastChildFill="True">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="87*"/>
+            <ColumnDefinition Width="713*"/>
+        </Grid.ColumnDefinitions>
+        <DockPanel LastChildFill="True" Grid.ColumnSpan="2">
             <TextBlock Name="Description" DockPanel.Dock="Top"></TextBlock>
             <Grid DockPanel.Dock="Bottom">
                 <Grid.ColumnDefinitions>

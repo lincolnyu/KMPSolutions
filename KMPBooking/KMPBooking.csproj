@@ -104,10 +104,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="DuplicateClients.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -115,9 +111,6 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DuplicateClients.xaml.cs">
-      <DependentUpon>DuplicateClients.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -155,6 +148,10 @@
     <ProjectReference Include="..\KMPBookingCore\KMPBookingCore.csproj">
       <Project>{bd71ad02-3fbd-4730-baf0-493f640ce316}</Project>
       <Name>KMPBookingCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\KMPControls\KMPControls.csproj">
+      <Project>{2c23b536-f2df-4be5-ac00-1bdd99ef3d8c}</Project>
+      <Name>KMPControls</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace KMPControls
 {
     /// <summary>
-    /// Interaction logic for window.xaml
+    /// Interaction logic for DuplicateClients.xaml
     /// </summary>
     public partial class DuplicateClients : Window
     {
