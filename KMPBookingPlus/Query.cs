@@ -1,4 +1,5 @@
 ﻿using KMPBookingCore;
+using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
 
@@ -6,87 +7,359 @@ namespace KMPBookingPlus
 {
     public static class Query
     {
-        public class ClientData
-        {
-            public Dictionary<string, List<Client>> NameToClients { get; } = new Dictionary<string, List<Client>> { };
-            public Dictionary<string, List<Client>> PhoneToClients { get; } = new Dictionary<string, List<Client>> { };
-            public Dictionary<string, Client> IdToClient { get; } = new Dictionary<string, Client> { };
+        public static bool IsNullId(int id) => id != 0;
 
-            public List<string> Names { get; } = new List<string> { };
-            public List<string> Ids { get; } = new List<string> { };
-            public List<string> PhoneNumbers { get; } = new List<string> { };
+        public class EntriesWithID<EntryType, IdType>
+        {
+            public Dictionary<IdType, EntryType> IdToEntry { get;  } = new Dictionary<IdType, EntryType>();
+            public List<IdType> Ids { get; } =  new List<IdType>();
+            public EntriesWithID()
+            {
+            }
+
+            public virtual void SortCollections()
+            {
+                Ids.Sort();
+            }
         }
 
-        public static ClientData LoadClientData(this OleDbConnection connection)
+        public static T LoadData<T, EntryType, IdType>(OleDbConnection connection, string query, Func<OleDbDataReader, (EntryType, IdType)> createEntry, Action<T, EntryType> postCreate=null, Action<T> postAdd=null) where T : EntriesWithID<EntryType, IdType>, new()
+        {
+            DbObject.PushLoadingFromDb(true);
+            var data = new T();
+            using (var r = connection.RunReaderQuery(query))
+            {
+                while (r.Read())
+                {
+                    try
+                    {
+                        var (e, id) = createEntry(r);
+                        if (!data.IdToEntry.ContainsKey(id))
+                        {
+                            data.Ids.Add(id);
+                            data.IdToEntry.Add(id, e);
+                            postCreate?.Invoke(data, e);
+                        }
+                        else
+                        {
+                            // TODO ntry already added
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // TODO report error
+                        continue;
+                    }
+                }
+            }
+            data.SortCollections();
+            postAdd?.Invoke(data);
+            DbObject.PopLoadingFromDb();
+            return data;
+        }
+
+        public class ClientData : EntriesWithID<Client, string>
+        {
+            public Dictionary<string, List<Client>> NameToEntry { get; } = new Dictionary<string, List<Client>> { };
+            public Dictionary<string, List<Client>> PhoneToEntry { get; } = new Dictionary<string, List<Client>> { };
+            
+
+            public List<string> Names { get; } = new List<string> { };
+            public List<string> PhoneNumbers { get; } = new List<string> { };
+
+            public override void SortCollections()
+            {
+                base.SortCollections();
+                Names.Sort();
+                PhoneNumbers.Sort();
+            }
+        }
+
+        public class GPData : EntriesWithID<GP, string>
+        {
+        }
+
+        public class EventData : EntriesWithID<Event, int>
+        {
+        }
+
+        public class ServiceData : EntriesWithID<Service, int>
+        {
+        }
+
+        public class ReceiptData : EntriesWithID<Receipt, int>
+        {
+        }
+
+        public class BookingData : EntriesWithID<Booking, int>
+        {
+        }
+
+        public static ClientData LoadClientData(OleDbConnection connection)
         {
             var query = "select [Medicare Number], [First Name], [Surname], [DOB], [Gender], [Phone], [Address] from Client";
 
-            var clientData = new ClientData();
+            return LoadData<ClientData, Client, string>(connection, query, r => {
+                var medicareNumber = r.GetString(0);
+                var firstName = r.TryGetString(1).Trim();
+                var surname = r.TryGetString(2).Trim();
+                
+                var dob = r.TryGetDateTime(3);
+                var gender = r.TryGetString(4);
+                var phone = r.TryGetString(5);
+                var address = r.TryGetString(6);
+                var cr = new Client
+                {
+                    MedicareNumber = medicareNumber,
+                    FirstName = firstName,
+                    Surname = surname,
+                    DOB = dob,
+                    Gender = gender,
+                    PhoneNumber = phone,
+                    Address = address
+                };
+
+                return (cr, medicareNumber);
+            }, (clientData, cr)=> {
+                var name = $"{cr.Surname}, {cr.FirstName}";
+                if (!clientData.NameToEntry.TryGetValue(name, out var namelist))
+                {
+                    clientData.NameToEntry.Add(name, new List<Client> { cr });
+                    clientData.Names.Add(name);
+                }
+                else
+                {
+                    namelist.Add(cr);
+                }
+                if (!string.IsNullOrWhiteSpace(cr.PhoneNumber))
+                {
+                    if (!clientData.PhoneToEntry.TryGetValue(cr.PhoneNumber, out var phonelist))
+                    {
+                        clientData.PhoneToEntry.Add(cr.PhoneNumber, new List<Client> { cr });
+                        clientData.PhoneNumbers.Add(cr.PhoneNumber);
+                    }
+                    else
+                    {
+                        phonelist.Add(cr);
+                    }
+                }
+            }, clientData=> {
+                clientData.Names.Sort();
+                clientData.PhoneNumbers.Sort();
+            });
+        }
+
+        public static GPData LoadGPData(OleDbConnection connection)
+        {
+            var query = "select [Provider Number], [Name], [Phone], [Fax], [Address] from GP";
+
+            return LoadData<GPData, GP, string>(connection, query, r => {
+                var providerNumber = r.GetString(0);
+                var name = r.GetString(1);
+                var phoneNumber = r.GetString(2);
+                var fax = r.GetString(3);
+                var address = r.GetString(4);
+                var gp = new GP
+                {
+                    Id = providerNumber,
+                    Name = name,
+                    Phone = phoneNumber,
+                    Fax = fax,
+                    Address = address,
+                };
+
+                return (gp, providerNumber);
+            });
+        }
+
+        public static void CorrelateClientAndGP(OleDbConnection connection, ClientData clientData, GPData gpData)
+        {
+            var query = "select Client.[Medicare Number], GP.[Provider Number] from Client, GP where Client.[Referring GP ID]=GP.[Provider Number]";
+
+            DbObject.PushLoadingFromDb(true);
 
             using (var r = connection.RunReaderQuery(query))
             {
                 while (r.Read())
                 {
-                    var medicareNumber = r.GetString(0);
-                    var firstName = r.TryGetString(1).Trim();
-                    var surname = r.TryGetString(2).Trim();
-                    var name = $"{surname}, {firstName}";
-                    var dob = r.TryGetDateTime(3);
-                    var gender = r.TryGetString(4);
-                    var phone = r.TryGetString(5);
-                    var address = r.TryGetString(6);
-                    var cr = new Client
+                    var clientId = r.GetString(0);
+                    var gpId = r.GetString(1);
+                    if (!clientData.IdToEntry.TryGetValue(clientId, out var client))
                     {
-                        MedicareNumber = medicareNumber,
-                        FirstName = firstName,
-                        Surname = surname,
-                        DOB = dob,
-                        Gender = gender,
-                        PhoneNumber = phone,
-                        Address = address
-                    };
-                    if (!clientData.IdToClient.ContainsKey(medicareNumber))
-                    {
-                        clientData.IdToClient[medicareNumber] = cr;
-                        clientData.Ids.Add(medicareNumber);
+                        throw new KeyNotFoundException($"Client ID {clientId} not found for Client-GP relations.");
                     }
-                    else
+                    if (!gpData.IdToEntry.TryGetValue(gpId, out var gp))
                     {
-                        //TODO it's an error
+                        throw new KeyNotFoundException($"GP ID {gpId} not found for Client-GP relations.");
                     }
-                    if (!clientData.NameToClients.TryGetValue(name, out var namelist))
-                    {
-                        clientData.NameToClients.Add(name, new List<Client> { cr });
-                        clientData.Names.Add(name);
-                    }
-                    else
-                    {
-                        namelist.Add(cr);
-                    }
-                    if (!string.IsNullOrWhiteSpace(cr.PhoneNumber))
-                    {
-                        if (!clientData.PhoneToClients.TryGetValue(cr.PhoneNumber, out var phonelist))
+                    client.ReferringGP = gp;
+                }
+            }
+
+            DbObject.PopLoadingFromDb();
+        }
+
+        public static BookingData LoadBookingData(OleDbConnection connection)
+        {
+            var query = "select ID, [Made On], Duration, [Reminder Date]";
+
+            return LoadData<BookingData, Booking, int>(connection, query, r => {
+                var bookingId = r.GetInt32(0);
+                var madeOn = r.GetDateTime(1);
+                var durationMins = r.GetInt32(2);
+                var reminderDate = r.GetDateTime(3);
+
+                var booking = new Booking
+                {
+                    Id = bookingId,
+                    MadeOn = madeOn,
+                };
+
+                return (booking, bookingId);
+            });
+        }
+
+        public static ReceiptData LoadReceiptData(OleDbConnection connection)
+        {
+            var query = "select ID, Diagnosis, [Claim Number], [Health Fund], [Membership Number], [Total Due], [Payment Received], Discount, Balance from Receipt";
+
+            return LoadData<ReceiptData, Receipt, int>(connection, query, r => {
+                var id = r.GetInt32(0);
+                var diagnosis = r.GetString(1);
+                var claimNumber = r.GetString(2);
+                var healthFund = r.GetString(3);
+                var membershipNumber = r.GetString(4);
+                var totalDue = r.GetDecimal(5);
+                var paymentReceived = r.GetDecimal(6);
+                var discount = r.GetDouble(7);
+                var balance = r.GetDecimal(8);
+
+                var receipt = new Receipt
+                {
+                    Id = id,
+                    Diagnosis = diagnosis,
+                    ClaimNumber = claimNumber,
+                    HealthFund = healthFund,
+                    MembershipNumber = membershipNumber,
+                    TotalDue = totalDue,
+                    PaymentReceived = paymentReceived,
+                    Discount = discount
+                };
+                receipt.Calculate();
+
+                return (receipt, id);
+            });
+        }
+
+        public static ServiceData LoadServiceData(OleDbConnection connection, EventData eventData, ReceiptData receiptData, BookingData bookingData)
+        {
+            var query = "select ID, Service, [Receipt ID], [Booking ID], [Total Fee], Owing, Benefit, Gap, Discount select from Service";
+
+            return LoadData<ServiceData, Service, int>(connection, query, r => {
+                var id = r.GetInt32(0);
+                var serviceConetnt = r.GetString(1);
+                var receiptId = r.GetInt32(2);
+                var bookingId = r.GetInt32(3);
+                var totalFee = r.GetDecimal(4);
+                var owing = r.GetDecimal(5);
+                var benefit = r.GetDecimal(6);
+                var gap = r.GetDecimal(7);
+                var discount = r.GetDouble(8);
+
+                Receipt receipt = null;
+                if (!IsNullId(receiptId) && !receiptData.IdToEntry.TryGetValue(receiptId, out receipt))
+                {
+                    throw new KeyNotFoundException($"Receipt ID {receiptId} not found for service {id}.");
+                }
+                Booking booking = null;
+                if (!IsNullId(bookingId) && !bookingData.IdToEntry.TryGetValue(bookingId, out booking))
+                {
+                    throw new KeyNotFoundException($"Receipt ID {bookingId} not found for service {id}.");
+                }
+
+                var service = new Service
+                {
+                    Id = id,
+                    ServiceTitle = serviceConetnt,
+                    Booking = booking,
+                    Receipt = receipt,
+                    TotalFee = totalFee,
+                    Owing = owing,
+                    Benefit = benefit,
+                    Gap = gap,
+                    Discount = (decimal)discount
+                };
+                service.Calculate();
+
+                return (service, id);
+            });
+        }
+
+        public static EventData LoadClientEventData(OleDbConnection connection, ClientData clientData, ServiceData serviceData, BookingData bookingData, ReceiptData receiptData)
+        {
+            var query = "select Client.[Medicare Number] Event.ID Event.[Event Date], Event.Type, from Client, Event where Client.[Medicare Number] = Event.[Client Id]";
+
+            return LoadData<EventData, Event, int>(connection, query, r =>
+            {
+                var clientId = r.GetString(0);
+                var eventId = r.GetInt32(1);
+                var date = r.GetDateTime(2);
+                var type = r.GetString(3);
+                var serviceId = r.GetInt32(4);
+
+                if (!clientData.IdToEntry.TryGetValue(clientId, out var client))
+                {
+                    throw new KeyNotFoundException($"Client ID {clientId} not found for event {eventId}.");
+                }
+
+                Event e;
+                switch (type)
+                {
+                    case "Service":
+                        if (serviceData.IdToEntry.TryGetValue(eventId, out var service))
                         {
-                            clientData.PhoneToClients.Add(cr.PhoneNumber, new List<Client> { cr });
-                            clientData.PhoneNumbers.Add(cr.PhoneNumber);
+                            e = service;
                         }
                         else
                         {
-                            phonelist.Add(cr);
+                            throw new KeyNotFoundException($"Service not found for service event {eventId}");
                         }
-                    }
+                        break;
+                    case "Booking":
+                        if (bookingData.IdToEntry.TryGetValue(eventId, out var booking))
+                        {
+                            e = booking;
+                        }
+                        else
+                        {
+                            throw new KeyNotFoundException($"Service not found for service event {eventId}");
+                        }
+                        break;
+                    case "Receipt":
+                        if (receiptData.IdToEntry.TryGetValue(eventId, out var receipt))
+                        {
+                            e = receipt;
+                        }
+                        else
+                        {
+                            throw new KeyNotFoundException($"Service not found for service event {eventId}");
+                        }
+                        break;
+                    default:
+                        e = new Event
+                        {
+                            Id = eventId,
+                            EventDate = date,
+                            Type = type,
+                        };
+                        break;
                 }
 
-                clientData.Ids.Sort();
-                clientData.Names.Sort();
-                clientData.PhoneNumbers.Sort();
+                e.Client = client;
+                client.Events.Add(e);
 
-                return clientData;
-            }
-        }
-        public static void LoadClientEventData(this OleDbConnection connection, ClientData clientData)
-        {
-            var query = "select [Medicare Number] from Client, Event where Client.[Medicare Number] = Event.[Client Id]";
+                return (e, eventId);
+            });
         }
     }
 }

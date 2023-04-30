@@ -58,13 +58,13 @@ namespace KMPBookingCore
                 var rn = 8;
                 foreach (var svc in services)
                 {
-                    if (svc.Date.HasValue)
+                    if (svc.EventDate.HasValue)
                     {
                         // TODO culture?
-                        t.Cell(rn, 1).Range.Text = svc.Date.Value.ToShortDateString();
+                        t.Cell(rn, 1).Range.Text = svc.EventDate.Value.ToShortDateString();
                     }
                     t.Cell(rn, 2).Range.Text = svc.Detail;
-                    t.Cell(rn, 3).Range.Text = svc.Total.ToDecPlaces();
+                    t.Cell(rn, 3).Range.Text = svc.TotalFee.ToDecPlaces();
                     t.Cell(rn, 4).Range.Text = svc.Owing.ToDecPlaces();
                     t.Cell(rn, 5).Range.Text = svc.Benefit.ToDecPlaces();
                     t.Cell(rn, 6).Range.Text = svc.Gap.ToDecPlaces();

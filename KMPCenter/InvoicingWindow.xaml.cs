@@ -109,7 +109,7 @@ namespace KMPCenter
                 yield return new Service {
                     Date = date,
                     Detail = svcdetail.ToString(),
-                    Total = total,
+                    TotalFee = total,
                     Owing = total,
                     Benefit = 0,
                     Discount = 0,
@@ -148,7 +148,7 @@ namespace KMPCenter
                         ExistingBookings.Items.Add($"{dt?.ToString() ?? "Unspecified date"} for {nummins} mins");
                         var booking = GetOrCreateBooking(id);
                         booking.Client = Clients.ActiveClient;
-                        booking.DateTime = dt;
+                        booking.EventDate = dt;
                         booking.Duration = TimeSpan.FromMinutes(nummins);
                         _existingBookings.Add(booking);
                     }
@@ -172,8 +172,8 @@ namespace KMPCenter
             if (ExistingBookings.SelectedIndex >= 0)
             {
                 var booking = _existingBookings[ExistingBookings.SelectedIndex];
-                ServiceDesc.Text = $"Service on {booking.DateTime?.ToString() ?? "unspecified date"} for {booking.Duration.TotalMinutes} minutes.";
-                ServiceDate.SelectedDate = booking.DateTime;
+                ServiceDesc.Text = $"Service on {booking.EventDate?.ToString() ?? "unspecified date"} for {booking.Duration.TotalMinutes} minutes.";
+                ServiceDate.SelectedDate = booking.EventDate;
                 AttachBookingChk.IsChecked = true;
             }
         }
@@ -201,10 +201,10 @@ namespace KMPCenter
 
         private void ServiceFeeComponentsChanged()
         {
-            CurrentServiceToAdd().Total = ServiceTotal.Text.GetDecimalOrZero();
-            CurrentServiceToAdd().Owing = CurrentServiceToAdd().Total;
+            CurrentServiceToAdd().TotalFee = ServiceTotal.Text.GetDecimalOrZero();
+            CurrentServiceToAdd().Owing = CurrentServiceToAdd().TotalFee;
             CurrentServiceToAdd().Benefit = ServiceBenefit.Text.GetDecimalOrZero();
-            CurrentServiceToAdd().Workout();
+            CurrentServiceToAdd().Calculate();
             ServiceCharge.Text = CurrentServiceToAdd().Balance.ToDecPlaces();
         }
 
@@ -275,7 +275,7 @@ namespace KMPCenter
         private void AddService()
         {
             _invoicedServices.Add(_currentService);
-            InvoicedServices.Items.Add($"{_currentService.Date?.ToShortDateString()??"Unspecified date"}: '{_currentService.Detail}' ${_currentService.Total.ToDecPlaces()}");
+            InvoicedServices.Items.Add($"{_currentService.Date?.ToShortDateString()??"Unspecified date"}: '{_currentService.Detail}' ${_currentService.TotalFee.ToDecPlaces()}");
 
             _servicesToAdd.Add(_currentService);
 
@@ -296,7 +296,7 @@ namespace KMPCenter
                     ("Receipt ID", sa.Receipt.Id.ToString()),
                     ("Booking ID", sa.Booking?.Id.ToString()),
                     ("Service Date", sa.Date.ToDbDate()),
-                    ("Total Fee", sa.Total.ToDecPlaces()),
+                    ("Total Fee", sa.TotalFee.ToDecPlaces()),
                     ("Owing", sa.Owing.ToDecPlaces()),
                     ("Benefit", sa.Benefit.ToDecPlaces()),
                     ("Gap", sa.Gap.ToDecPlaces()),
@@ -316,7 +316,7 @@ namespace KMPCenter
                     ("Receipt ID", su.Receipt.Id.ToString()),
                     ("Booking ID", su.Booking?.Id.ToString()),
                     ("Service Date", su.Date.ToDbDate()),
-                    ("Total Fee", su.Total.ToDecPlaces()),
+                    ("Total Fee", su.TotalFee.ToDecPlaces()),
                     ("Owing", su.Owing.ToDecPlaces()),
                     ("Benefit", su.Benefit.ToDecPlaces()),
                     ("Gap", su.Gap.ToDecPlaces()),

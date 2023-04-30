@@ -44,6 +44,7 @@
     <Compile Include="AccessUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query.cs" />
+    <Compile Include="Update.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\KMPBookingCore\KMPBookingCore.csproj">

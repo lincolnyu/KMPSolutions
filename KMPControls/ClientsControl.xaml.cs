@@ -214,9 +214,9 @@ namespace KMPControls
             if (Connection != null)
             {
                 var clientData = Connection.LoadClientData();
-                _nameToClients = clientData.NameToClients;
-                _idToClient = clientData.IdToClient;
-                _phoneToClients = clientData.PhoneToClients;
+                _nameToClients = clientData.NameToEntry;
+                _idToClient = clientData.IdToEntry;
+                _phoneToClients = clientData.PhoneToEntry;
 
                 foreach (var n in clientData.PhoneNumbers)
                 {
