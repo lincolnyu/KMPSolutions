@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Text;
 using static KMPBookingCore.UiUtils;
+using KMPBookingCore.DbObjects;
 
 namespace KMPControls
 {
@@ -213,7 +214,7 @@ namespace KMPControls
         {
             if (Connection != null)
             {
-                var clientData = Connection.LoadClientData();
+                var clientData = Query.LoadClientData(Connection);
                 _nameToClients = clientData.NameToEntry;
                 _idToClient = clientData.IdToEntry;
                 _phoneToClients = clientData.PhoneToEntry;

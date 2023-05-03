@@ -32,7 +32,7 @@ namespace KMPBookingPlus
             }
         }
 
-        public static string CreateInsert(string tableName, IList<(string, string)> fieldValuePairs)
+        public static string CreateInsert(string tableName, IEnumerable<(string, string)> fieldValuePairs)
         {
             var sbFields = new StringBuilder();
             var sbValues = new StringBuilder();
@@ -54,11 +54,11 @@ namespace KMPBookingPlus
                 sbValues.Remove(sbValues.Length - 1, 1);
             }
 
-            var cmd = $"insert into {tableName} ({sbFields.ToString()}) values ({sbValues.ToString()})";
+            var cmd = $"insert into {tableName} ({sbFields}) values ({sbValues})";
             return cmd;
         }
 
-        public static string CreateUpdate(string tableName, IList<(string, string)> fieldValuePairs, string cond)
+        public static string CreateUpdate(string tableName, IEnumerable<(string, string)> fieldValuePairs, string cond)
         {
             var sbSetters = new StringBuilder();
             foreach (var fvp in fieldValuePairs)
@@ -76,7 +76,7 @@ namespace KMPBookingPlus
             {
                 sbSetters.Remove(sbSetters.Length - 1, 1);
             }
-            var cmd = $"update {tableName} set {sbSetters.ToString()} where {cond}";
+            var cmd = $"update {tableName} set {sbSetters} where {cond}";
             return cmd;
         }
 

@@ -1,5 +1,8 @@
-﻿namespace KMPBookingCore
+﻿using KMPBookingCore.Database;
+
+namespace KMPBookingCore.DbObjects
 {
+    [DBClass]
     public class GP : DbObject
     {
         private string _id;
@@ -8,6 +11,7 @@
         private string _phone;
         private string _fax;
 
+        [DBPrimaryKey]
         public string Id
         {
             get => _id; set
@@ -16,6 +20,8 @@
                 RaiseEventChanged(nameof(Id));
             }
         }
+
+        [DBField]
         public string Name
         {
             get => _name; set
@@ -24,6 +30,7 @@
                 RaiseEventChanged(nameof(Name));
             }
         }
+        [DBField]
         public string Address
         {
             get => _address; set
@@ -32,6 +39,7 @@
                 RaiseEventChanged(nameof(Address));
             }
         }
+        [DBField]
         public string Phone
         {
             get => _phone; set
@@ -40,6 +48,7 @@
                 RaiseEventChanged(nameof(Phone));
             }
         }
+        [DBField]
         public string Fax
         {
             get => _fax; set

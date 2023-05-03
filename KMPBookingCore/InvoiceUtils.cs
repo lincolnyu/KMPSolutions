@@ -1,4 +1,5 @@
-﻿using Microsoft.Office.Interop.Word;
+﻿using KMPBookingCore.DbObjects;
+using Microsoft.Office.Interop.Word;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,7 +64,7 @@ namespace KMPBookingCore
                         // TODO culture?
                         t.Cell(rn, 1).Range.Text = svc.EventDate.Value.ToShortDateString();
                     }
-                    t.Cell(rn, 2).Range.Text = svc.Detail;
+                    t.Cell(rn, 2).Range.Text = svc.ServiceContent;
                     t.Cell(rn, 3).Range.Text = svc.TotalFee.ToDecPlaces();
                     t.Cell(rn, 4).Range.Text = svc.Owing.ToDecPlaces();
                     t.Cell(rn, 5).Range.Text = svc.Benefit.ToDecPlaces();

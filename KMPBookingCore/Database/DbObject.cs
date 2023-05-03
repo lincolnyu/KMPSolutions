@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection;
 
-namespace KMPBookingCore
+namespace KMPBookingCore.Database
 {
-    public class DbObject: INotifyPropertyChanged
+    public abstract class DbObject : INotifyPropertyChanged
     {
         public enum DbState
         {
@@ -14,7 +16,7 @@ namespace KMPBookingCore
 
         public DbState ObjDbState { get; protected set; }
 
-        protected DbObject() 
+        protected DbObject()
         {
             if (LoadingFromDb)
             {
@@ -48,6 +50,26 @@ namespace KMPBookingCore
                     ObjDbState = DbState.Dirty;
                 }
             }
+        }
+
+        public virtual IEnumerable<(string, string)> GetFieldValuePairs()
+        {
+            var properties = GetType().GetProperties();
+            foreach (var property in properties) 
+            {
+                var dbfield = property.GetCustomAttribute<DBFieldAttribute>();
+                if (dbfield != null)
+                {
+                    var fieldName = DbUtils.GetDbFieldName(dbfield.FieldName, property.Name);
+                    var fieldValue = FieldToDbString(fieldName, property.PropertyType, property.GetValue(this));
+                    yield return (fieldName, fieldValue);
+                }
+            }
+        }
+
+        protected virtual string FieldToDbString(string propertyName, Type type, object value)
+        {
+            return DbUtils.ToDbString(type, value);
         }
     }
 }

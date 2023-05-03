@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using KMPBookingCore.Database;
 
-namespace KMPBookingCore
+namespace KMPBookingCore.DbObjects
 {
+    [DBClass]
     public class Client : DbObject, IEquatable<Client>
     {
         public Client()
         {
         }
 
+        [DBPrimaryKey]
         public string MedicareNumber
         {
             get => _medicareNumber; set
@@ -17,6 +20,8 @@ namespace KMPBookingCore
                 RaiseEventChanged(nameof(MedicareNumber));
             }
         } // Client ID
+
+        [DBField]
         public string FirstName
         {
             get => _firstName; set
@@ -25,6 +30,7 @@ namespace KMPBookingCore
                 RaiseEventChanged(nameof(FirstName));
             }
         }
+        [DBField]
         public string Surname
         {
             get => _surname; set
@@ -33,6 +39,7 @@ namespace KMPBookingCore
                 RaiseEventChanged(nameof(Surname));
             }
         }
+        [DBField]
         public DateTime? DOB
         {
             get => _dob; set
@@ -41,6 +48,7 @@ namespace KMPBookingCore
                 RaiseEventChanged(nameof(DOB));
             }
         }
+        [DBField]
         public string Gender
         {
             get => _gender; set
@@ -49,6 +57,7 @@ namespace KMPBookingCore
                 RaiseEventChanged(nameof(Gender));
             }
         }
+        [DBField]
         public string PhoneNumber
         {
             get => _phoneNumber; set
@@ -57,6 +66,7 @@ namespace KMPBookingCore
                 RaiseEventChanged(nameof(PhoneNumber));
             }
         }
+        [DBField]
         public string Address
         {
             get => _address; set
@@ -66,12 +76,22 @@ namespace KMPBookingCore
             }
         }
 
+        [DBField]
         public GP ReferringGP
         {
-            get => referringGP; set
+            get => _referringGP; set
             {
-                referringGP = value;
+                _referringGP = value;
                 RaiseEventChanged(nameof(ReferringGP));
+            }
+        }
+        [DBField]
+        public DateTime? ReferringDate
+        {
+            get => _referringDate; set
+            {
+                _referringDate = value;
+                RaiseEventChanged(nameof(ReferringDate));
             }
         }
 
@@ -93,7 +113,8 @@ namespace KMPBookingCore
         private string _gender;
         private string _phoneNumber;
         private string _address;
-        private GP referringGP;
+        private GP _referringGP;
+        private DateTime? _referringDate;
     }
 }
 

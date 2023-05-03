@@ -1,8 +1,12 @@
-﻿namespace KMPBookingCore
+﻿using System.Collections.Generic;
+using KMPBookingCore.Database;
+
+namespace KMPBookingCore.DbObjects
 {
+    [DBClass]
     public class Service : Event
     {
-        private string _serviceTitle;
+        private string _serviceContent;
         private Receipt _receipt;
         private string _detail;
         private decimal _totalFee;
@@ -18,14 +22,16 @@
             Type = "Service";
         }
 
-        public string ServiceTitle
+        [DBField]
+        public string ServiceContent
         {
-            get => _serviceTitle; set
+            get => _serviceContent; set
             {
-                _serviceTitle = value;
-                RaiseEventChanged(nameof(ServiceTitle));
+                _serviceContent = value;
+                RaiseEventChanged(nameof(ServiceContent));
             }
         }
+        [DBField]
         public Receipt Receipt
         {
             get => _receipt; set
@@ -34,14 +40,16 @@
                 RaiseEventChanged(nameof(Receipt));
             }
         }
-        public string Detail
+        [DBField]
+        public Booking Booking
         {
-            get => _detail; set
+            get => _booking; set
             {
-                _detail = value;
-                RaiseEventChanged(nameof(Detail));
+                _booking = value;
+                RaiseEventChanged(nameof(Booking));
             }
         }
+        [DBField]
         public decimal TotalFee
         {
             get => _totalFee; set
@@ -50,6 +58,7 @@
                 RaiseEventChanged(nameof(TotalFee));
             }
         }
+        [DBField]
         public decimal Owing
         {
             get => _owing; set
@@ -58,6 +67,7 @@
                 RaiseEventChanged(nameof(Owing));
             }
         }
+        [DBField]
         public decimal Benefit
         {
             get => _benefit; set
@@ -66,6 +76,7 @@
                 RaiseEventChanged(nameof(Benefit));
             }
         }
+        [DBField]
         public decimal Gap
         {
             get => _gap; set
@@ -74,6 +85,7 @@
                 RaiseEventChanged(nameof(Gap));
             }
         }
+        [DBField]
         public decimal Discount
         {
             get => _discount; set
@@ -90,19 +102,11 @@
                 RaiseEventChanged(nameof(Balance));
             }
         }
-        public Booking Booking
-        {
-            get => _booking; set
-            {
-                _booking = value;
-                RaiseEventChanged(nameof(Booking));
-            }
-        }
-
+      
         public void Calculate()
         {
             Gap = Owing - Benefit;
             Balance = Gap * (1 - Discount / 100);
         }
-    }
+}
 }

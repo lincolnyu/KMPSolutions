@@ -1,4 +1,5 @@
-﻿using KMPBookingCore;
+﻿using KMPBookingCore.Database;
+using KMPBookingCore.DbObjects;
 using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
@@ -97,7 +98,7 @@ namespace KMPBookingPlus
 
         public static ClientData LoadClientData(OleDbConnection connection)
         {
-            var query = "select [Medicare Number], [First Name], [Surname], [DOB], [Gender], [Phone], [Address] from Client";
+            var query = "select [Medicare Number], [First Name], Surname, DOB, Gender, Phone, Address, [Referring Date] from Client";
 
             return LoadData<ClientData, Client, string>(connection, query, r => {
                 var medicareNumber = r.GetString(0);
@@ -108,6 +109,7 @@ namespace KMPBookingPlus
                 var gender = r.TryGetString(4);
                 var phone = r.TryGetString(5);
                 var address = r.TryGetString(6);
+                var referringDate = r.TryGetDateTime(7);
                 var cr = new Client
                 {
                     MedicareNumber = medicareNumber,
@@ -116,9 +118,9 @@ namespace KMPBookingPlus
                     DOB = dob,
                     Gender = gender,
                     PhoneNumber = phone,
-                    Address = address
+                    Address = address,
+                    ReferringDate = referringDate
                 };
-
                 return (cr, medicareNumber);
             }, (clientData, cr)=> {
                 var name = $"{cr.Surname}, {cr.FirstName}";
@@ -151,7 +153,7 @@ namespace KMPBookingPlus
 
         public static GPData LoadGPData(OleDbConnection connection)
         {
-            var query = "select [Provider Number], [Name], [Phone], [Fax], [Address] from GP";
+            var query = "select [Provider Number], Name, Phone, Fax, Address from GP";
 
             return LoadData<GPData, GP, string>(connection, query, r => {
                 var providerNumber = r.GetString(0);
@@ -280,7 +282,7 @@ namespace KMPBookingPlus
                 var service = new Service
                 {
                     Id = id,
-                    ServiceTitle = serviceConetnt,
+                    ServiceContent = serviceConetnt,
                     Booking = booking,
                     Receipt = receipt,
                     TotalFee = totalFee,

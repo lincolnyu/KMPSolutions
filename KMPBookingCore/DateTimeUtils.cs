@@ -136,7 +136,6 @@ namespace KMPBookingCore
         public static string ToDbDate(this DateTime date)
         {
             return $"\"{date.ToString("yyyy-MM-dd")}\"";
-            //return $"\"{date.ToShortDateString()}\"";
         }
 
         public static string ToDbDate(this DateTime? date)
@@ -153,8 +152,7 @@ namespace KMPBookingCore
 
         public static string ToDbDateTime(this DateTime date)
         {
-            return $"\"{date.ToString("yyyy-MM-dd hh:mm:ss")}\"";
-            //return $"\"{date.ToString()}\"";
+            return $"\"{date.ToString("yyyy-MM-dd hh:mm:ss.fff")}\"";
         }
 
         public static string ToDbDateTime(this DateTime? date)

@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Collections.Generic;
+using KMPBookingCore.DbObjects;
 
 namespace KMPBookingCore
 {

@@ -1,82 +1,99 @@
-﻿namespace KMPBookingCore
+﻿using KMPBookingCore.Database;
+
+namespace KMPBookingCore.DbObjects
 {
+    [DBClass]
     public class Receipt : Event
     {
-        private string diagnosis;
-        private string claimNumber;
-        private string healthFund;
-        private string membershipNumber;
-        private decimal totalDue;
-        private decimal paymentReceived;
-        private double discount;
-        private decimal balance;
+        private string _diagnosis;
+        private string _claimNumber;
+        private string _healthFund;
+        private string _membershipNumber;
+        private decimal _totalDue;
+        private decimal _paymentReceived;
+        private double _discount;
+        private decimal _balance;
 
         public Receipt()
         {
             Type = "Receipt";
         }
 
+        [DBField]
         public string Diagnosis
         {
-            get => diagnosis; set
+            get => _diagnosis; set
             {
-                diagnosis = value;
+                _diagnosis = value;
                 RaiseEventChanged(nameof(Diagnosis));
             }
         }
+
+        [DBField]
         public string ClaimNumber
         {
-            get => claimNumber; set
+            get => _claimNumber; set
             {
-                claimNumber = value;
+                _claimNumber = value;
                 RaiseEventChanged(nameof(ClaimNumber));
             }
         }
+
+        [DBField]
         public string HealthFund
         {
-            get => healthFund; set
+            get => _healthFund; set
             {
-                healthFund = value;
+                _healthFund = value;
                 RaiseEventChanged(nameof(HealthFund));
             }
         }
+
+        [DBField]
         public string MembershipNumber
         {
-            get => membershipNumber; set
+            get => _membershipNumber; set
             {
-                membershipNumber = value;
+                _membershipNumber = value;
                 RaiseEventChanged(nameof(MembershipNumber));
             }
         }
+
+        [DBField]
         public decimal TotalDue
         {
-            get => totalDue; set
+            get => _totalDue; set
             {
-                totalDue = value;
+                _totalDue = value;
                 RaiseEventChanged(nameof(TotalDue));
             }
         }
+
+        [DBField]
         public decimal PaymentReceived
         {
-            get => paymentReceived; set
+            get => _paymentReceived; set
             {
-                paymentReceived = value;
+                _paymentReceived = value;
                 RaiseEventChanged(nameof(PaymentReceived));
             }
         }
+
+        [DBField]
         public double Discount
         {
-            get => discount; set
+            get => _discount; set
             {
-                discount = value;
+                _discount = value;
                 RaiseEventChanged(nameof(Discount));
             }
         }
+
         public decimal Balance
         {
-            get => balance; set
+            get => _balance; set
             {
-                balance = value;
+                _balance = value;
                 RaiseEventChanged(nameof(Balance));
             }
         }

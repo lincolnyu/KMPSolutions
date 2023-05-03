@@ -16,6 +16,7 @@ using System.Diagnostics;
 using System.Windows.Navigation;
 using System.Deployment.Application;
 using KMPControls;
+using KMPBookingCore.DbObjects;
 
 namespace KMPBooking
 {

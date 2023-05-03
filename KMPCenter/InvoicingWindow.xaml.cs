@@ -1,4 +1,5 @@
 ﻿using KMPBookingCore;
+using KMPBookingCore.DbObjects;
 using KMPBookingPlus;
 using System;
 using System.Collections.Generic;
@@ -107,8 +108,8 @@ namespace KMPCenter
                 }
                 decimal total = (decimal)(rand.NextDouble() * 100);
                 yield return new Service {
-                    Date = date,
-                    Detail = svcdetail.ToString(),
+                    EventDate = date,
+                    ServiceContent = svcdetail.ToString(),
                     TotalFee = total,
                     Owing = total,
                     Benefit = 0,
@@ -195,8 +196,8 @@ namespace KMPCenter
 
         private void ServiceDataChanged()
         {
-            CurrentServiceToAdd().Detail = ServiceDesc.Text;
-            CurrentServiceToAdd().Date = ServiceDate.SelectedDate;
+            CurrentServiceToAdd().ServiceContent = ServiceDesc.Text;
+            CurrentServiceToAdd().EventDate = ServiceDate.SelectedDate;
         }
 
         private void ServiceFeeComponentsChanged()
@@ -275,7 +276,7 @@ namespace KMPCenter
         private void AddService()
         {
             _invoicedServices.Add(_currentService);
-            InvoicedServices.Items.Add($"{_currentService.Date?.ToShortDateString()??"Unspecified date"}: '{_currentService.Detail}' ${_currentService.TotalFee.ToDecPlaces()}");
+            InvoicedServices.Items.Add($"{_currentService.EventDate?.ToShortDateString()??"Unspecified date"}: '{_currentService.ServiceContent}' ${_currentService.TotalFee.ToDecPlaces()}");
 
             _servicesToAdd.Add(_currentService);
 
@@ -292,10 +293,10 @@ namespace KMPCenter
             foreach (var sa in _servicesToAdd)
             {
                 var cmdsvc = AccessUtils.CreateInsert("Services", new (string, string)[]{
-                    ("Service", sa.Detail.ToDbString()),
+                    ("Service", sa.ServiceContent.ToDbString()),
                     ("Receipt ID", sa.Receipt.Id.ToString()),
                     ("Booking ID", sa.Booking?.Id.ToString()),
-                    ("Service Date", sa.Date.ToDbDate()),
+                    ("Service Date", sa.EventDate.ToDbDate()),
                     ("Total Fee", sa.TotalFee.ToDecPlaces()),
                     ("Owing", sa.Owing.ToDecPlaces()),
                     ("Benefit", sa.Benefit.ToDecPlaces()),
@@ -312,10 +313,10 @@ namespace KMPCenter
                 var su = kvp.Value;
                 var cmdsvc = AccessUtils.CreateUpdate("Services", new (string, string)[]
                 {
-                    ("Service", su.Detail.ToDbString()),
+                    ("Service", su.ServiceContent.ToDbString()),
                     ("Receipt ID", su.Receipt.Id.ToString()),
                     ("Booking ID", su.Booking?.Id.ToString()),
-                    ("Service Date", su.Date.ToDbDate()),
+                    ("Service Date", su.EventDate.ToDbDate()),
                     ("Total Fee", su.TotalFee.ToDecPlaces()),
                     ("Owing", su.Owing.ToDecPlaces()),
                     ("Benefit", su.Benefit.ToDecPlaces()),

@@ -11,6 +11,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Controls;
+using KMPBookingCore.DbObjects;
 
 namespace KMPCenter
 {
