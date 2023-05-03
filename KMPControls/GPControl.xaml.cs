@@ -1,17 +1,11 @@
-﻿using System;
+﻿using KMPBookingCore.DbObjects;
+using KMPBookingPlus;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data.OleDb;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace KMPControls
 {
@@ -20,6 +14,10 @@ namespace KMPControls
     /// </summary>
     public partial class GPControl : UserControl
     {
+        private Dictionary<string, GP> _idToGP;
+
+        public OleDbConnection Connection { get; private set; }
+
         public GPControl()
         {
             InitializeComponent();
@@ -78,6 +76,34 @@ namespace KMPControls
         private void UpdateBtn_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        public void SetDataConnection(OleDbConnection connection)
+        {
+            Connection = connection;
+            LoadData();
+        }
+
+        private void LoadData()
+        {
+            if (Connection != null)
+            {
+                var gpData = Query.LoadGPData(Connection);
+                _idToGP = gpData.IdToEntry;
+
+                foreach (var n in gpData.PhoneNumbers)
+                {
+                    GPPhoneNumber.Items.Add(n);
+                }
+                foreach (var id in gpData.Ids)
+                {
+                    GPId.Items.Add(id);
+                }
+                foreach (var n in gpData.Names)
+                {
+                    GPName.Items.Add(n);
+                }
+            }
         }
     }
 }

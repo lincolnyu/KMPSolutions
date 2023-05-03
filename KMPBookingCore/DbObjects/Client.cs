@@ -58,12 +58,12 @@ namespace KMPBookingCore.DbObjects
             }
         }
         [DBField]
-        public string PhoneNumber
+        public string Phone
         {
-            get => _phoneNumber; set
+            get => _phone; set
             {
-                _phoneNumber = value;
-                RaiseEventChanged(nameof(PhoneNumber));
+                _phone = value;
+                RaiseEventChanged(nameof(Phone));
             }
         }
         [DBField]
@@ -101,7 +101,7 @@ namespace KMPBookingCore.DbObjects
             && MedicareNumber == other.MedicareNumber
             && Equals(DOB, other.DOB)
             && Gender == other.Gender
-            && PhoneNumber == other.PhoneNumber
+            && Phone == other.Phone
             && Address == other.Address;
 
         public List<Event> Events = new List<Event>();
@@ -111,7 +111,7 @@ namespace KMPBookingCore.DbObjects
         private string _surname;
         private DateTime? _dob;
         private string _gender;
-        private string _phoneNumber;
+        private string _phone;
         private string _address;
         private GP _referringGP;
         private DateTime? _referringDate;

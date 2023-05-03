@@ -38,7 +38,7 @@ namespace KMPBookingCore
         }
 
         public static IEnumerable<Client> FindByPhoneNumberContaining(this IEnumerable<Client> clients, string numberSubstr)
-            => clients.Where(x => x.PhoneNumber.Contains(numberSubstr));
+            => clients.Where(x => x.Phone.Contains(numberSubstr));
 
     }
 }

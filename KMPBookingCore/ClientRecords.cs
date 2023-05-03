@@ -35,10 +35,10 @@ namespace KMPBookingCore
             => _records.FindByMedicareNumberContaining(medSubstr);
 
         public IEnumerable<Client> FindByPhoneNumber(string phoneNumber)
-            => _records.Where(x => x.PhoneNumber == phoneNumber);
+            => _records.Where(x => x.Phone == phoneNumber);
 
         public IEnumerable<Client> FindByPhoneNumberContaining(string numberSubstr)
-            => _records.Where(x => x.PhoneNumber.Contains(numberSubstr));
+            => _records.Where(x => x.Phone.Contains(numberSubstr));
 
         public IReadOnlyList<Client> Records()
             => _records;

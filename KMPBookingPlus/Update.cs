@@ -6,20 +6,22 @@ namespace KMPBookingPlus
 {
     public static class Update
     {
-        public static void SaveClientData(OleDbConnection connection, ClientData clientData)
+        private static void SaveData<EntryType, IdType>(OleDbConnection connection, EntriesWithID<EntryType, IdType> data) where EntryType : DbObject
         {
-            foreach (var kvp in clientData.IdToEntry)
+            var primaryKeyDbField = DbUtils.GetPrimaryKeyDBFieldName(typeof(EntryType));
+            foreach (var kvp in data.IdToEntry)
             {
                 var id = kvp.Key;
-                var client = kvp.Value;
+                var obj = kvp.Value;
                 string statement;
-                if (client.ObjDbState == DbObject.DbState.New)
+                var tableName = DbUtils.GetTableName<EntryType>();
+                if (obj.ObjDbState == DbObject.DbState.New)
                 {
-                    statement = AccessUtils.CreateInsert("Client", client.GetFieldValuePairs());
+                    statement = AccessUtils.CreateInsert(tableName, obj.GetFieldValuePairs());
                 }
-                else if (client.ObjDbState == DbObject.DbState.Dirty)
+                else if (obj.ObjDbState == DbObject.DbState.Dirty)
                 {
-                    statement = AccessUtils.CreateUpdate("Client", client.GetFieldValuePairs(), $"[Medicare Number]={id}");
+                    statement = AccessUtils.CreateUpdate(tableName, obj.GetFieldValuePairs(), $"{primaryKeyDbField}={id}");
                 }
                 else
                 {
@@ -27,39 +29,21 @@ namespace KMPBookingPlus
                 }
                 connection.RunNonQuery(statement);
             }
+        }
+
+        public static void SaveClientData(OleDbConnection connection, ClientData clientData)
+        {
+            SaveData(connection, clientData);
         }
 
         public static void SaveGPData(OleDbConnection connection, GPData gpData)
         {
-            foreach (var kvp in gpData.IdToEntry)
-            {
-                var id = kvp.Key;
-                var gp = kvp.Value;
-                string statement;
-                if (gp.ObjDbState == DbObject.DbState.New)
-                {
-                    statement = AccessUtils.CreateInsert("GP", gp.GetFieldValuePairs());
-                }
-                else if (gp.ObjDbState == DbObject.DbState.Dirty)
-                {
-                    statement = AccessUtils.CreateUpdate("GP", gp.GetFieldValuePairs(), $"[Provider Number]={id}");
-                }
-                else
-                {
-                    continue;
-                }
-                connection.RunNonQuery(statement);
-            }
+            SaveData(connection, gpData);
         }
 
         public static void SaveEventData(OleDbConnection connection, EventData eventData)
         {
-            foreach (var kvp in eventData.IdToEntry)
-            {
-                var id = kvp.Key;
-                var e = kvp.Value;
-
-            }
+            SaveData(connection, eventData);
         }
     }
 }

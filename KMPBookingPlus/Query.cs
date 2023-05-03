@@ -6,11 +6,12 @@ using System.Data.OleDb;
 
 namespace KMPBookingPlus
 {
+    // TODO Abstract the object-dbtable relations
     public static class Query
     {
         public static bool IsNullId(int id) => id != 0;
 
-        public class EntriesWithID<EntryType, IdType>
+        public class EntriesWithID<EntryType, IdType> where EntryType:DbObject
         {
             public Dictionary<IdType, EntryType> IdToEntry { get;  } = new Dictionary<IdType, EntryType>();
             public List<IdType> Ids { get; } =  new List<IdType>();
@@ -24,7 +25,7 @@ namespace KMPBookingPlus
             }
         }
 
-        public static T LoadData<T, EntryType, IdType>(OleDbConnection connection, string query, Func<OleDbDataReader, (EntryType, IdType)> createEntry, Action<T, EntryType> postCreate=null, Action<T> postAdd=null) where T : EntriesWithID<EntryType, IdType>, new()
+        public static T LoadData<T, EntryType, IdType>(OleDbConnection connection, string query, Func<OleDbDataReader, (EntryType, IdType)> createEntry, Action<T, EntryType> postCreate=null, Action<T> postAdd=null) where T : EntriesWithID<EntryType, IdType>, new() where EntryType: DbObject
         {
             DbObject.PushLoadingFromDb(true);
             var data = new T();
@@ -63,7 +64,6 @@ namespace KMPBookingPlus
         {
             public Dictionary<string, List<Client>> NameToEntry { get; } = new Dictionary<string, List<Client>> { };
             public Dictionary<string, List<Client>> PhoneToEntry { get; } = new Dictionary<string, List<Client>> { };
-            
 
             public List<string> Names { get; } = new List<string> { };
             public List<string> PhoneNumbers { get; } = new List<string> { };
@@ -78,6 +78,18 @@ namespace KMPBookingPlus
 
         public class GPData : EntriesWithID<GP, string>
         {
+            public Dictionary<string, List<GP>> NameToEntry { get; } = new Dictionary<string, List<GP>> { };
+            public Dictionary<string, List<GP>> PhoneToEntry { get; } = new Dictionary<string, List<GP>> { };
+
+            public List<string> Names { get; } = new List<string> { };
+            public List<string> PhoneNumbers { get; } = new List<string> { };
+
+            public override void SortCollections()
+            {
+                base.SortCollections();
+                Names.Sort();
+                PhoneNumbers.Sort();
+            }
         }
 
         public class EventData : EntriesWithID<Event, int>
@@ -117,7 +129,7 @@ namespace KMPBookingPlus
                     Surname = surname,
                     DOB = dob,
                     Gender = gender,
-                    PhoneNumber = phone,
+                    Phone = phone,
                     Address = address,
                     ReferringDate = referringDate
                 };
@@ -133,12 +145,12 @@ namespace KMPBookingPlus
                 {
                     namelist.Add(cr);
                 }
-                if (!string.IsNullOrWhiteSpace(cr.PhoneNumber))
+                if (!string.IsNullOrWhiteSpace(cr.Phone))
                 {
-                    if (!clientData.PhoneToEntry.TryGetValue(cr.PhoneNumber, out var phonelist))
+                    if (!clientData.PhoneToEntry.TryGetValue(cr.Phone, out var phonelist))
                     {
-                        clientData.PhoneToEntry.Add(cr.PhoneNumber, new List<Client> { cr });
-                        clientData.PhoneNumbers.Add(cr.PhoneNumber);
+                        clientData.PhoneToEntry.Add(cr.Phone, new List<Client> { cr });
+                        clientData.PhoneNumbers.Add(cr.Phone);
                     }
                     else
                     {
@@ -171,6 +183,31 @@ namespace KMPBookingPlus
                 };
 
                 return (gp, providerNumber);
+            }, (gpData, gp) => {
+                if (!gpData.NameToEntry.TryGetValue(gp.Name, out var namelist))
+                {
+                    gpData.NameToEntry.Add(gp.Name, new List<GP> { gp });
+                    gpData.Names.Add(gp.Name);
+                }
+                else
+                {
+                    namelist.Add(gp);
+                }
+                if (!string.IsNullOrWhiteSpace(gp.Phone))
+                {
+                    if (!gpData.PhoneToEntry.TryGetValue(gp.Phone, out var phonelist))
+                    {
+                        gpData.PhoneToEntry.Add(gp.Phone, new List<GP> { gp });
+                        gpData.PhoneNumbers.Add(gp.Phone);
+                    }
+                    else
+                    {
+                        phonelist.Add(gp);
+                    }
+                }
+            }, clientData => {
+                clientData.Names.Sort();
+                clientData.PhoneNumbers.Sort();
             });
         }
 

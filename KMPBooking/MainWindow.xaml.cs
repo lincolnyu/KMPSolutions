@@ -399,7 +399,7 @@ namespace KMPBooking
                             FirstName = firstName,
                             Surname = surname,
                             MedicareNumber = medi,
-                            PhoneNumber = phone,
+                            Phone = phone,
                             Gender = gen,
                         };
                         if (DateTime.TryParse(dob, out var dt))
@@ -492,7 +492,7 @@ namespace KMPBooking
         {
             foreach (var c in clients)
             {
-                yield return $"{FormCommaSeparateName(c.FirstName, c.Surname)} (Medicare#{c.MedicareNumber}, Phone#{c.PhoneNumber})";
+                yield return $"{FormCommaSeparateName(c.FirstName, c.Surname)} (Medicare#{c.MedicareNumber}, Phone#{c.Phone})";
             }
         }
 
@@ -530,7 +530,7 @@ namespace KMPBooking
                     }
                     ClientMedicare.Text = client.MedicareNumber;
                     ClientName.Text = FormCommaSeparateName(client.FirstName, client.Surname);
-                    ClientNumber.Text = client.PhoneNumber;
+                    ClientNumber.Text = client.Phone;
                 }
             });
         }
@@ -568,7 +568,7 @@ namespace KMPBooking
                 }
                 ClientMedicare.Text = client.MedicareNumber;
                 ClientName.Text = FormCommaSeparateName(client.FirstName, client.Surname);
-                ClientNumber.Text = client.PhoneNumber;
+                ClientNumber.Text = client.Phone;
             });
         }
 
@@ -606,7 +606,7 @@ namespace KMPBooking
                     }
                     ClientMedicare.Text = client.MedicareNumber;
                     ClientName.Text = FormCommaSeparateName(client.FirstName, client.Surname);
-                    ClientNumber.Text = client.PhoneNumber;
+                    ClientNumber.Text = client.Phone;
                 }
             });
         }

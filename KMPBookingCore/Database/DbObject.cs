@@ -60,7 +60,12 @@ namespace KMPBookingCore.Database
                 var dbfield = property.GetCustomAttribute<DBFieldAttribute>();
                 if (dbfield != null)
                 {
-                    var fieldName = DbUtils.GetDbFieldName(dbfield.FieldName, property.Name);
+                    var fieldName = DbUtils.GetDbFieldName(property);
+                    if (property.PropertyType.GetCustomAttribute<DBClassAttribute>() != null && fieldName.EndsWith("ID", StringComparison.OrdinalIgnoreCase))
+                    {
+                        fieldName += " ID";
+                    }
+
                     var fieldValue = FieldToDbString(fieldName, property.PropertyType, property.GetValue(this));
                     yield return (fieldName, fieldValue);
                 }

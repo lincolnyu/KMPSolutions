@@ -15,6 +15,7 @@
         </Grid.ColumnDefinitions>
         <StackPanel Grid.ColumnSpan="2">
             <kmpcontrols:ClientsControl Name="Clients"></kmpcontrols:ClientsControl>
+            <kmpcontrols:GPControl Name="GPs"></kmpcontrols:GPControl>
         </StackPanel>
     </Grid>
 </Window>

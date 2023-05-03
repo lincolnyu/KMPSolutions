@@ -206,7 +206,7 @@ namespace KMPCenter
                                 Surname = r.TryGetString(2),
                                 DOB = r.TryGetDateTime(3),
                                 Gender = r.TryGetString(4),
-                                PhoneNumber = r.TryGetString(5),
+                                Phone = r.TryGetString(5),
                                 Address = r.TryGetString(6)
                             };
                             dbClients[cr.MedicareNumber] = cr;
@@ -234,7 +234,7 @@ namespace KMPCenter
                             sbSql.Append($"[Surname] = '{mr.Surname}',");
                             sbSql.Append($"[DOB] = {mr.DOB.ToDbDate()},");
                             sbSql.Append($"[Gender] = '{mr.Gender}',");
-                            sbSql.Append($"[Phone] = '{mr.PhoneNumber}',");
+                            sbSql.Append($"[Phone] = '{mr.Phone}',");
                             sbSql.Append($"[Address] = '{mr.Address}'");
                             sbSql.Append($" where [Medicare Number] = '{mr.MedicareNumber}'");
                             Connection.RunNonQuery(sbSql.ToString(), false);
@@ -247,7 +247,7 @@ namespace KMPCenter
                             sbSql.Append($"'{nr.Surname}',");
                             sbSql.Append($"{nr.DOB.ToDbDate()},");
                             sbSql.Append($"'{nr.Gender}',");
-                            sbSql.Append($"'{nr.PhoneNumber}',");
+                            sbSql.Append($"'{nr.Phone}',");
                             sbSql.Append($"'{nr.Address}')");
                             Connection.RunNonQuery(sbSql.ToString(), false);
                         }
@@ -341,7 +341,7 @@ namespace KMPCenter
                             FirstName = firstName,
                             Surname = surname,
                             MedicareNumber = medi,
-                            PhoneNumber = phone,
+                            Phone = phone,
                             Address = addr,
                             Gender = gen
                         };

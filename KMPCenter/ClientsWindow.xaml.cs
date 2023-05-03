@@ -15,6 +15,8 @@ namespace KMPCenter
             InitializeComponent();
             Clients.InputMode = KMPControls.ClientsControl.Mode.Input;
             Clients.SetDataConnection(MainWindow.Connection);
+
+            GPs.SetDataConnection(MainWindow.Connection);
         }
     }
 }

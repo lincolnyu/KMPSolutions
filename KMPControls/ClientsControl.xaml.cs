@@ -309,7 +309,7 @@ namespace KMPControls
         {
             foreach (var c in clients)
             {
-                yield return $"#{c.MedicareNumber}: {c.ClientFormalName()} (Medicare#{c.MedicareNumber}, Phone#{c.PhoneNumber})";
+                yield return $"#{c.MedicareNumber}: {c.ClientFormalName()} (Medicare#{c.MedicareNumber}, Phone#{c.Phone})";
             }
         }
 
@@ -343,7 +343,7 @@ namespace KMPControls
                 {
                     ClientId.Text = ActiveClient.MedicareNumber;
                     ClientName.Text = ActiveClient.ClientFormalName();
-                    ClientNumber.Text = ActiveClient.PhoneNumber;
+                    ClientNumber.Text = ActiveClient.Phone;
                     if (InputMode == Mode.Input)
                     {
                         ConvertGenderToUi(ActiveClient.Gender);
@@ -402,7 +402,7 @@ namespace KMPControls
             sbSql.Append($"{ActiveClient.DOB.ToDbDate()},");
             sbSql.Append($"'{ActiveClient.Gender}',");
             sbSql.Append($"'{ActiveClient.MedicareNumber}',");
-            sbSql.Append($"'{ActiveClient.PhoneNumber}',");
+            sbSql.Append($"'{ActiveClient.Phone}',");
             sbSql.Append($"'{ActiveClient.Address}')");
             Connection.RunNonQuery(sbSql.ToString(), false);
         }
@@ -421,7 +421,7 @@ namespace KMPControls
             sbSql.Append($"[DOB] = {ActiveClient.DOB.ToDbDate()},");
             sbSql.Append($"[Medicare] = {ActiveClient.MedicareNumber}, ");
             sbSql.Append($"[Gender] = '{ActiveClient.Gender}',");
-            sbSql.Append($"[Phone] = '{ActiveClient.PhoneNumber}',");
+            sbSql.Append($"[Phone] = '{ActiveClient.Phone}',");
             sbSql.Append($"[Address] = '{ActiveClient.Address}'");
             sbSql.Append($" where ID = {ActiveClient.MedicareNumber}");
             Connection.RunNonQuery(sbSql.ToString());
@@ -434,7 +434,7 @@ namespace KMPControls
             ActiveClient.DOB = ClientDob.SelectedDate;
             ActiveClient.MedicareNumber = ClientId.Text.Trim();
             ActiveClient.Gender = ConvertUiToGender();
-            ActiveClient.PhoneNumber = ClientNumber.Text;
+            ActiveClient.Phone = ClientNumber.Text;
             ActiveClient.Address = ClientAddress.Text;
             var name = ClientName.Text;
             (ActiveClient.FirstName, ActiveClient.Surname) = BookingIcs.SmartParseName(name);
@@ -453,7 +453,7 @@ namespace KMPControls
             else if (CurrentUpdateMode == UpdateMode.Editing && ActiveClient != null)
             {
                 ClientName.Text = ActiveClient.ClientFormalName();
-                ClientNumber.Text = ActiveClient.PhoneNumber;
+                ClientNumber.Text = ActiveClient.Phone;
                 ConvertGenderToUi(ActiveClient.Gender);
                 ClientDob.SelectedDate = ActiveClient.DOB;
                 ClientAddress.Text = ActiveClient.Address;

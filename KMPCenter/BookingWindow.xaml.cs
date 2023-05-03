@@ -219,7 +219,7 @@ namespace KMPCenter
                 App.ShowMessage("Error: No client selected.");
                 return;
             }
-            var smsics = GenerateSmsIcs(client.ClientFormalName(), client.PhoneNumber, client.MedicareNumber,
+            var smsics = GenerateSmsIcs(client.ClientFormalName(), client.Phone, client.MedicareNumber,
                 bookingDateTime.Value, duration.Value, smsDateTime.Value);
             if (smsics != null)
             {
@@ -274,7 +274,7 @@ namespace KMPCenter
             (var msg, var rr) = CheckDate(sms ? Tolerance.Neither : Tolerance.AllowIncompleteSmsDate);
             AddValidationMessage(sb, ref r, rr, msg);
 
-            if (SetSmsReminder.IsChecked == true && string.IsNullOrWhiteSpace(client.PhoneNumber)
+            if (SetSmsReminder.IsChecked == true && string.IsNullOrWhiteSpace(client.Phone)
                 && r != CheckResult.Error)
             {
                 AddValidationMessage(sb, ref r, CheckResult.Warning, "Phone number not provided, SMS event will be incomplete.");
@@ -388,7 +388,7 @@ namespace KMPCenter
                 App.ShowMessage("Error: No client selected.");
                 return;
             }
-            var ics = GenerateBookingIcs(client.ClientFormalName(), client.MedicareNumber, client.PhoneNumber,
+            var ics = GenerateBookingIcs(client.ClientFormalName(), client.MedicareNumber, client.Phone,
                 bookingDateTime.Value, duration.Value);
             if (ics != null)
             {

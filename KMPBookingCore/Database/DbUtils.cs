@@ -9,12 +9,52 @@ namespace KMPBookingCore.Database
         public static string NullString = "''";
         public static string NullNumberId = "0";
 
-        public static string GetDbFieldName(string attributeProvidedName, string memberName)
+        public static string GetTableName<T>() where T : DbObject
         {
+            return GetTableName(typeof(T));
+        }
+
+        private static string GetTableName(Type type)
+        {
+            var dbclass = type.GetCustomAttribute<DBClassAttribute>();
+            if (!string.IsNullOrEmpty(dbclass.TableName))
+            {
+                return dbclass.TableName;
+            }
+            return type.Name;
+        }
+
+        public static PropertyInfo GetPrimaryKey(Type type)
+        {
+            foreach (var property in type.GetProperties(BindingFlags.FlattenHierarchy))
+            {
+                if (property.GetCustomAttribute<DBPrimaryKeyAttribute>() != null)
+                {
+                    return property;
+                }
+            }
+            return null; ;
+        }
+
+        public static string GetPrimaryKeyDBFieldName(Type type)
+        {
+            var primaryKey = GetPrimaryKey(type);
+            if (primaryKey == null)
+            {
+                return GetDbFieldName(primaryKey);
+            }
+            return null;
+        }
+
+        public static string GetDbFieldName(PropertyInfo property, bool includeBrackets=true)
+        {
+            var dbfield = property.GetCustomAttribute<DBFieldAttribute>();
+            var attributeProvidedName = dbfield.FieldName;
             if (!string.IsNullOrEmpty(attributeProvidedName))
             {
                 return attributeProvidedName;
             }
+            var memberName = property.Name;
             var sb = new StringBuilder();
             for (var i = 0; i < memberName.Length; ++i)
             {
@@ -25,7 +65,14 @@ namespace KMPBookingCore.Database
                 }
                 sb.Append(ch);
             }
-            return sb.ToString();
+            var res = sb.ToString().Trim();
+            if (includeBrackets && res.Contains(" "))
+            {
+                res = res.TrimStart('[');
+                res = res.TrimEnd(']');
+                res = "[" + res + "]";
+            }
+            return res;
         }
 
         public static string ToDbString(Type type, object value)
@@ -46,31 +93,33 @@ namespace KMPBookingCore.Database
             {
                 return ((DateTime?)value).ToDbDateTime();
             }
-            else if (value.GetType().GetCustomAttribute<DBClassAttribute>() != null)
+            else if (type.GetCustomAttribute<DBClassAttribute>() != null)
             {
-                if (value == null)
+                var primaryKeyProperty = GetPrimaryKey(type);
+                if (primaryKeyProperty != null)
                 {
-                    if (type == typeof(string))
+                    if (value != null)
                     {
-                        return NullString;
-                    }
-                    else if (type == typeof(int))
-                    {
-                        return NullNumberId;
+                        var id = primaryKeyProperty.GetValue(value);
+                        return id.ToString();
                     }
                     else
                     {
-                        throw new ArgumentException($"Unexpected ID type to convert to DB: {type}");
+                        if (type == typeof(string))
+                        {
+                            return NullString;
+                        }
+                        else if (type == typeof(int))
+                        {
+                            return NullNumberId;
+                        }
+                        else
+                        {
+                            throw new ArgumentException($"Unexpected ID type to convert to DB: {type}");
+                        }
                     }
                 }
-                foreach (var property in value.GetType().GetProperties(BindingFlags.FlattenHierarchy))
-                {
-                    if (property.GetCustomAttribute<DBPrimaryKeyAttribute>() != null)
-                    {
-                        var id = property.GetValue(value);
-                        return id.ToString();
-                    }
-                }
+               
                 throw new ArgumentException($"Primary key not found in type: {type}");
             }
             else if (value == null)
