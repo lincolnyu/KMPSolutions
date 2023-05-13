@@ -3,7 +3,7 @@ using KMPBookingCore.Database;
 
 namespace KMPBookingCore.DbObjects
 {
-    [DBClass]
+    [DbClass]
     public class Service : Event
     {
         private string _serviceContent;
@@ -22,7 +22,7 @@ namespace KMPBookingCore.DbObjects
             Type = "Service";
         }
 
-        [DBField]
+        [DbField]
         public string ServiceContent
         {
             get => _serviceContent; set
@@ -31,7 +31,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(ServiceContent));
             }
         }
-        [DBField]
+        [DbField]
         public Receipt Receipt
         {
             get => _receipt; set
@@ -40,7 +40,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(Receipt));
             }
         }
-        [DBField]
+        [DbField]
         public Booking Booking
         {
             get => _booking; set
@@ -49,7 +49,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(Booking));
             }
         }
-        [DBField]
+        [DbField]
         public decimal TotalFee
         {
             get => _totalFee; set
@@ -58,7 +58,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(TotalFee));
             }
         }
-        [DBField]
+        [DbField]
         public decimal Owing
         {
             get => _owing; set
@@ -67,7 +67,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(Owing));
             }
         }
-        [DBField]
+        [DbField]
         public decimal Benefit
         {
             get => _benefit; set
@@ -76,7 +76,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(Benefit));
             }
         }
-        [DBField]
+        [DbField]
         public decimal Gap
         {
             get => _gap; set
@@ -85,7 +85,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(Gap));
             }
         }
-        [DBField]
+        [DbField]
         public decimal Discount
         {
             get => _discount; set

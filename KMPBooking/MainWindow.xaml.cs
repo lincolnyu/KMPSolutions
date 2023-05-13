@@ -510,7 +510,7 @@ namespace KMPBooking
                     Client client = null;
                     if (clients.Count > 1)
                     {
-                        var dc = new DuplicateClients($"Multiple clients found with name containing '{name}'", RecordsToStrings(clients))
+                        var dc = new DuplicateResolverDialog("Duplicate Clients", $"Multiple clients found with name containing '{name}'", RecordsToStrings(clients))
                         {
                             Owner = this,
                             WindowStartupLocation = WindowStartupLocation.CenterOwner
@@ -548,7 +548,7 @@ namespace KMPBooking
                 Client client = null;
                 if (clients.Count > 1)
                 {
-                    var dc = new DuplicateClients($"Multiple clients found with medicare number containing '{medi}'", RecordsToStrings(clients))
+                    var dc = new DuplicateResolverDialog("Duplicate Clients", $"Multiple clients found with medicare number containing '{medi}'", RecordsToStrings(clients))
                     {
                         Owner = this,
                         WindowStartupLocation = WindowStartupLocation.CenterOwner
@@ -586,7 +586,7 @@ namespace KMPBooking
                     Client client;
                     if (clients.Count > 1)
                     {
-                        var dc = new DuplicateClients($"Multiple clients found with phone number containing '{phone}'", RecordsToStrings(clients))
+                        var dc = new DuplicateResolverDialog("Duplicate Clients", $"Multiple clients found with phone number containing '{phone}'", RecordsToStrings(clients))
                         {
                             Owner = this,
                             WindowStartupLocation = WindowStartupLocation.CenterOwner

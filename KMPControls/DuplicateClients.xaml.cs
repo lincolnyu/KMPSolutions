@@ -6,11 +6,12 @@ namespace KMPControls
     /// <summary>
     /// Interaction logic for DuplicateClients.xaml
     /// </summary>
-    public partial class DuplicateClients : Window
+    public partial class DuplicateResolverDialog : Window
     {
-        public DuplicateClients(string description, IEnumerable<string> items)
+        public DuplicateResolverDialog(string title, string description, IEnumerable<string> items)
         {
             InitializeComponent();
+            this.Title = Title;
             Description.Text = description;
             foreach (var item in items)
             {

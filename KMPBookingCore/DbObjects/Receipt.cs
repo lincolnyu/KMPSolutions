@@ -2,7 +2,7 @@
 
 namespace KMPBookingCore.DbObjects
 {
-    [DBClass]
+    [DbClass]
     public class Receipt : Event
     {
         private string _diagnosis;
@@ -19,7 +19,7 @@ namespace KMPBookingCore.DbObjects
             Type = "Receipt";
         }
 
-        [DBField]
+        [DbField]
         public string Diagnosis
         {
             get => _diagnosis; set
@@ -29,7 +29,7 @@ namespace KMPBookingCore.DbObjects
             }
         }
 
-        [DBField]
+        [DbField]
         public string ClaimNumber
         {
             get => _claimNumber; set
@@ -39,7 +39,7 @@ namespace KMPBookingCore.DbObjects
             }
         }
 
-        [DBField]
+        [DbField]
         public string HealthFund
         {
             get => _healthFund; set
@@ -49,7 +49,7 @@ namespace KMPBookingCore.DbObjects
             }
         }
 
-        [DBField]
+        [DbField]
         public string MembershipNumber
         {
             get => _membershipNumber; set
@@ -59,7 +59,7 @@ namespace KMPBookingCore.DbObjects
             }
         }
 
-        [DBField]
+        [DbField]
         public decimal TotalDue
         {
             get => _totalDue; set
@@ -69,7 +69,7 @@ namespace KMPBookingCore.DbObjects
             }
         }
 
-        [DBField]
+        [DbField]
         public decimal PaymentReceived
         {
             get => _paymentReceived; set
@@ -79,7 +79,7 @@ namespace KMPBookingCore.DbObjects
             }
         }
 
-        [DBField]
+        [DbField]
         public double Discount
         {
             get => _discount; set

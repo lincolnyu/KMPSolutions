@@ -16,7 +16,7 @@ namespace KMPBookingCore.Database
 
         private static string GetTableName(Type type)
         {
-            var dbclass = type.GetCustomAttribute<DBClassAttribute>();
+            var dbclass = type.GetCustomAttribute<DbClassAttribute>();
             if (!string.IsNullOrEmpty(dbclass.TableName))
             {
                 return dbclass.TableName;
@@ -28,7 +28,7 @@ namespace KMPBookingCore.Database
         {
             foreach (var property in type.GetProperties(BindingFlags.FlattenHierarchy))
             {
-                if (property.GetCustomAttribute<DBPrimaryKeyAttribute>() != null)
+                if (property.GetCustomAttribute<DbPrimaryKeyAttribute>() != null)
                 {
                     return property;
                 }
@@ -48,7 +48,7 @@ namespace KMPBookingCore.Database
 
         public static string GetDbFieldName(PropertyInfo property, bool includeBrackets=true)
         {
-            var dbfield = property.GetCustomAttribute<DBFieldAttribute>();
+            var dbfield = property.GetCustomAttribute<DbFieldAttribute>();
             var attributeProvidedName = dbfield.FieldName;
             if (!string.IsNullOrEmpty(attributeProvidedName))
             {
@@ -93,7 +93,7 @@ namespace KMPBookingCore.Database
             {
                 return ((DateTime?)value).ToDbDateTime();
             }
-            else if (type.GetCustomAttribute<DBClassAttribute>() != null)
+            else if (type.GetCustomAttribute<DbClassAttribute>() != null)
             {
                 var primaryKeyProperty = GetPrimaryKey(type);
                 if (primaryKeyProperty != null)

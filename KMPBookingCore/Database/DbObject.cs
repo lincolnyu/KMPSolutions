@@ -57,11 +57,11 @@ namespace KMPBookingCore.Database
             var properties = GetType().GetProperties();
             foreach (var property in properties) 
             {
-                var dbfield = property.GetCustomAttribute<DBFieldAttribute>();
+                var dbfield = property.GetCustomAttribute<DbFieldAttribute>();
                 if (dbfield != null)
                 {
                     var fieldName = DbUtils.GetDbFieldName(property);
-                    if (property.PropertyType.GetCustomAttribute<DBClassAttribute>() != null && fieldName.EndsWith("ID", StringComparison.OrdinalIgnoreCase))
+                    if (property.PropertyType.GetCustomAttribute<DbClassAttribute>() != null && fieldName.EndsWith("ID", StringComparison.OrdinalIgnoreCase))
                     {
                         fieldName += " ID";
                     }

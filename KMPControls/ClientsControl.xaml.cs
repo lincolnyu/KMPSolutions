@@ -58,8 +58,8 @@ namespace KMPControls
         public bool IsUpdating => CurrentUpdateMode == UpdateMode.Adding || CurrentUpdateMode == UpdateMode.Editing;
 
         public OleDbConnection Connection { get; private set; }
-        private Dictionary<string, List<Client>> _nameToClients;
-        private Dictionary<string, List<Client>> _phoneToClients;
+        private Dictionary<string, List<Client>> _nameToClient;
+        private Dictionary<string, List<Client>> _phoneToClient;
         private Dictionary<string, Client> _idToClient;
         private AutoResetSuppressor _suppressSearch = new AutoResetSuppressor();
         private AutoResetSuppressor _addEditSuprressor = new AutoResetSuppressor();
@@ -215,9 +215,9 @@ namespace KMPControls
             if (Connection != null)
             {
                 var clientData = Query.LoadClientData(Connection);
-                _nameToClients = clientData.NameToEntry;
+                _nameToClient = clientData.NameToEntry;
                 _idToClient = clientData.IdToEntry;
-                _phoneToClients = clientData.PhoneToEntry;
+                _phoneToClient = clientData.PhoneToEntry;
 
                 foreach (var n in clientData.PhoneNumbers)
                 {
@@ -320,7 +320,7 @@ namespace KMPControls
                 ActiveClient = null;
                 if (foundClients.Count > 1)
                 {
-                    var dc = new DuplicateClients(duplicateMessage,
+                    var dc = new DuplicateResolverDialog("Duplicate Clients", duplicateMessage,
                         RecordsToStrings(foundClients))
                     {
                         //TODO set owner to the owner of this control

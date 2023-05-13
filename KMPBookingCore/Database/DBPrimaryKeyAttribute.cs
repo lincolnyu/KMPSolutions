@@ -2,7 +2,7 @@
 
 namespace KMPBookingCore.Database
 {
-    public class DBPrimaryKeyAttribute : Attribute
+    public class DbPrimaryKeyAttribute : Attribute
     {
     }
 }

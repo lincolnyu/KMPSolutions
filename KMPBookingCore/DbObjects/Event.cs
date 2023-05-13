@@ -3,7 +3,7 @@ using KMPBookingCore.Database;
 
 namespace KMPBookingCore.DbObjects
 {
-    [DBClass]
+    [DbClass]
     public class Event : DbObject
     {
         private int _id;
@@ -11,7 +11,7 @@ namespace KMPBookingCore.DbObjects
         private DateTime? _eventDate;
         private string _type;
 
-        [DBPrimaryKey]
+        [DbPrimaryKey]
         public int Id
         {
             get => _id; set
@@ -20,7 +20,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged("Id");
             }
         }
-        [DBField]
+        [DbField]
         public Client Client
         {
             get => _client; set
@@ -29,7 +29,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged("Client");
             }
         }
-        [DBField]
+        [DbField]
         public DateTime? EventDate
         {
             get => _eventDate; set
@@ -38,7 +38,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged("EventDate");
             }
         }
-        [DBField]
+        [DbField]
         public string Type
         {
             get => _type; set

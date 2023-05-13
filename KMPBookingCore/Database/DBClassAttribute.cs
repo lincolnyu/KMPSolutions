@@ -2,10 +2,10 @@
 
 namespace KMPBookingCore.Database
 {
-    public class DBClassAttribute : Attribute
+    public class DbClassAttribute : Attribute
     {
-        public DBClassAttribute() { }
-        public DBClassAttribute(string tableName)
+        public DbClassAttribute() { }
+        public DbClassAttribute(string tableName)
         {
             TableName = tableName;
         }

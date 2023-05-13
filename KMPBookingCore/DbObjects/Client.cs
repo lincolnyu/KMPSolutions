@@ -4,14 +4,14 @@ using KMPBookingCore.Database;
 
 namespace KMPBookingCore.DbObjects
 {
-    [DBClass]
+    [DbClass]
     public class Client : DbObject, IEquatable<Client>
     {
         public Client()
         {
         }
 
-        [DBPrimaryKey]
+        [DbPrimaryKey]
         public string MedicareNumber
         {
             get => _medicareNumber; set
@@ -21,7 +21,7 @@ namespace KMPBookingCore.DbObjects
             }
         } // Client ID
 
-        [DBField]
+        [DbField]
         public string FirstName
         {
             get => _firstName; set
@@ -30,7 +30,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(FirstName));
             }
         }
-        [DBField]
+        [DbField]
         public string Surname
         {
             get => _surname; set
@@ -39,7 +39,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(Surname));
             }
         }
-        [DBField]
+        [DbField]
         public DateTime? DOB
         {
             get => _dob; set
@@ -48,7 +48,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(DOB));
             }
         }
-        [DBField]
+        [DbField]
         public string Gender
         {
             get => _gender; set
@@ -57,7 +57,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(Gender));
             }
         }
-        [DBField]
+        [DbField]
         public string Phone
         {
             get => _phone; set
@@ -66,7 +66,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(Phone));
             }
         }
-        [DBField]
+        [DbField]
         public string Address
         {
             get => _address; set
@@ -76,7 +76,7 @@ namespace KMPBookingCore.DbObjects
             }
         }
 
-        [DBField]
+        [DbField]
         public GP ReferringGP
         {
             get => _referringGP; set
@@ -85,7 +85,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(ReferringGP));
             }
         }
-        [DBField]
+        [DbField]
         public DateTime? ReferringDate
         {
             get => _referringDate; set

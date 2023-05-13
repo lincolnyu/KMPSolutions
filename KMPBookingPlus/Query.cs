@@ -170,12 +170,12 @@ namespace KMPBookingPlus
             return LoadData<GPData, GP, string>(connection, query, r => {
                 var providerNumber = r.GetString(0);
                 var name = r.GetString(1);
-                var phoneNumber = r.GetString(2);
-                var fax = r.GetString(3);
-                var address = r.GetString(4);
+                var phoneNumber = r.TryGetString(2);
+                var fax = r.TryGetString(3);
+                var address = r.TryGetString(4);
                 var gp = new GP
                 {
-                    Id = providerNumber,
+                    ProviderNumber = providerNumber,
                     Name = name,
                     Phone = phoneNumber,
                     Fax = fax,

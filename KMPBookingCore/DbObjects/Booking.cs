@@ -3,7 +3,7 @@ using System;
 
 namespace KMPBookingCore.DbObjects
 {
-    [DBClass]
+    [DbClass]
     public class Booking : Event
     {
         private DateTime? _madeOn;
@@ -15,7 +15,7 @@ namespace KMPBookingCore.DbObjects
             Type = "Booking";
         }
 
-        [DBField]
+        [DbField]
         public DateTime? MadeOn
         {
             get => _madeOn; set
@@ -24,7 +24,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(MadeOn));
             }
         }
-        [DBField]
+        [DbField]
         public TimeSpan Duration
         {
             get => _duration; set
@@ -33,7 +33,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(Duration));
             }
         }
-        [DBField]
+        [DbField]
         public DateTime? ReminderDate
         {
             get => _reminderDate; set

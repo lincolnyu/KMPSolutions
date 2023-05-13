@@ -2,10 +2,10 @@
 
 namespace KMPBookingCore.Database
 {
-    public class DBFieldAttribute : Attribute
+    public class DbFieldAttribute : Attribute
     {
-        public DBFieldAttribute() { }
-        public DBFieldAttribute(string fieldName) 
+        public DbFieldAttribute() { }
+        public DbFieldAttribute(string fieldName) 
         {
             FieldName = fieldName;
         }

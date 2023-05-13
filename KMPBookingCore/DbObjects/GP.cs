@@ -2,7 +2,7 @@
 
 namespace KMPBookingCore.DbObjects
 {
-    [DBClass]
+    [DbClass]
     public class GP : DbObject
     {
         private string _id;
@@ -11,17 +11,17 @@ namespace KMPBookingCore.DbObjects
         private string _phone;
         private string _fax;
 
-        [DBPrimaryKey]
-        public string Id
+        [DbPrimaryKey]
+        public string ProviderNumber
         {
             get => _id; set
             {
                 _id = value;
-                RaiseEventChanged(nameof(Id));
+                RaiseEventChanged(nameof(ProviderNumber));
             }
         }
 
-        [DBField]
+        [DbField]
         public string Name
         {
             get => _name; set
@@ -30,7 +30,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(Name));
             }
         }
-        [DBField]
+        [DbField]
         public string Address
         {
             get => _address; set
@@ -39,7 +39,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(Address));
             }
         }
-        [DBField]
+        [DbField]
         public string Phone
         {
             get => _phone; set
@@ -48,7 +48,7 @@ namespace KMPBookingCore.DbObjects
                 RaiseEventChanged(nameof(Phone));
             }
         }
-        [DBField]
+        [DbField]
         public string Fax
         {
             get => _fax; set
