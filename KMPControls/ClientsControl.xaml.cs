@@ -55,15 +55,17 @@ namespace KMPControls
                 }
             }
         }
+
         public bool IsUpdating => CurrentUpdateMode == UpdateMode.Adding || CurrentUpdateMode == UpdateMode.Editing;
 
         public OleDbConnection Connection { get; private set; }
-        private Dictionary<string, List<Client>> _nameToClient;
-        private Dictionary<string, List<Client>> _phoneToClient;
-        private Dictionary<string, Client> _idToClient;
+
+        public Query.ClientData ClientData { get; private set; }
+
         private AutoResetSuppressor _suppressSearch = new AutoResetSuppressor();
         private AutoResetSuppressor _addEditSuprressor = new AutoResetSuppressor();
         public Action<string> ErrorReporter { private get; set; }
+        public Dictionary<string, Client> IdToClient => ClientData.IdToEntry;
 
         public enum UpdateMode
         {
@@ -107,7 +109,7 @@ namespace KMPControls
 
         public bool TrySetActiveClient(Client client)
         {
-            if (_idToClient[client.MedicareNumber] == client)
+            if (IdToClient[client.MedicareNumber] == client)
             {
                 SearchBy(new[] { client }, "");
                 return true;
@@ -214,20 +216,17 @@ namespace KMPControls
         {
             if (Connection != null)
             {
-                var clientData = Query.LoadClientData(Connection);
-                _nameToClient = clientData.NameToEntry;
-                _idToClient = clientData.IdToEntry;
-                _phoneToClient = clientData.PhoneToEntry;
+                ClientData = Query.LoadClientData(Connection);
 
-                foreach (var n in clientData.PhoneNumbers)
+                foreach (var n in ClientData.PhoneNumbers)
                 {
                     ClientNumber.Items.Add(n);
                 }
-                foreach (var id in clientData.Ids)
+                foreach (var id in ClientData.Ids)
                 {
                     ClientId.Items.Add(id);
                 }
-                foreach (var n in clientData.Names)
+                foreach (var n in ClientData.Names)
                 {
                     ClientName.Items.Add(n);
                 }
@@ -362,21 +361,21 @@ namespace KMPControls
 
         private void SearchByMedicareNumber(string medi)
         {
-            SearchBy(_idToClient.Values.FindByMedicareNumberContaining(medi)
+            SearchBy(IdToClient.Values.FindByMedicareNumberContaining(medi)
                     .OrderBy(x => x.MedicareNumber).ToList(),
                     $"Multiple clients found with medicare number containing '{medi}'");
         }
 
         private void SearchByName(string name)
         {
-            SearchBy(_idToClient.Values.FindNameContaining(name)
+            SearchBy(IdToClient.Values.FindNameContaining(name)
                     .OrderBy(x => x.MedicareNumber).ToList(),
                     $"Multiple clients found with name containing '{name}'");
         }
 
         private void SearchByPhone(string phone)
         {   
-            SearchBy(_idToClient.Values.FindByPhoneNumberContaining(phone)
+            SearchBy(IdToClient.Values.FindByPhoneNumberContaining(phone)
                     .OrderBy(x => x.MedicareNumber).ToList(),
                     $"Multiple clients found with phone number containing '{phone}'");
         }

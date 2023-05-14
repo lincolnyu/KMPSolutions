@@ -1,17 +1,15 @@
 ﻿using KMPBookingCore.DbObjects;
 using KMPBookingPlus;
-using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using static KMPBookingPlus.Query;
 using static KMPBookingCore.GPUtils;
 using System.Linq;
 using static KMPBookingCore.UiUtils;
-using static KMPControls.ClientsControl;
-using System.Xml.Linq;
+using static KMPBookingPlus.Query;
+using System;
 
 namespace KMPControls
 {
@@ -20,10 +18,6 @@ namespace KMPControls
     /// </summary>
     public partial class GPControl : UserControl
     {
-        private Dictionary<string, GP> _idToGP;
-        private Dictionary<string, List<GP>> _nameToGP;
-        private Dictionary<string, List<GP>> _phoneToGP;
-
         public OleDbConnection Connection { get; private set; }
 
         public delegate void ActiveGPChangedEventHandler();
@@ -35,19 +29,117 @@ namespace KMPControls
         public GP ActiveGP
         {
             get => _activeGP;
-            private set
+            set
             {
                 if (_activeGP != value)
                 {
                     _activeGP = value;
+                    if (_activeGP != null)
+                    {
+                        GPId.Text = _activeGP.ProviderNumber;
+                        GPName.Text = _activeGP.Name;
+                        GPPhoneNumber.Text = _activeGP.Phone;
+                        GPAddress.Text = _activeGP.Address;
+                    }
+                    else
+                    {
+                        GPId.Text = "";
+                        GPName.Text = "";
+                        GPPhoneNumber.Text = "";
+                        GPAddress.Text = "";
+                    }
                     ActiveGPChanged?.Invoke();
                 }
             }
         }
 
+        public GPData GPData { get; private set; }
+
+        public Dictionary<string, GP> IdToGp => GPData.IdToEntry;
+
+        public enum UpdateMode
+        {
+            Reading,
+            Editing,
+            Adding
+        }
+
+        public UpdateMode CurrentUpdateMode
+        {
+            get
+            {
+                if (IsAdding.IsVisible && IsAdding.IsChecked == true)
+                {
+                    return UpdateMode.Adding;
+                }
+                else if (IsEditing.IsVisible && IsEditing.IsChecked == true)
+                {
+                    return UpdateMode.Editing;
+                }
+                else
+                {
+                    return UpdateMode.Reading;
+                }
+            }
+        }
+
+        public bool IsUpdating => CurrentUpdateMode == UpdateMode.Adding || CurrentUpdateMode == UpdateMode.Editing;
+
         public GPControl()
         {
             InitializeComponent();
+
+            UpdateUIOnAddingStatusChanged();
+            IsAdding.Checked += IsAddingCheckedUnchecked;
+            IsAdding.Unchecked += IsAddingCheckedUnchecked;
+            IsEditing.Checked += IsEditingCheckedUnchecked;
+            IsEditing.Unchecked += IsEditingCheckedUnchecked;
+        }
+
+        private void UpdateUIOnAddingStatusChanged()
+        {
+            var isUpdating = IsUpdating;
+            var visible = isUpdating ? Visibility.Collapsed : Visibility.Visible;
+            SearchByNameBtn.Visibility = visible;
+            SearchByPhoneBtn.Visibility = visible;
+            GPId.IsTextSearchEnabled = !isUpdating;
+            GPName.IsTextSearchEnabled = !isUpdating;
+            GPPhoneNumber.IsTextSearchEnabled = !isUpdating;
+            GPAddress.IsReadOnly = !isUpdating;
+            UpdateBtn.IsEnabled = isUpdating;
+            ResetBtn.IsEnabled = isUpdating;
+
+            switch (CurrentUpdateMode)
+            {
+                case UpdateMode.Adding:
+                    SearchByIdBtn.Visibility = Visibility.Collapsed;
+                    GPId.IsEnabled = true;
+                    UpdateBtn.Content = "Add";
+                    GPId.Text = "";
+                    break;
+                case UpdateMode.Editing:
+                    SearchByIdBtn.Visibility = Visibility.Visible;
+                    GPId.IsEnabled = true;
+                    UpdateBtn.Content = "Update";
+                    GPId.Text = ActiveGP?.ProviderNumber ?? "";
+                    break;
+                default:
+                    SearchByIdBtn.Visibility = Visibility.Visible;
+                    GPId.IsEnabled = true;
+                    UpdateBtn.Content = "Update";
+                    GPId.Text = ActiveGP?.ProviderNumber ?? "";
+                    break;
+            }
+        }
+
+        private void IsEditingCheckedUnchecked(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void IsAddingCheckedUnchecked(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private void GPId_KeyDown(object sender, KeyEventArgs e)
@@ -68,7 +160,7 @@ namespace KMPControls
 
         private void SearchByProviderNumber(string providerNumber)
         {
-            SearchBy(_idToGP.Values.FindByProviderNumberContaining(providerNumber)
+            SearchBy(IdToGp.Values.FindByProviderNumberContaining(providerNumber)
                     .OrderBy(x => x.ProviderNumber).ToList(),
                     $"Multiple GPs found with provider number containing '{providerNumber}'");
         }
@@ -107,16 +199,6 @@ namespace KMPControls
                 {
                     //ErrorReporter?.Invoke("Error: Client not found.");
                 }
-                if (ActiveGP != null)
-                {
-                    GPId.Text = ActiveGP.ProviderNumber;
-                    GPName.Text = ActiveGP.Name;
-                    GPPhoneNumber.Text = ActiveGP.Phone;
-                    GPAddress.Text = ActiveGP.Address;
-                }
-                else
-                {
-                }
             });
         }
 
@@ -143,7 +225,7 @@ namespace KMPControls
 
         private void SearchByName(string name)
         {
-            SearchBy(_idToGP.Values.FindNameContaining(name)
+            SearchBy(IdToGp.Values.FindNameContaining(name)
                     .OrderBy(x => x.ProviderNumber).ToList(),
                     $"Multiple GP found with name containing '{name}'");
         }
@@ -176,7 +258,7 @@ namespace KMPControls
 
         private void SearchByPhone(string phone)
         {
-            SearchBy(_idToGP.Values.FindPhoneContaining(phone).OrderBy(x=>x.ProviderNumber).ToList(), $"Multiple GP found with phone number containing '{phone}'");
+            SearchBy(IdToGp.Values.FindPhoneContaining(phone).OrderBy(x=>x.ProviderNumber).ToList(), $"Multiple GP found with phone number containing '{phone}'");
         }
 
         private void ResetBtn_Click(object sender, RoutedEventArgs e)
@@ -199,21 +281,17 @@ namespace KMPControls
         {
             if (Connection != null)
             {
-                var gpData = Query.LoadGPData(Connection);
+                GPData = Query.LoadGPData(Connection);
 
-                _nameToGP = gpData.NameToEntry;
-                _idToGP = gpData.IdToEntry;
-                _phoneToGP = gpData.PhoneToEntry;
-
-                foreach (var n in gpData.PhoneNumbers)
+                foreach (var n in GPData.PhoneNumbers)
                 {
                     GPPhoneNumber.Items.Add(n);
                 }
-                foreach (var id in gpData.Ids)
+                foreach (var id in GPData.Ids)
                 {
                     GPId.Items.Add(id);
                 }
-                foreach (var n in gpData.Names)
+                foreach (var n in GPData.Names)
                 {
                     GPName.Items.Add(n);
                 }
