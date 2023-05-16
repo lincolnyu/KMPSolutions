@@ -396,14 +396,12 @@ namespace KMPControls
         {
             ActiveClient = new Client();
             UpdateUiToActive();
-            var sbSql = new StringBuilder("insert into Clients([Client Name], [DOB], [Gender], [Medicare], [Phone], [Address]) values(");
-            sbSql.Append($"'{ActiveClient.ClientFormalName()}',");
-            sbSql.Append($"{ActiveClient.DOB.ToDbDate()},");
-            sbSql.Append($"'{ActiveClient.Gender}',");
-            sbSql.Append($"'{ActiveClient.MedicareNumber}',");
-            sbSql.Append($"'{ActiveClient.Phone}',");
-            sbSql.Append($"'{ActiveClient.Address}')");
-            Connection.RunNonQuery(sbSql.ToString(), false);
+            if (!ClientData.TryAdd(ActiveClient))
+            {
+                // todo...
+                return;
+            }
+            //TODO Successful message
         }
 
         private void Edit()
@@ -415,16 +413,7 @@ namespace KMPControls
             }
 
             UpdateUiToActive();
-            var sbSql = new StringBuilder($"update Clients set ");
-            sbSql.Append($"[Client Name] = '{ActiveClient.ClientFormalName()}',");
-            sbSql.Append($"[DOB] = {ActiveClient.DOB.ToDbDate()},");
-            sbSql.Append($"[Medicare] = {ActiveClient.MedicareNumber}, ");
-            sbSql.Append($"[Gender] = '{ActiveClient.Gender}',");
-            sbSql.Append($"[Phone] = '{ActiveClient.Phone}',");
-            sbSql.Append($"[Address] = '{ActiveClient.Address}'");
-            sbSql.Append($" where ID = {ActiveClient.MedicareNumber}");
-            Connection.RunNonQuery(sbSql.ToString());
-
+            
             //TODO Successful message
         }
 

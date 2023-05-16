@@ -1,4 +1,5 @@
-﻿using KMPBookingCore.Database;
+﻿using KMPBookingCore;
+using KMPBookingCore.Database;
 using KMPBookingCore.DbObjects;
 using System;
 using System.Collections.Generic;
@@ -74,6 +75,30 @@ namespace KMPBookingPlus
                 Names.Sort();
                 PhoneNumbers.Sort();
             }
+
+            public bool TryAdd(Client client)
+            {
+                if (IdToEntry.ContainsKey(client.MedicareNumber))
+                {
+                    return false;
+                }
+                IdToEntry.Add(client.MedicareNumber, client);
+                var name = client.ClientFormalName();
+                var index = Names.IndexOf(name);
+                if (index < 0)
+                {
+                    index = -index - 1;
+                    Names.Insert(index, name);
+                }
+                var phone = client.Phone;
+                index = Names.IndexOf(phone);
+                if (index < 0)
+                {
+                    index = -index - 1;
+                    PhoneNumbers.Insert(index, phone);
+                }
+                return true;
+            }
         }
 
         public class GPData : EntriesWithID<GP, string>
@@ -139,7 +164,7 @@ namespace KMPBookingPlus
                 if (!clientData.NameToEntry.TryGetValue(name, out var namelist))
                 {
                     clientData.NameToEntry.Add(name, new List<Client> { cr });
-                    clientData.Names.Add(name);
+                    clientData.Names.Add(cr.ClientFormalName());
                 }
                 else
                 {
