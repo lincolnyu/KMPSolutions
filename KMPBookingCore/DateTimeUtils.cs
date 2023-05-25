@@ -128,11 +128,6 @@ namespace KMPBookingCore
             return sb.ToString();
         }
 
-        public static string ToDbString(this string s)
-        {
-            return $"'{s}'";
-        }
-
         public static string ToDbDate(this DateTime date)
         {
             return $"\"{date.ToString("yyyy-MM-dd")}\"";
@@ -152,7 +147,12 @@ namespace KMPBookingCore
 
         public static string ToDbDateTime(this DateTime date)
         {
-            return $"\"{date.ToString("yyyy-MM-dd hh:mm:ss.fff")}\"";
+            return $"'{date.ToString("g")}'";
+        }
+
+        public static string ToDbDateOnly(this DateTime date)
+        {
+            return $"'{date.ToString("d")}'";
         }
 
         public static string ToDbDateTime(this DateTime? date)
@@ -166,5 +166,18 @@ namespace KMPBookingCore
                 return "NULL";
             }
         }
+
+        public static string ToDbDateOnly(this DateTime? date)
+        {
+            if (date.HasValue)
+            {
+                return date.Value.ToDbDateOnly();
+            }
+            else
+            {
+                return "NULL";
+            }
+        }
+
     }
 }

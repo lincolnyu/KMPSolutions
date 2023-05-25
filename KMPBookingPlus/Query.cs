@@ -115,6 +115,30 @@ namespace KMPBookingPlus
                 Names.Sort();
                 PhoneNumbers.Sort();
             }
+
+            public bool TryAdd(GP gp)
+            {
+                if (IdToEntry.ContainsKey(gp.ProviderNumber))
+                {
+                    return false;
+                }
+                IdToEntry.Add(gp.ProviderNumber, gp);
+                var name = gp.Name;
+                var index = Names.IndexOf(name);
+                if (index < 0)
+                {
+                    index = -index - 1;
+                    Names.Insert(index, name);
+                }
+                var phone = gp.Phone;
+                index = PhoneNumbers.IndexOf(phone);
+                if (index < 0)
+                {
+                    index = -index - 1;
+                    PhoneNumbers.Insert(index, phone);
+                }
+                return true;
+            }
         }
 
         public class EventData : EntriesWithID<Event, int>

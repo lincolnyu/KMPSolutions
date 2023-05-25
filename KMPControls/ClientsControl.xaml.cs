@@ -132,6 +132,12 @@ namespace KMPControls
             IsEditing.Unchecked += IsEditingCheckedUnchecked;
             ClientName.DropDownOpened += ClientFieldDropDownOpened;
             ClientNumber.DropDownOpened += ClientFieldDropDownOpened;
+            this.Unloaded += ClientsControl_Unloaded;
+        }
+
+        private void ClientsControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            SaveData();
         }
 
         private void ClientFieldDropDownOpened(object sender, EventArgs e)
@@ -230,6 +236,14 @@ namespace KMPControls
                 {
                     ClientName.Items.Add(n);
                 }
+            }
+        }
+
+        public void SaveData()
+        {
+            if (Connection != null)
+            {
+                Update.SaveClientData(Connection, ClientData);
             }
         }
 

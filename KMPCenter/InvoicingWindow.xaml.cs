@@ -293,7 +293,7 @@ namespace KMPCenter
             foreach (var sa in _servicesToAdd)
             {
                 var cmdsvc = AccessUtils.CreateInsert("Services", new (string, string)[]{
-                    ("Service", sa.ServiceContent.ToDbString()),
+                    ("Service", sa.ServiceContent),
                     ("Receipt ID", sa.Receipt.Id.ToString()),
                     ("Booking ID", sa.Booking?.Id.ToString()),
                     ("Service Date", sa.EventDate.ToDbDate()),
@@ -313,7 +313,7 @@ namespace KMPCenter
                 var su = kvp.Value;
                 var cmdsvc = AccessUtils.CreateUpdate("Services", new (string, string)[]
                 {
-                    ("Service", su.ServiceContent.ToDbString()),
+                    ("Service", su.ServiceContent),
                     ("Receipt ID", su.Receipt.Id.ToString()),
                     ("Booking ID", su.Booking?.Id.ToString()),
                     ("Service Date", su.EventDate.ToDbDate()),

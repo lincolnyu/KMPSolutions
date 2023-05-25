@@ -10,6 +10,7 @@ using System.Linq;
 using static KMPBookingCore.UiUtils;
 using static KMPBookingPlus.Query;
 using System;
+using KMPBookingCore;
 
 namespace KMPControls
 {
@@ -24,6 +25,7 @@ namespace KMPControls
         public event ActiveGPChangedEventHandler ActiveGPChanged;
 
         private AutoResetSuppressor _suppressSearch = new AutoResetSuppressor();
+        private AutoResetSuppressor _addEditSuprressor = new AutoResetSuppressor();
         private GP _activeGP;
 
         public GP ActiveGP
@@ -34,20 +36,6 @@ namespace KMPControls
                 if (_activeGP != value)
                 {
                     _activeGP = value;
-                    if (_activeGP != null)
-                    {
-                        GPId.Text = _activeGP.ProviderNumber;
-                        GPName.Text = _activeGP.Name;
-                        GPPhoneNumber.Text = _activeGP.Phone;
-                        GPAddress.Text = _activeGP.Address;
-                    }
-                    else
-                    {
-                        GPId.Text = "";
-                        GPName.Text = "";
-                        GPPhoneNumber.Text = "";
-                        GPAddress.Text = "";
-                    }
                     ActiveGPChanged?.Invoke();
                 }
             }
@@ -94,6 +82,13 @@ namespace KMPControls
             IsAdding.Unchecked += IsAddingCheckedUnchecked;
             IsEditing.Checked += IsEditingCheckedUnchecked;
             IsEditing.Unchecked += IsEditingCheckedUnchecked;
+
+            this.Unloaded += GPControl_Unloaded;
+        }
+
+        private void GPControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            SaveData();
         }
 
         private void UpdateUIOnAddingStatusChanged()
@@ -134,12 +129,26 @@ namespace KMPControls
 
         private void IsEditingCheckedUnchecked(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            _addEditSuprressor.Run(() =>
+            {
+                if (IsEditing.IsChecked == true)
+                {
+                    IsAdding.IsChecked = false;
+                }
+                UpdateUIOnAddingStatusChanged();
+            });
         }
 
         private void IsAddingCheckedUnchecked(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            _addEditSuprressor.Run(() =>
+            {
+                if (IsAdding.IsChecked == true)
+                {
+                    IsEditing.IsChecked = false;
+                }
+                UpdateUIOnAddingStatusChanged();
+            });
         }
 
         private void GPId_KeyDown(object sender, KeyEventArgs e)
@@ -263,12 +272,65 @@ namespace KMPControls
 
         private void ResetBtn_Click(object sender, RoutedEventArgs e)
         {
-
+            if (CurrentUpdateMode == UpdateMode.Adding)
+            {
+                GPId.Text = "";
+                GPName.Text = "";
+                GPPhoneNumber.Text = "";
+                GPAddress.Text = "";
+            }
+            else if (CurrentUpdateMode == UpdateMode.Editing && ActiveGP != null)
+            {
+                GPId.Text = ActiveGP.ProviderNumber;
+                GPName.Text = ActiveGP.Name;
+                GPPhoneNumber.Text = ActiveGP.Phone;
+                GPAddress.Text = ActiveGP.Address;
+            }
         }
 
         private void UpdateBtn_Click(object sender, RoutedEventArgs e)
         {
+            if (CurrentUpdateMode == UpdateMode.Adding)
+            {
+                Add();
+            }
+            else if (CurrentUpdateMode == UpdateMode.Editing)
+            {
+                Edit();
+            }
+        }
 
+        private void Edit()
+        {
+            if (ActiveGP == null)
+            {
+                //TODO Error message...
+                return;
+            }
+
+            UpdateUiToActive();
+
+            //TODO Successful message
+        }
+
+        private void Add()
+        {
+            ActiveGP = new GP();
+            UpdateUiToActive();
+            if (!GPData.TryAdd(ActiveGP))
+            {
+                // todo...
+                return;
+            }
+            //TODO Successful message
+        }
+
+        private void UpdateUiToActive()
+        {
+            ActiveGP.ProviderNumber = GPId.Text.Trim();
+            ActiveGP.Name = GPName.Text;
+            ActiveGP.Phone = GPPhoneNumber.Text;
+            ActiveGP.Address = GPAddress.Text;
         }
 
         public void SetDataConnection(OleDbConnection connection)
@@ -295,6 +357,14 @@ namespace KMPControls
                 {
                     GPName.Items.Add(n);
                 }
+            }
+        }
+
+        private void SaveData()
+        {
+            if (Connection != null)
+            {
+                Update.SaveGPData(Connection, GPData);
             }
         }
     }

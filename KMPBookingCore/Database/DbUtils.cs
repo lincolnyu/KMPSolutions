@@ -6,7 +6,7 @@ namespace KMPBookingCore.Database
 {
     public static class DbUtils
     {
-        public static string NullString = "''";
+        public static string NullString = "NULL";
         public static string NullNumberId = "0";
 
         public static string GetTableName<T>() where T : DbObject
@@ -26,14 +26,14 @@ namespace KMPBookingCore.Database
 
         public static PropertyInfo GetPrimaryKey(Type type)
         {
-            foreach (var property in type.GetProperties(BindingFlags.FlattenHierarchy))
+            foreach (var property in type.GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public))
             {
                 if (property.GetCustomAttribute<DbPrimaryKeyAttribute>() != null)
                 {
                     return property;
                 }
             }
-            return null; ;
+            return null;
         }
 
         public static string GetPrimaryKeyDBFieldName(Type type)
@@ -43,16 +43,20 @@ namespace KMPBookingCore.Database
             {
                 return GetDbFieldName(primaryKey);
             }
-            return null;
+            return primaryKey.Name;
         }
 
         public static string GetDbFieldName(PropertyInfo property, bool includeBrackets=true)
         {
             var dbfield = property.GetCustomAttribute<DbFieldAttribute>();
-            var attributeProvidedName = dbfield.FieldName;
-            if (!string.IsNullOrEmpty(attributeProvidedName))
+            // There may be fields that are db fields and allowed to not have DbField attribute.
+            if (dbfield != null)
             {
-                return attributeProvidedName;
+                var attributeProvidedName = dbfield.FieldName;
+                if (!string.IsNullOrEmpty(attributeProvidedName))
+                {
+                    return attributeProvidedName;
+                }
             }
             var memberName = property.Name;
             var sb = new StringBuilder();
@@ -65,6 +69,11 @@ namespace KMPBookingCore.Database
                 }
                 sb.Append(ch);
             }
+            if (property.PropertyType.GetCustomAttribute<DbClassAttribute>() != null && !sb.ToString().EndsWith("ID", StringComparison.OrdinalIgnoreCase))
+            {
+                sb.Append(" ID");
+            }
+
             var res = sb.ToString().Trim();
             if (includeBrackets && res.Contains(" "))
             {
@@ -75,7 +84,7 @@ namespace KMPBookingCore.Database
             return res;
         }
 
-        public static string ToDbString(Type type, object value)
+        public static string ToDbString(Type type, object value, PropertyInfo property=null)
         {
             if (type == typeof(string))
             {
@@ -87,13 +96,21 @@ namespace KMPBookingCore.Database
             }
             else if (type == typeof(DateTime))
             {
+                if (property != null && (property.GetCustomAttribute<DbDateOnlyAttribute>()?.IsDateOnly??true))
+                {
+                    return ((DateTime)value).ToDbDateOnly();
+                }
                 return ((DateTime)value).ToDbDateTime();
             }
             else if (type == typeof(DateTime?))
             {
+                if (property != null && (property.GetCustomAttribute<DbDateOnlyAttribute>()?.IsDateOnly ?? true))
+                {
+                    return ((DateTime?)value).ToDbDateOnly();
+                }
                 return ((DateTime?)value).ToDbDateTime();
             }
-            else if (type.GetCustomAttribute<DbClassAttribute>() != null)
+            else if (type.IsClass && type.GetCustomAttribute<DbClassAttribute>() != null)
             {
                 var primaryKeyProperty = GetPrimaryKey(type);
                 if (primaryKeyProperty != null)
@@ -105,11 +122,11 @@ namespace KMPBookingCore.Database
                     }
                     else
                     {
-                        if (type == typeof(string))
+                        if (primaryKeyProperty.PropertyType == typeof(string))
                         {
                             return NullString;
                         }
-                        else if (type == typeof(int))
+                        else if (primaryKeyProperty.PropertyType == typeof(int))
                         {
                             return NullNumberId;
                         }
