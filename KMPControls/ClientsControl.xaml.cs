@@ -7,7 +7,6 @@ using System.Data.OleDb;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Text;
 using static KMPBookingCore.UiUtils;
 using KMPBookingCore.DbObjects;
 
@@ -67,6 +66,43 @@ namespace KMPControls
         public Action<string> ErrorReporter { private get; set; }
         public Dictionary<string, Client> IdToClient => ClientData.IdToEntry;
 
+        public GPControl LinkedGPControl
+        {
+            get
+            {
+                return _linkedGPControl;
+            }
+            set
+            {
+                if (_linkedGPControl != value)
+                {
+                    var oldGpControl = _linkedGPControl;
+                    _linkedGPControl = value;
+                    SetupLinkageWithGPControl(oldGpControl);
+                }
+            }
+        }
+
+        private void SetupLinkageWithGPControl(GPControl oldGpControl)
+        {
+            if (oldGpControl != null)
+            {
+                oldGpControl.ActiveGPChanged -= GpControl_ActiveGPChanged;
+            }
+            if (_linkedGPControl != null)
+            {
+                _linkedGPControl.ActiveGPChanged += GpControl_ActiveGPChanged;
+            }
+        }
+
+        private void GpControl_ActiveGPChanged()
+        {
+            if (ActiveClient != null)
+            {
+                ActiveClient.ReferringGP = _linkedGPControl.ActiveGP;
+            }
+        }
+
         public enum UpdateMode
         {
             Reading,
@@ -94,6 +130,8 @@ namespace KMPControls
         }
 
         private Client _activeClient;
+        private GPControl _linkedGPControl;
+
         public Client ActiveClient
         {
             get => _activeClient;
@@ -101,9 +139,20 @@ namespace KMPControls
             {
                 if (_activeClient != value)
                 {
+                    var oldActiveClient = _activeClient;
                     _activeClient = value;
+                    OnActiveClientChanged(oldActiveClient);
+
                     ActiveClientChanged?.Invoke();
                 }
+            }
+        }
+
+        private void OnActiveClientChanged(Client oldActiveClient)
+        {
+            if (LinkedGPControl != null && ActiveClient != null)
+            {
+                LinkedGPControl.ActiveGP = ActiveClient.ReferringGP;
             }
         }
 

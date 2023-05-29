@@ -9,7 +9,6 @@ using static KMPBookingCore.GPUtils;
 using System.Linq;
 using static KMPBookingCore.UiUtils;
 using static KMPBookingPlus.Query;
-using System;
 using KMPBookingCore;
 
 namespace KMPControls
@@ -36,6 +35,7 @@ namespace KMPControls
                 if (_activeGP != value)
                 {
                     _activeGP = value;
+                    UpdateUiFromActive();
                     ActiveGPChanged?.Invoke();
                 }
             }
@@ -331,6 +331,24 @@ namespace KMPControls
             ActiveGP.Name = GPName.Text;
             ActiveGP.Phone = GPPhoneNumber.Text;
             ActiveGP.Address = GPAddress.Text;
+        }
+
+        private void UpdateUiFromActive()
+        {
+            if (ActiveGP != null)
+            {
+                GPId.Text = ActiveGP.ProviderNumber;
+                GPName.Text = ActiveGP.Name;
+                GPPhoneNumber.Text = ActiveGP.Phone;
+                GPAddress.Text = ActiveGP.Address;
+            }
+            else
+            {
+                GPId.Text = "";
+                GPName.Text = "";
+                GPPhoneNumber.Text = "";
+                GPAddress.Text = "";
+            }
         }
 
         public void SetDataConnection(OleDbConnection connection)

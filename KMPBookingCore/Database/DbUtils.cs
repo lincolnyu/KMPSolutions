@@ -118,7 +118,14 @@ namespace KMPBookingCore.Database
                     if (value != null)
                     {
                         var id = primaryKeyProperty.GetValue(value);
-                        return id.ToString();
+                        if (primaryKeyProperty.PropertyType == typeof(int))
+                        {
+                            return id.ToString();
+                        }
+                        else
+                        {
+                            return "'" + id.ToString() + "'";
+                        }
                     }
                     else
                     {

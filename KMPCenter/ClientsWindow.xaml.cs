@@ -20,6 +20,8 @@ namespace KMPCenter
             Clients.SetDataConnection(MainWindow.Connection);
             GPs.SetDataConnection(MainWindow.Connection);
             Query.CorrelateClientAndGP(MainWindow.Connection, Clients.ClientData, GPs.GPData);
+
+            Clients.LinkedGPControl = GPs;
         }
 
         private void Clients_ActiveClientChanged()
