@@ -39,11 +39,7 @@ namespace KMPBookingCore.Database
         public static string GetPrimaryKeyDBFieldName(Type type)
         {
             var primaryKey = GetPrimaryKey(type);
-            if (primaryKey == null)
-            {
-                return GetDbFieldName(primaryKey);
-            }
-            return primaryKey.Name;
+            return GetDbFieldName(primaryKey);
         }
 
         public static string GetDbFieldName(PropertyInfo property, bool includeBrackets=true)

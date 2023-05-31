@@ -97,9 +97,9 @@ namespace KMPControls
 
         private void GpControl_ActiveGPChanged()
         {
-            if (ActiveClient != null)
+            if (CurrentUpdateMode != UpdateMode.Reading)
             {
-                ActiveClient.ReferringGP = _linkedGPControl.ActiveGP;
+                UpdateActiveClientReferringGP();
             }
         }
 
@@ -116,10 +116,12 @@ namespace KMPControls
             {
                 if (IsAdding.IsVisible && IsAdding.IsChecked == true)
                 {
+                    UpdateActiveClientReferringGP();
                     return UpdateMode.Adding;
                 }
                 else if (IsEditing.IsVisible && IsEditing.IsChecked == true)
                 {
+                    UpdateActiveClientReferringGP();
                     return UpdateMode.Editing;
                 }
                 else
@@ -129,8 +131,17 @@ namespace KMPControls
             }
         }
 
+        private void UpdateActiveClientReferringGP()
+        {
+            if (ActiveClient != null)
+            {
+                ActiveClient.ReferringGP = _linkedGPControl.ActiveGP;
+            }
+        }
+
         private Client _activeClient;
         private GPControl _linkedGPControl;
+        private GP _originalReferringGP;
 
         public Client ActiveClient
         {
@@ -150,9 +161,14 @@ namespace KMPControls
 
         private void OnActiveClientChanged(Client oldActiveClient)
         {
-            if (LinkedGPControl != null && ActiveClient != null)
+            _originalReferringGP = null;
+            if (LinkedGPControl != null)
             {
-                LinkedGPControl.ActiveGP = ActiveClient.ReferringGP;
+                if (ActiveClient != null)
+                {
+                    LinkedGPControl.ActiveGP = ActiveClient.ReferringGP;
+                }
+                _originalReferringGP = LinkedGPControl.ActiveGP;
             }
         }
 
@@ -500,6 +516,7 @@ namespace KMPControls
                 ClientGender.SelectedItem = "";
                 ClientDob.SelectedDate = null;
                 ClientAddress.Text = "";
+                _linkedGPControl.ActiveGP = null;
             }
             else if (CurrentUpdateMode == UpdateMode.Editing && ActiveClient != null)
             {
@@ -508,6 +525,7 @@ namespace KMPControls
                 ConvertGenderToUi(ActiveClient.Gender);
                 ClientDob.SelectedDate = ActiveClient.DOB;
                 ClientAddress.Text = ActiveClient.Address;
+                _linkedGPControl.ActiveGP = _originalReferringGP;
             }
         }
 

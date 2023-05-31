@@ -21,7 +21,8 @@ namespace KMPBookingPlus
                 }
                 else if (obj.ObjDbState == DbObject.DbState.Dirty)
                 {
-                    statement = AccessUtils.CreateUpdate(tableName, obj.GetFieldValuePairs(), $"{primaryKeyDbField}={id}");
+                    var idStr = DbUtils.ToDbString(typeof(IdType), id);
+                    statement = AccessUtils.CreateUpdate(tableName, obj.GetFieldValuePairs(), $"{primaryKeyDbField}={idStr}");
                 }
                 else
                 {
