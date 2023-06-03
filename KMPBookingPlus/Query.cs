@@ -3,6 +3,7 @@ using KMPBookingCore.Database;
 using KMPBookingCore.DbObjects;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Data.OleDb;
 
 namespace KMPBookingPlus
@@ -385,62 +386,95 @@ namespace KMPBookingPlus
 
         public static EventData LoadClientEventData(OleDbConnection connection, ClientData clientData, ServiceData serviceData, BookingData bookingData, ReceiptData receiptData)
         {
-            var query = "select Client.[Medicare Number] Event.ID Event.[Event Date], Event.Type, from Client, Event where Client.[Medicare Number] = Event.[Client Id]";
+            var query = "select Client.[Medicare Number], Event.ID, Event.[Event Date], Event.Type from Client, Event where Client.[Medicare Number]=Event.[Client ID]";
 
             return LoadData<EventData, Event, int>(connection, query, r =>
             {
                 var clientId = r.GetString(0);
                 var eventId = r.GetInt32(1);
                 var date = r.GetDateTime(2);
-                var type = r.GetString(3);
-                var serviceId = r.GetInt32(4);
+                var type = r.TryGetString(3);
 
                 if (!clientData.IdToEntry.TryGetValue(clientId, out var client))
                 {
                     throw new KeyNotFoundException($"Client ID {clientId} not found for event {eventId}.");
                 }
 
-                Event e;
+                Event e = null;
                 switch (type)
                 {
                     case "Service":
-                        if (serviceData.IdToEntry.TryGetValue(eventId, out var service))
+                        if (serviceData != null)
                         {
-                            e = service;
-                        }
-                        else
-                        {
-                            throw new KeyNotFoundException($"Service not found for service event {eventId}");
+                            if (serviceData.IdToEntry.TryGetValue(eventId, out var service))
+                            {
+                                e = service;
+                            }
+                            else
+                            {
+                                throw new KeyNotFoundException($"Service not found for service event {eventId}");
+                            }
                         }
                         break;
                     case "Booking":
-                        if (bookingData.IdToEntry.TryGetValue(eventId, out var booking))
+                        if (bookingData != null)
                         {
-                            e = booking;
-                        }
-                        else
-                        {
-                            throw new KeyNotFoundException($"Service not found for service event {eventId}");
+                            if (bookingData.IdToEntry.TryGetValue(eventId, out var booking))
+                            {
+                                e = booking;
+                            }
+                            else
+                            {
+                                throw new KeyNotFoundException($"Service not found for service event {eventId}");
+                            }
                         }
                         break;
                     case "Receipt":
-                        if (receiptData.IdToEntry.TryGetValue(eventId, out var receipt))
+                        if (receiptData != null)
                         {
-                            e = receipt;
-                        }
-                        else
-                        {
-                            throw new KeyNotFoundException($"Service not found for service event {eventId}");
+                            if (receiptData.IdToEntry.TryGetValue(eventId, out var receipt))
+                            {
+                                e = receipt;
+                            }
+                            else
+                            {
+                                throw new KeyNotFoundException($"Service not found for service event {eventId}");
+                            }
                         }
                         break;
                     default:
-                        e = new Event
+                        if (e == null && serviceData != null)
                         {
-                            Id = eventId,
-                            EventDate = date,
-                            Type = type,
-                        };
+                            if (serviceData.IdToEntry.TryGetValue(eventId, out var service))
+                            {
+                                e = service;
+                            }
+                        }
+                        if (e == null && bookingData != null)
+                        {
+                            if (bookingData.IdToEntry.TryGetValue(eventId, out var booking))
+                            {
+                                e = booking;
+                            }
+                        }
+                        if (e == null && receiptData != null)
+                        {
+                            if (receiptData.IdToEntry.TryGetValue(eventId, out var receipt))
+                            {
+                                e = receipt;
+                            }
+                        }
                         break;
+                }
+
+                if (e == null)
+                {
+                    e = new Event
+                    {
+                        Id = eventId,
+                        EventDate = date,
+                        Type = type,
+                    };
                 }
 
                 e.Client = client;

@@ -9,13 +9,13 @@
         WindowStartupLocation="CenterOwner"
         Title="KMP Clients" Height="450" Width="800">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="59*"/>
-            <ColumnDefinition Width="741*"/>
-        </Grid.ColumnDefinitions>
         <StackPanel Grid.ColumnSpan="2">
-            <kmpcontrols:ClientsControl Name="Clients"></kmpcontrols:ClientsControl>
-            <kmpcontrols:GPControl Name="GPs"></kmpcontrols:GPControl>
+            <GroupBox Margin="3" Header="Client">
+                <kmpcontrols:ClientsControl Name="Clients"></kmpcontrols:ClientsControl>
+            </GroupBox>
+            <GroupBox Margin="3" Header="GP">
+                <kmpcontrols:GPControl Name="GPs"></kmpcontrols:GPControl>
+            </GroupBox>
         </StackPanel>
     </Grid>
 </Window>

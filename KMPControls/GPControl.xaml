@@ -6,32 +6,36 @@
              xmlns:local="clr-namespace:KMPControls"
              mc:Ignorable="d" d:DesignWidth="400" Height="158">
     <StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <Label>GP Provider Number</Label>
-            <ComboBox MinWidth="120" IsEditable="True" Name="GPId"
+        <GroupBox Header="Profile">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label>Provider Number</Label>
+                    <ComboBox MinWidth="120" IsEditable="True" Name="GPId"
                         KeyDown="GPId_KeyDown"  SelectionChanged="GPId_SelectionChanged"></ComboBox>
-            <Button Name="SearchByIdBtn" Click="SearchByIdBtn_Click" ToolTip="Find the GP whose Prover Number contain this text">Find</Button>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <Label>GP Name</Label>
-            <ComboBox MinWidth="120" IsEditable="True" Name="GPName"
+                    <Button Name="SearchByIdBtn" Click="SearchByIdBtn_Click" ToolTip="Find the GP whose Prover Number contain this text">Find</Button>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label>Name</Label>
+                    <ComboBox MinWidth="120" IsEditable="True" Name="GPName"
                         KeyDown="GPName_KeyDown" SelectionChanged="GPName_SelectionChanged"></ComboBox>
-            <Button Name="SearchByNameBtn" Click="SearchByNameBtn_Click" ToolTip="Find all clients whose names contain this text">
-                Find
-            </Button>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <Label>GP Phone Number</Label>
-            <ComboBox MinWidth="120" IsEditable="True"  Name="GPPhoneNumber" 
+                    <Button Name="SearchByNameBtn" Click="SearchByNameBtn_Click" ToolTip="Find all clients whose names contain this text">
+                        Find
+                    </Button>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label>Phone Number</Label>
+                    <ComboBox MinWidth="120" IsEditable="True"  Name="GPPhoneNumber" 
                         KeyDown="GPPhoneNumber_KeyDown" SelectionChanged="GPPhoneNumber_SelectionChanged"></ComboBox>
-            <Button Name="SearchByPhoneBtn" Click="SearchByPhoneBtn_Click" ToolTip="Find all clients whose phone numbers contain this text">
-                Find
-            </Button>
-        </StackPanel>
-        <StackPanel Name="GPAddressSection" Orientation="Horizontal">
-            <Label>GP Address</Label>
-            <TextBox Name="GPAddress" MinWidth="360"></TextBox>
-        </StackPanel>
+                    <Button Name="SearchByPhoneBtn" Click="SearchByPhoneBtn_Click" ToolTip="Find all clients whose phone numbers contain this text">
+                        Find
+                    </Button>
+                </StackPanel>
+                <StackPanel Name="GPAddressSection" Orientation="Horizontal">
+                    <Label>Address</Label>
+                    <TextBox Name="GPAddress" MinWidth="360"></TextBox>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
         <StackPanel Name="AddGPControl" Orientation="Horizontal">
             <CheckBox Name="IsAdding">Adding</CheckBox>
             <CheckBox Name="IsEditing">Editing</CheckBox>

@@ -14,52 +14,86 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <Label>Client ID</Label>
-            <ComboBox MinWidth="120" IsEditable="True" Name="ClientId"
+        <GroupBox Header="Profile">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label>ID</Label>
+                    <ComboBox MinWidth="120" IsEditable="True" Name="ClientId"
                         KeyDown="ClientIdKeyDown" SelectionChanged="ClientIdSelChanged"></ComboBox>
-            <Button Name="SearchByIdBtn" Click="SearchByIdClick" ToolTip="Find the client whose IDs contain this text">Find</Button>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <Label>Client Name</Label>
-            <ComboBox MinWidth="120" IsEditable="True" Name="ClientName"
+                    <Button Name="SearchByIdBtn" Click="SearchByIdClick" ToolTip="Find the client whose IDs contain this text">Find</Button>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label>Name</Label>
+                    <ComboBox MinWidth="120" IsEditable="True" Name="ClientName"
                         KeyDown="ClientNameKeyDown" SelectionChanged="ClientNameSelChanged"></ComboBox>
-            <Button Name="SearchByNameBtn" Click="SearchByNameClick" ToolTip="Find all clients whose names contain this text">
-                Find
-            </Button>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <Label>Client Phone Number</Label>
-            <ComboBox MinWidth="120" IsEditable="True"  Name="ClientNumber" 
+                    <Button Name="SearchByNameBtn" Click="SearchByNameClick" ToolTip="Find all clients whose names contain this text">
+                        Find
+                    </Button>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label>Phone Number</Label>
+                    <ComboBox MinWidth="120" IsEditable="True"  Name="ClientNumber" 
                         KeyDown="ClientNumberKeyDown" SelectionChanged="ClientNumberSelChanged"></ComboBox>
-            <Button Name="SearchByPhoneBtn" Click="SearchByPhoneClick" ToolTip="Find all clients whose phone numbers contain this text">
-                Find
-            </Button>
-        </StackPanel>
-        <StackPanel Name="ClientGenderSection" Orientation="Horizontal">
-            <Label>Client Gender</Label>
-            <ComboBox Name="ClientGender" IsEditable="True">
-            </ComboBox>
-        </StackPanel>
-        <StackPanel Name="ClientDobSection" Orientation="Horizontal">
-            <Label>Client DOB</Label>
-            <DatePicker Name="ClientDob" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch"></DatePicker>
-            <Button Name="ResetDob" Click="ClientDobReset">Reset</Button>
-        </StackPanel>
-        <StackPanel Name="ClientAddressSection" Orientation="Horizontal">
-            <Label>Client Address</Label>
-            <TextBox Name="ClientAddress" MinWidth="360"></TextBox>
-        </StackPanel>
+                    <Button Name="SearchByPhoneBtn" Click="SearchByPhoneClick" ToolTip="Find all clients whose phone numbers contain this text">
+                        Find
+                    </Button>
+                </StackPanel>
+                <StackPanel Name="ClientGenderSection" Orientation="Horizontal">
+                    <Label>Gender</Label>
+                    <ComboBox Name="ClientGender" IsEditable="True">
+                    </ComboBox>
+                </StackPanel>
+                <StackPanel Name="ClientDobSection" Orientation="Horizontal">
+                    <Label>DOB</Label>
+                    <DatePicker Name="ClientDob" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch"></DatePicker>
+                    <Button Name="ResetDob" Click="ClientDobReset">Clear</Button>
+                </StackPanel>
+                <StackPanel Name="ClientAddressSection" Orientation="Horizontal">
+                    <Label>Address</Label>
+                    <TextBox Name="ClientAddress" MinWidth="360"></TextBox>
+                </StackPanel>
+                <StackPanel Name="GPReferralDateSection" Orientation="Horizontal">
+                    <Label>GP Referring Date</Label>
+                    <DatePicker Name="GPReferralDate" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch"></DatePicker>
+                    <Button Name="ResetGPReferralDate" Click="ResetGPReferralDate_Click">Clear</Button>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Header="Events">
+            <ListView Name="EventsListView" ItemsSource="{Binding Events}">
+                <ListView.ItemTemplate>
+                    <ItemContainerTemplate>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Id}"></TextBlock>
+                        </StackPanel>
+                    </ItemContainerTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+<!--
+            <ContentPresenter Content="{Binding}">
+                <ContentPresenter.ContentTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <ListView Name="EventsListView" ItemsSource="{Binding Events}">
+                            </ListView>
+                            <TextBlock Name="EventsEmpty" Text="No Events" Visibility="Collapsed"/>
+                        </Grid>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=EventsListView, Path=Items.Count}" Value="0">
+                                <Setter TargetName="EventsListView" Property="Visibility" Value="Collapsed"/>
+                                <Setter TargetName="EventsEmpty" Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ContentPresenter.ContentTemplate>
+            </ContentPresenter>
+            -->
+        </GroupBox>
         <StackPanel Name="AddClientControl" Orientation="Horizontal">
             <CheckBox Name="IsAdding">Adding</CheckBox>
             <CheckBox Name="IsEditing">Editing</CheckBox>
             <Button Width="90" Name="ResetBtn" Click="ResetClick">Reset</Button>
             <Button Width="80" Name="UpdateBtn" Click="UpdateClientClick">Update</Button>
-        </StackPanel>
-        <StackPanel Orientation="Vertical">
-            <TextBlock>Events</TextBlock>
-            <ListView>
-            </ListView>
         </StackPanel>
     </StackPanel>
 </UserControl>

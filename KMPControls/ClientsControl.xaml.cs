@@ -38,6 +38,7 @@ namespace KMPControls
                         case Mode.Simple:
                             ClientGenderSection.Visibility = Visibility.Collapsed;
                             ClientDobSection.Visibility = Visibility.Collapsed;
+                            GPReferralDate.Visibility = Visibility.Collapsed;
                             ClientAddressSection.Visibility = Visibility.Collapsed;
                             AddClientControl.Visibility = Visibility.Collapsed;
                             IsEditing.IsChecked = false;
@@ -45,6 +46,7 @@ namespace KMPControls
                         case Mode.Input:
                             ClientGenderSection.Visibility = Visibility.Visible;
                             ClientDobSection.Visibility = Visibility.Visible;
+                            GPReferralDate.Visibility = Visibility.Visible;
                             ClientAddressSection.Visibility = Visibility.Visible;
                             AddClientControl.Visibility = Visibility.Visible;
                             IsAdding.IsChecked = true;
@@ -153,7 +155,6 @@ namespace KMPControls
                     var oldActiveClient = _activeClient;
                     _activeClient = value;
                     OnActiveClientChanged(oldActiveClient);
-
                     ActiveClientChanged?.Invoke();
                 }
             }
@@ -170,6 +171,37 @@ namespace KMPControls
                 }
                 _originalReferringGP = LinkedGPControl.ActiveGP;
             }
+
+            if (ActiveClient != null)
+            {
+                ClientId.Text = ActiveClient.MedicareNumber;
+                ClientName.Text = ActiveClient.ClientFormalName();
+                ClientNumber.Text = ActiveClient.Phone;
+                if (InputMode == Mode.Input)
+                {
+                    ConvertGenderToUi(ActiveClient.Gender);
+                    if (ActiveClient.DOB.HasValue)
+                    {
+                        ClientDob.SelectedDate = ActiveClient.DOB.Value;
+                    }
+                    if (ActiveClient.ReferringDate.HasValue)
+                    {
+                        GPReferralDate.SelectedDate = ActiveClient.ReferringDate.Value;
+                    }
+                    ClientAddress.Text = ActiveClient.Address;
+                }
+            }
+            else
+            {
+                ClientId.Text = "";
+                ClientName.Text = "";
+                ClientNumber.Text = "";
+                ClientDob.SelectedDate = null;
+                GPReferralDate.SelectedDate = null;
+                ClientAddress.Text = "";
+            }
+
+            this.DataContext = ActiveClient;
         }
 
         public bool TrySetActiveClient(Client client)
@@ -249,10 +281,13 @@ namespace KMPControls
             ClientNumber.IsTextSearchEnabled = !isUpdating;
             ClientAddress.IsReadOnly = !isUpdating;
             ClientGender.IsReadOnly = !isUpdating;
+            ClientGender.IsEnabled = isUpdating;
             ClientDob.IsEnabled = isUpdating;
+            GPReferralDate.IsEnabled = isUpdating;
             UpdateBtn.IsEnabled = isUpdating;
             ResetBtn.IsEnabled = isUpdating;
             ResetDob.IsEnabled = isUpdating;
+            ResetGPReferralDate.IsEnabled = isUpdating;
 
             switch (CurrentUpdateMode)
             {
@@ -301,6 +336,9 @@ namespace KMPControls
                 {
                     ClientName.Items.Add(n);
                 }
+
+                // TODO Load data for specific event types.
+                Query.LoadClientEventData(Connection, ClientData, null, null, null);
             }
         }
 
@@ -417,24 +455,6 @@ namespace KMPControls
                 {
                     ErrorReporter?.Invoke("Error: Client not found.");
                 }
-                if (ActiveClient != null)
-                {
-                    ClientId.Text = ActiveClient.MedicareNumber;
-                    ClientName.Text = ActiveClient.ClientFormalName();
-                    ClientNumber.Text = ActiveClient.Phone;
-                    if (InputMode == Mode.Input)
-                    {
-                        ConvertGenderToUi(ActiveClient.Gender);
-                        if (ActiveClient.DOB.HasValue)
-                        {
-                            ClientDob.SelectedDate = ActiveClient.DOB.Value;
-                        }
-                        ClientAddress.Text = ActiveClient.Address;
-                    }
-                }
-                else
-                {
-                }
             });
         }
 
@@ -499,6 +519,7 @@ namespace KMPControls
         private void UpdateUiToActive()
         {
             ActiveClient.DOB = ClientDob.SelectedDate;
+            ActiveClient.ReferringDate = GPReferralDate.SelectedDate;
             ActiveClient.MedicareNumber = ClientId.Text.Trim();
             ActiveClient.Gender = ConvertUiToGender();
             ActiveClient.Phone = ClientNumber.Text;
@@ -515,6 +536,7 @@ namespace KMPControls
                 ClientNumber.Text = "";
                 ClientGender.SelectedItem = "";
                 ClientDob.SelectedDate = null;
+                GPReferralDate.SelectedDate = null;
                 ClientAddress.Text = "";
                 _linkedGPControl.ActiveGP = null;
             }
@@ -524,6 +546,7 @@ namespace KMPControls
                 ClientNumber.Text = ActiveClient.Phone;
                 ConvertGenderToUi(ActiveClient.Gender);
                 ClientDob.SelectedDate = ActiveClient.DOB;
+                GPReferralDate.SelectedDate = ActiveClient.ReferringDate;
                 ClientAddress.Text = ActiveClient.Address;
                 _linkedGPControl.ActiveGP = _originalReferringGP;
             }
@@ -583,6 +606,11 @@ namespace KMPControls
         private void ClientDobReset(object sender, RoutedEventArgs e)
         {
             ClientDob.SelectedDate = null;
+        }
+
+        private void ResetGPReferralDate_Click(object sender, RoutedEventArgs e)
+        {
+            GPReferralDate.SelectedDate = null;
         }
     }
 }
