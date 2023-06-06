@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:KMPControls.ViewModel">
     <Style TargetType="TextBox">
         <Setter Property="VerticalContentAlignment" Value="Center"/>
     </Style>
@@ -15,4 +16,14 @@
     <Style TargetType="Button">
         <Setter Property="Height" Value="30"/>
     </Style>
+    <DataTemplate DataType="{x:Type local:EventViewModel}">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock>Id:</TextBlock>
+            <TextBox Text="{Binding Id}"></TextBox>
+            <TextBlock>Date:</TextBlock>
+            <DatePicker VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" SelectedDate="{Binding Date, Mode=TwoWay}"></DatePicker>
+            <TextBlock>Type:</TextBlock>
+            <ComboBox Text="{Binding Type}" IsEditable="True" ItemsSource="{Binding PredefinedTypes}"></ComboBox>
+        </StackPanel>
+    </DataTemplate>
 </ResourceDictionary>

@@ -3,9 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:KMPControls"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             xmlns:local="clr-namespace:KMPControls">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -60,23 +58,13 @@
             </StackPanel>
         </GroupBox>
         <GroupBox Header="Events">
-            <ListView Name="EventsListView" ItemsSource="{Binding Events}">
-                <ListView.ItemTemplate>
-                    <ItemContainerTemplate>
-                        <StackPanel>
-                            <TextBlock Text="{Binding Id}"></TextBlock>
-                        </StackPanel>
-                    </ItemContainerTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-<!--
             <ContentPresenter Content="{Binding}">
                 <ContentPresenter.ContentTemplate>
                     <DataTemplate>
                         <Grid>
                             <ListView Name="EventsListView" ItemsSource="{Binding Events}">
                             </ListView>
-                            <TextBlock Name="EventsEmpty" Text="No Events" Visibility="Collapsed"/>
+                            <TextBlock Name="EventsEmpty" Text="No Events" Foreground="Gray" Visibility="Collapsed"/>
                         </Grid>
                         <DataTemplate.Triggers>
                             <DataTrigger Binding="{Binding ElementName=EventsListView, Path=Items.Count}" Value="0">
@@ -87,7 +75,6 @@
                     </DataTemplate>
                 </ContentPresenter.ContentTemplate>
             </ContentPresenter>
-            -->
         </GroupBox>
         <StackPanel Name="AddClientControl" Orientation="Horizontal">
             <CheckBox Name="IsAdding">Adding</CheckBox>

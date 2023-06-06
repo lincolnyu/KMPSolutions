@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using KMPBookingCore.Database;
+﻿using KMPBookingCore.Database;
 
 namespace KMPBookingCore.DbObjects
 {
@@ -8,7 +7,6 @@ namespace KMPBookingCore.DbObjects
     {
         private string _serviceContent;
         private Receipt _receipt;
-        private string _detail;
         private decimal _totalFee;
         private decimal _owing;
         private decimal _benefit;

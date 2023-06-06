@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:KMPCenter"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="KMP Center" Height="450" Width="800">
+        Title="KMP Center">
     <Grid>
         <Grid.Resources>
             <Style TargetType="StackPanel">

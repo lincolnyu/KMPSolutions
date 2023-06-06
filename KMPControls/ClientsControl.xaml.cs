@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using static KMPBookingCore.UiUtils;
 using KMPBookingCore.DbObjects;
+using KMPControls.ViewModel;
 
 namespace KMPControls
 {
@@ -160,6 +161,8 @@ namespace KMPControls
             }
         }
 
+        internal ClientViewModel ActiveClientViewModel { get; private set; }
+
         private void OnActiveClientChanged(Client oldActiveClient)
         {
             _originalReferringGP = null;
@@ -201,7 +204,8 @@ namespace KMPControls
                 ClientAddress.Text = "";
             }
 
-            this.DataContext = ActiveClient;
+            ActiveClientViewModel = new ClientViewModel(ActiveClient);
+            this.DataContext = ActiveClientViewModel;
         }
 
         public bool TrySetActiveClient(Client client)
