@@ -616,5 +616,12 @@ namespace KMPControls
         {
             GPReferralDate.SelectedDate = null;
         }
+
+        private void EventItemDeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            var obj = button.DataContext;
+            ActiveClientViewModel.Events.Remove((EventViewModel)obj);
+        }
     }
 }

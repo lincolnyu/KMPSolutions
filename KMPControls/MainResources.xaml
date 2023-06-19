@@ -17,7 +17,7 @@
         <Setter Property="Height" Value="30"/>
     </Style>
     <DataTemplate DataType="{x:Type local:EventViewModel}">
-        <StackPanel Orientation="Horizontal">
+        <StackPanel Grid.Column="0" Orientation="Horizontal">
             <TextBlock>Id:</TextBlock>
             <TextBox Text="{Binding Id}"></TextBox>
             <TextBlock>Date:</TextBlock>

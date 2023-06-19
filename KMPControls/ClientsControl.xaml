@@ -62,7 +62,22 @@
                 <ContentPresenter.ContentTemplate>
                     <DataTemplate>
                         <Grid>
-                            <ListView Name="EventsListView" ItemsSource="{Binding Events}">
+                            <ListView Name="EventsListView" ItemsSource="{Binding Events}" HorizontalContentAlignment="Stretch">
+                                <ListView.ItemTemplate>
+                                    <ItemContainerTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <ContentControl Content="{Binding}">
+                                            </ContentControl>
+                                            <StackPanel Grid.Column="1" FlowDirection="RightToLeft">
+                                                <Button DockPanel.Dock="Right" Click="EventItemDeleteButton_Click">&#x1F5D1;</Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </ItemContainerTemplate>
+                                </ListView.ItemTemplate>
                             </ListView>
                             <TextBlock Name="EventsEmpty" Text="No Events" Foreground="Gray" Visibility="Collapsed"/>
                         </Grid>
