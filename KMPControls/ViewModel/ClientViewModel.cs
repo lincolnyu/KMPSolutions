@@ -1,5 +1,6 @@
 ﻿using KMPBookingCore.DbObjects;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace KMPControls.ViewModel
 {
@@ -33,6 +34,20 @@ namespace KMPControls.ViewModel
                 foreach (var e in Model.Events)
                 {
                     Events.Add(new EventViewModel(e));
+                }
+            }
+        }
+
+        public void Replace(EventViewModel toBeReplaced, EventViewModel replacement)
+        {
+            for (var i = 0; i < Events.Count; i++)
+            {
+                var ev = Events[i];
+                if (ev ==  toBeReplaced)
+                {
+                    Events.RemoveAt(i);
+                    Events.Insert(i, replacement);
+                    break;
                 }
             }
         }

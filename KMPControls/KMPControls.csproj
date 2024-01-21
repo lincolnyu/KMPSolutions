@@ -52,8 +52,11 @@
       <DependentUpon>DuplicateClients.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\BaseViewModel.cs" />
+    <Compile Include="ViewModel\BookingEventViewModel.cs" />
     <Compile Include="ViewModel\ClientViewModel.cs" />
     <Compile Include="ViewModel\EventViewModel.cs" />
+    <Compile Include="ViewModel\ReceiptEventViewModel.cs" />
+    <Compile Include="ViewModel\ServiceEventViewModel.cs" />
     <Page Include="ClientsControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

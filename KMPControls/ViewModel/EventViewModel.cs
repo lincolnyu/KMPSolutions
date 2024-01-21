@@ -39,7 +39,7 @@ namespace KMPControls.ViewModel
             }
         }
 
-        private static List<string> _predefinedTypes = new List<string>
+        private static readonly List<string> _predefinedTypes = new List<string>
         {
             "Booking",
             "Claim",
@@ -59,9 +59,12 @@ namespace KMPControls.ViewModel
         }
 
         private void OnTypeChanged()
-        {
-            
+        {            
             // TODO...
+            switch (Type)
+            {
+                
+            }
         }
     }
 }
