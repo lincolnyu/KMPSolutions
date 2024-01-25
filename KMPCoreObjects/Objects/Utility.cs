@@ -1,0 +1,131 @@
+﻿using KMPAccounting.Objects.Accounts;
+using KMPAccounting.Objects.BookKeeping;
+using System;
+using System.Diagnostics;
+
+namespace KMPAccounting.Objects
+{
+    public static class Utility
+    {
+        public static AccountNode? GetAccount(string fullName)
+        {
+            var split = fullName.Split('.', 2);
+            Debug.Assert(split.Length <= 2);
+            var state = AccountsState.GetAccountsState(split[0]);
+            if (state == null) return null;
+            if (split.Length == 1)
+            {
+                return state;
+            }
+            return state.GetAccount(split[1]);
+        }
+
+        public static AccountNode? GetAccount(this AccountsState state, string fullName)
+        {
+            var splitNames = fullName.Split('.');
+            AccountNode p = state;
+            foreach (var splitName in splitNames)
+            {
+                if (!p.Children.TryGetValue(splitName, out var account))
+                {
+                    return null;
+                }
+                p = account;
+            }
+            return p;
+        }
+
+        /// <summary>
+        ///  Ensure the specified account is created in the specified state by executing the OpenAccount entries it creates as required.
+        /// </summary>
+        /// <param name="ledger">The ledger to use for the account opening entry.</param>
+        /// <param name="state">The accounts state the account is in.</param>
+        /// <param name="fullName">The full name that identify the account in the state.</param>
+        /// <param name="addingToLedger">If the open account entry is to be added to the ledger.</param>
+        public static void EnsureCreateAccount(this AccountsState state, string fullName, bool sideDifferToParent, Ledger? ledgerToAddTo)
+        {
+            var splitNames = fullName.Split('.');
+            AccountNode p = state;
+            string? parentFullName = null;
+            var i = 0;
+            foreach (var seg in splitNames)
+            {
+                if (parentFullName != null || !p.Children.TryGetValue(seg, out var child))
+                {
+                    if (parentFullName == null)
+                    {
+                        parentFullName = p.FullName;
+                    }
+                    var side = i == splitNames.Length - 1 && sideDifferToParent ? AccountNode.GetOppositeSide(p.Side) : p.Side;
+                    var openAccount = new OpenAccount(DateTime.Now, (new AccountNodeReference(parentFullName), side), seg);
+                    if (ledgerToAddTo != null)
+                    {
+                        ledgerToAddTo.Entries.Add(openAccount);
+                    }
+                    openAccount.Redo();
+                    parentFullName += "." + seg;
+                }
+                else
+                {
+                    p = child;
+                }
+                ++i;
+            }
+        }
+
+        /// <summary>
+        ///  Ensure the specified account is created in an existing state as specified in its full name.
+        /// </summary>
+        /// <param name="ledger">The ledger to use for the account opening entry.</param>
+        /// <param name="fullName">The full name that identify the account globally.</param>
+        /// <param name="sideDifferToParent">If the account's leaf node is to have the opposite side to its immediate parent. The intermediate nodes created towards the leaf node will all have the same side as their parents.</param>
+        public static void EnsureCreateAccount(this Ledger ledger, string fullName, bool sideDifferToParent)
+        {
+            // This makes sure the state is already created.
+            // The function is meant to create accounts for a state. And that's why it expects the fullName to have at least 2 segments.
+            var split = fullName.Split('.', 2);
+
+            var stateName = split[0];
+            var state = AccountsState.GetAccountsState(stateName);
+            if (state == null)
+            {
+                var openAccount = new OpenAccount(DateTime.Now, null, stateName);
+                ledger.Entries.Add(openAccount);
+                openAccount.Redo();
+
+                state = AccountsState.GetAccountsState(stateName)!;
+            }
+
+            if (split.Length == 2)
+            {
+                state.EnsureCreateAccount(split[1], sideDifferToParent, ledger);
+            }
+        }
+
+        public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, string creditedAccountFullName, string debitedAccountFullName, decimal amount, string? remarks = null)
+        {
+            var transaction = new Transaction(dateTime, new AccountNodeReference(creditedAccountFullName), new AccountNodeReference(debitedAccountFullName), amount) { Remarks = remarks };
+            ledger.Entries.Add(transaction);
+            transaction.Redo();
+        }
+
+        public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, (string, decimal)[] credited, (string, decimal)[] debited, string? remarks = null)
+        {
+            var transaction = new PackedTransaction(dateTime)
+            {
+                Remarks = remarks
+            };
+            foreach (var (accountFullName, amount) in credited)
+            {
+                transaction.Credited.Add((new AccountNodeReference(accountFullName)!, amount));
+            }
+            foreach (var (accountFullName, amount) in debited)
+            {
+                transaction.Debited.Add((new AccountNodeReference(accountFullName), amount));
+            }
+            // TODO Add balance checking assert.
+            ledger.Entries.Add(transaction);
+            transaction.Redo();
+        }
+    }
+}
