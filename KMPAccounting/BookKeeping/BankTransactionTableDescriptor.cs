@@ -11,5 +11,8 @@
         public string TableName { get; }
 
         public BankTransactionRowDescriptor RowDescriptor { get; }
+
+        public string BaseAccountPrefix { get; set; } = "";
+        public string CounterAccountPrefix { get; set; } = "";
     }
 }

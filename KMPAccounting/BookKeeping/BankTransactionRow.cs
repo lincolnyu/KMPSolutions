@@ -10,5 +10,7 @@ namespace KMPAccounting.BookKeeping
         public abstract BankTransactionTableDescriptor OwnerTable { get; }
 
         public int? OriginalRowNumber { get; }
+
+        public Receipt? Receipt { get; }
     }
 }

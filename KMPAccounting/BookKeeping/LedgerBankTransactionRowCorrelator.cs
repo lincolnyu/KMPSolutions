@@ -14,42 +14,73 @@ namespace KMPAccounting.BookKeeping
 
         public IBankTransactionRowEmitter Emitter { get; }
 
-        public IEnumerable<Transaction> Correlate()
+        public IEnumerable<(BankTransactionRow, List<Transaction>)> Correlate()
         {
             foreach (var row in Emitter.Emit())
             {
                 var table = row.OwnerTable;
                 var rowDescriptor = table.RowDescriptor;
                 var dateTimeStr = row.GetValue(rowDescriptor.DateTimeColumnName);
-                var baseAccountName = row.GetValue(rowDescriptor.BaseAccountColumnName);
-                var counterAccountName = row.GetValue(rowDescriptor.CounterAccountColumnName);
+                
+                var baseAccountName = table.BaseAccountPrefix + row.GetValue(rowDescriptor.BaseAccountColumnName);
+                
                 var amountStr = row.GetValue(rowDescriptor.AmountColumnName);
                 var amount = decimal.Parse(amountStr);
 
+                var counterAccountsStr = row.GetValue(rowDescriptor.CounterAccountColumnName);
+                var counterAccounts = ParseCounterAccounts(counterAccountsStr, amount);
+
                 var dateTime = CsvUtility.ParseDateTime(dateTimeStr);
 
+                var transactions = new List<Transaction>();
                 if (rowDescriptor.PositiveAmountForCredit)
                 {
-                    if (amount > 0)
+                    foreach (var (counterAccountName, counterAccountAmount) in counterAccounts)
                     {
-                        yield return new Transaction(dateTime, new AccountNodeReference(baseAccountName) , new AccountNodeReference (counterAccountName), amount);
-                    }
-                    else
-                    {
-                        yield return new Transaction(dateTime, new AccountNodeReference(counterAccountName), new AccountNodeReference(baseAccountName), -amount);
+                        var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
+                        if (counterAccountAmount > 0)
+                        {
+                            transactions.Add(new Transaction(dateTime, new AccountNodeReference(baseAccountName), new AccountNodeReference(actualCounterAccountName), counterAccountAmount));
+                        }
+                        else
+                        {
+                            transactions.Add(new Transaction(dateTime, new AccountNodeReference(actualCounterAccountName), new AccountNodeReference(baseAccountName), -counterAccountAmount));
+                        }
                     }
                 }
                 else
                 {
-                    if (amount > 0)
+                    foreach (var (counterAccountName, counterAccountAmount) in counterAccounts)
                     {
-                        yield return new Transaction(dateTime, new AccountNodeReference(counterAccountName), new AccountNodeReference(baseAccountName), amount);
-                    }
-                    else
-                    {
-                        yield return new Transaction(dateTime, new AccountNodeReference(baseAccountName), new AccountNodeReference(counterAccountName), -amount);
+                        var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
+                        if (counterAccountAmount > 0)
+                        {
+                            transactions.Add(new Transaction(dateTime, new AccountNodeReference(actualCounterAccountName), new AccountNodeReference(baseAccountName), counterAccountAmount));
+                        }
+                        else
+                        {
+                            transactions.Add(new Transaction(dateTime, new AccountNodeReference(baseAccountName), new AccountNodeReference(actualCounterAccountName), -counterAccountAmount));
+                        }
                     }
                 }
+                yield return (row, transactions);
+            }
+        }
+
+        private IEnumerable<(string, decimal)> ParseCounterAccounts(string counterAccountsStr, decimal totalAmount)
+        {
+            var counterAccounts = counterAccountsStr.Split(';');
+            if (counterAccounts.Length > 2)
+            {
+                foreach (var ca in counterAccounts)
+                {
+                    var caSplit = ca.Split('=');
+                    yield return (caSplit[0], decimal.Parse(caSplit[1]));
+                }
+            }
+            else
+            {
+                yield return (counterAccounts[0], totalAmount);
             }
         }
     }
