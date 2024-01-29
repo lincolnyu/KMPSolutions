@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KMPCoreObjects\KMPAccounting.csproj" />
+    <ProjectReference Include="..\KMPAccounting\KMPAccounting.csproj" />
   </ItemGroup>
 
 </Project>
