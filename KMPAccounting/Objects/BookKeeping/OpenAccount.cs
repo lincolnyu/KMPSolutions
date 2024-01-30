@@ -1,5 +1,7 @@
 ﻿using KMPAccounting.Objects.Accounts;
+using KMPCommon;
 using System;
+using System.Text;
 
 namespace KMPAccounting.Objects.BookKeeping
 {
@@ -12,8 +14,41 @@ namespace KMPAccounting.Objects.BookKeeping
             Name = name;
         }
 
+        public static OpenAccount ParseLine(DateTime dateTime, string line)
+        {
+            int p = 0;
+            int newp;
+            line.GetNextWord('|', p, out newp, out string? name);
+            p = newp + 1;
+
+            (AccountNodeReference, AccountNode.SideEnum)? parentAndSide = null;
+            if (line.GetNextWord('|', p, out newp, out string? parentName))
+            {
+                p = newp + 1;
+                line.GetNextWord('|', p, out newp, out string? sideName);
+                var side = sideName == "C" ? AccountNode.SideEnum.Credit : AccountNode.SideEnum.Debit;
+                parentAndSide = (new AccountNodeReference(parentName!), side);
+            }
+
+            return new OpenAccount(dateTime, parentAndSide, name!);
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            sb.Append(Name);
+            sb.Append('|');
+            if (ParentAndSide.HasValue)
+            {
+                sb.Append(ParentAndSide.Value.Item1.FullName);
+                sb.Append('|');
+                sb.Append(ParentAndSide.Value.Item2 == AccountNode.SideEnum.Credit? "c" : "D");
+                sb.Append('|');
+            }
+            return sb.ToString();
+        }
+
         public (AccountNodeReference, AccountNode.SideEnum)? ParentAndSide { get; }
-        public AccountNode.SideEnum? Side { get; }
         public string Name { get; }
 
         public override void Redo()
@@ -36,7 +71,7 @@ namespace KMPAccounting.Objects.BookKeeping
         {
             if (ParentAndSide != null)
             {
-                var (parent, side) = ParentAndSide.Value;
+                var (parent, _) = ParentAndSide.Value;
                 var parentNode = parent.Get()!;
                 if (parentNode.Children.Remove(Name, out var child))
                 {

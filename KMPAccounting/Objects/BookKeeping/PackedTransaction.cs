@@ -1,6 +1,8 @@
 ﻿using KMPAccounting.Objects.Accounts;
+using KMPCommon;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace KMPAccounting.Objects.BookKeeping
 {
@@ -9,6 +11,80 @@ namespace KMPAccounting.Objects.BookKeeping
         public PackedTransaction(DateTime dateTime)
             : base(dateTime)
         {
+        }
+
+        public static PackedTransaction ParseLine(DateTime dateTime, string line)
+        {
+            var pt = new PackedTransaction(dateTime);
+
+            int p = 0;
+            int newp;
+            {
+                line.GetNextWord('|', p, out newp, out string? creditedCountStr);
+                p = newp + 1;
+                var creditedCount = int.Parse(creditedCountStr);
+                for (var i = 0; i < creditedCount; ++i)
+                {
+                    line.GetNextWord('|', p, out newp, out var credited);
+                    p = newp + 1;
+                    line.GetNextWord('|', p, out newp, out var amountStr);
+                    p = newp + 1;
+                    var amount = decimal.Parse(amountStr);
+                    pt.Credited.Add((new AccountNodeReference(credited!), amount));
+                }
+            }
+
+            {
+                line.GetNextWord('|', p, out newp, out string? debitedCountStr);
+                p = newp + 1;
+                var debitedCount = int.Parse(debitedCountStr);
+                for (var i = 0; i < debitedCount; ++i)
+                {
+                    line.GetNextWord('|', p, out newp, out var debited);
+                    p = newp + 1;
+                    line.GetNextWord('|', p, out newp, out var amountStr);
+                    p = newp + 1;
+                    var amount = decimal.Parse(amountStr);
+                    pt.Debited.Add((new AccountNodeReference(debited!), amount));
+                }
+            }
+
+            if (line.GetNextWord('|', p, out newp, out string? remarks))
+            {
+                pt.Remarks = remarks;
+            }
+
+            return pt;
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            sb.Append($"{Credited.Count}|");
+            foreach (var (acc, amount) in Credited)
+            {
+                sb.Append(acc.FullName);
+                sb.Append("|");
+                sb.Append(amount.ToString());
+                sb.Append("|");
+            }
+            sb.Append($"{Debited.Count}|");
+            foreach (var (acc, amount) in Debited)
+            {
+                sb.Append(acc.FullName);
+                sb.Append("|");
+                sb.Append(amount.ToString());
+                sb.Append("|");
+            }
+
+            if (Remarks != null)
+            {
+                sb.Append(Remarks);
+                sb.Append("|");
+            }
+
+            return base.ToString();
         }
 
         // The accounts being credited
