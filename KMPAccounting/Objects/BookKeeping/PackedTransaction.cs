@@ -13,6 +13,45 @@ namespace KMPAccounting.Objects.BookKeeping
         {
         }
 
+        public override bool Equals(Entry other)
+        {
+            if (other is PackedTransaction otherPt)
+            {
+                if (!CsvUtility.TimestampsAreEqual(DateTime, other.DateTime))
+                {
+                    return false;
+                }
+                if (!Equals(Remarks, otherPt.Remarks))
+                {
+                    return false;
+                }
+                if (Credited.Count != otherPt.Credited.Count)
+                {
+                    return false;
+                }
+                if (Debited.Count != otherPt.Debited.Count)
+                {
+                    return false;
+                }
+                for (var i =  0; i < Credited.Count; ++i)
+                {
+                    if (!Credited[i].Equals(otherPt.Credited[i]))
+                    {
+                        return false;
+                    }
+                }
+                for (var i = 0; i < Debited.Count; ++i)
+                {
+                    if (!Debited[i].Equals(otherPt.Debited[i]))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
         public static PackedTransaction ParseLine(DateTime dateTime, string line)
         {
             var pt = new PackedTransaction(dateTime);
@@ -61,6 +100,10 @@ namespace KMPAccounting.Objects.BookKeeping
         {
             var sb = new StringBuilder();
 
+            sb.Append(CsvUtility.TimestampToString(DateTime));
+            sb.Append("|");
+            sb.Append("PackedTransaction|");
+
             sb.Append($"{Credited.Count}|");
             foreach (var (acc, amount) in Credited)
             {
@@ -84,7 +127,7 @@ namespace KMPAccounting.Objects.BookKeeping
                 sb.Append("|");
             }
 
-            return base.ToString();
+            return sb.ToString();
         }
 
         // The accounts being credited

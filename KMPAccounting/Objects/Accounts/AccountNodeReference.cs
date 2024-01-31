@@ -1,12 +1,23 @@
 ﻿using KMPAccounting.Objects.Fundamental;
+using System;
 
 namespace KMPAccounting.Objects.Accounts
 {
-    public class AccountNodeReference
+    public class AccountNodeReference : IEquatable<AccountNodeReference>
     {
         public AccountNodeReference(string fullName)
         {
             FullName = fullName;
+        }
+
+        public bool Equals(AccountNodeReference other)
+        {
+            return FullName.Equals(other.FullName);
+        }
+
+        public override string ToString()
+        {
+            return FullName;
         }
 
         // Including the states name as the root
@@ -25,6 +36,7 @@ namespace KMPAccounting.Objects.Accounts
             }
             return account;
         }
+
 
         WeakPointer<AccountNode>? nodeCache_ = null;
     }

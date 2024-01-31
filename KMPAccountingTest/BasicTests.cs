@@ -101,5 +101,56 @@ namespace KMPCoreObjectsTest
 
             Assert.Pass();
         }
+
+        [Test]
+        public void LedgerSerializationTest()
+        {
+            var ledger = new Ledger();
+
+            OU.EnsureCreateAccount(ledger, "Tom.Assets", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity", true);
+            OU.EnsureCreateAccount(ledger, "Tom.Liability", true);
+
+            const decimal BaseEquity = 300m;
+
+            // Initial balance setup
+            OU.EnsureCreateAccount(ledger, "Tom.Assets.Cash", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Base", false);
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets.Cash", "Tom.Equity.Base", BaseEquity);
+
+            // Real transactions
+            OU.EnsureCreateAccount(ledger, "Tom.Liability.TaxWithheld", true);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Income.Salary", false);
+
+            const decimal Salary = 25000m;
+            const decimal TaxWithheld = 2000m;
+            const decimal Expense = 8000m;
+            const decimal Deduction = 6000m;
+
+            ledger.AddAndExecuteTransaction(DateTime.Now, new[] { ("Tom.Assets.Cash", Salary - TaxWithheld), ("Tom.Liability.TaxWithheld", TaxWithheld) },
+                new[] { ("Tom.Equity.Income.Salary", Salary) });
+
+
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Expense", true);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Deduction", true);
+
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Equity.Expense", "Tom.Assets.Cash", Expense);
+
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Equity.Deduction", "Tom.Assets.Cash", Deduction);
+
+            {
+                using var sw = new StreamWriter("test.txt");
+                ledger.WriteToStream(sw);
+            }
+            {
+                using var sr = new StreamReader("test.txt");
+                var loadedLedger = new Ledger();
+                loadedLedger.LoadFromStream(sr);
+
+                Assert.That(loadedLedger, Is.EqualTo(ledger));
+            }
+
+            Assert.Pass();
+        }
     }
 }

@@ -158,5 +158,10 @@ namespace KMPCommon
         {
             return $"{dateTime.Year:0000}{dateTime.Month:00}{dateTime.Day:00}{dateTime.Hour:00}{dateTime.Minute:00}{dateTime.Second:00}";
         }
+
+        public static bool TimestampsAreEqual(DateTime dateTime1, DateTime dateTime2)
+        {
+            return dateTime1.Year.Equals(dateTime2.Year) && dateTime1.Month.Equals(dateTime2.Month) && dateTime1.Day.Equals(dateTime2.Day) && dateTime1.Hour.Equals(dateTime2.Hour) && dateTime1.Minute.Equals(dateTime2.Minute) && dateTime1.Second.Equals(dateTime2.Second);
+        }
     }
 }

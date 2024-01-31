@@ -15,9 +15,33 @@ namespace KMPAccounting.Objects.BookKeeping
             Amount = amount;
         }
 
+        public override bool Equals(Entry other)
+        {
+            if (other is Transaction otherT)
+            {
+                if (!CsvUtility.TimestampsAreEqual(DateTime, other.DateTime))
+                {
+                    return false;
+                }
+                if (!Credited.Equals(otherT.Credited))
+                {
+                    return false;
+                }
+                if (!Debited.Equals(otherT.Debited))
+                {
+                    return false;
+                }
+                if (!Amount.Equals(otherT.Amount))
+                {
+                    return false;
+                }
+                return true;
+            }
+            return false;
+        }
+
         public static Transaction ParseLine(DateTime dateTime, string line)
         {
-            
             int p = 0;
             int newp;
 
@@ -43,6 +67,10 @@ namespace KMPAccounting.Objects.BookKeeping
         {
             var sb = new StringBuilder();
 
+            sb.Append(CsvUtility.TimestampToString(DateTime));
+            sb.Append("|");
+            sb.Append("Transaction|");
+
             sb.Append(Credited.FullName);
             sb.Append("|");
 
@@ -58,7 +86,7 @@ namespace KMPAccounting.Objects.BookKeeping
                 sb.Append("|");
             }
 
-            return base.ToString();
+            return sb.ToString();
         }
 
         // The acount being credited

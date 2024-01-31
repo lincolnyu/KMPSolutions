@@ -7,22 +7,25 @@ namespace KMPAccounting.Objects.BookKeeping
     {
         public static Entry ParseEntry(string line)
         {
-            var sep0 = line.IndexOf('|');
-            var timestamp = line.Substring(0, sep0);
-            
-            var dtTimestamp = CsvUtility.ParseTimestamp(timestamp);
-            
-            var sep1= line.IndexOf('|', sep0 + 1);
-            var type = line.Substring(sep0 + 1, sep1 - sep0 - 1);
-            var content = line.Substring(sep0 + 1);
+            int p = 0;
+            int newp;
+            line.GetNextWord('|', p, out newp, out var timestampStr);
+            p = newp + 1;
+
+            var timestamp = CsvUtility.ParseTimestamp(timestampStr);
+
+            line.GetNextWord('|', p, out newp, out var type);
+
+            p = newp + 1;
+            var content = line.Substring(p);
             switch (type)
             {
                 case "PackedTransaction":
-                    return PackedTransaction.ParseLine(dtTimestamp, content);
+                    return PackedTransaction.ParseLine(timestamp, content);
                 case "Transaction":
-                    return Transaction.ParseLine(dtTimestamp, content);
+                    return Transaction.ParseLine(timestamp, content);
                 case "OpenAccount":
-                    return OpenAccount.ParseLine(dtTimestamp, content);
+                    return OpenAccount.ParseLine(timestamp, content);
                 default:
                     throw new ArgumentException($"Unknown entry type {type}");
             }

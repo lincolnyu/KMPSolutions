@@ -14,6 +14,27 @@ namespace KMPAccounting.Objects.BookKeeping
             Name = name;
         }
 
+        public override bool Equals(Entry other)
+        {
+            if (other is OpenAccount otherOa) 
+            {
+                if (DateTime != other.DateTime)
+                {
+                    return false;
+                }
+                if (!Name.Equals(otherOa.Name))
+                {
+                    return false;
+                }
+                if (!ParentAndSide.Equals(otherOa.ParentAndSide))
+                {
+                    return false;
+                }
+                return true;
+            }
+            return false;
+        }
+
         public static OpenAccount ParseLine(DateTime dateTime, string line)
         {
             int p = 0;
@@ -36,6 +57,11 @@ namespace KMPAccounting.Objects.BookKeeping
         public override string ToString()
         {
             var sb = new StringBuilder();
+
+            sb.Append(CsvUtility.TimestampToString(DateTime));
+            sb.Append("|");
+            sb.Append("OpenAccount|");
+
             sb.Append(Name);
             sb.Append('|');
             if (ParentAndSide.HasValue)

@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace KMPAccounting.Objects.BookKeeping
 {
-    public class Ledger
+    public class Ledger : IEquatable<Ledger>
     {
         /// <summary>
         ///  All systemwide accounting entries sorted in chronicle order
@@ -30,6 +31,22 @@ namespace KMPAccounting.Objects.BookKeeping
                 var entry = EntryFactory.ParseEntry(line);
                 Entries.Add(entry);
             }
+        }
+
+        public bool Equals(Ledger other)
+        {
+            if (Entries.Count != other.Entries.Count)
+            {
+                return false;
+            }
+            for (var i = 0; i < Entries.Count; ++i)
+            {
+                if (!Entries[i].Equals(other.Entries[i]))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }
