@@ -7,7 +7,7 @@ using OU = KMPAccounting.Objects.Utility;
 
 namespace KMPCoreObjectsTest
 {
-    public class BasicTests
+    public class CoreTests
     {
         [SetUp]
         public void Setup()

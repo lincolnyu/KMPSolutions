@@ -14,6 +14,12 @@ namespace KMPCommon
             NormalAfterQuote
         }
 
+        /// <summary>
+        ///  Return the fields of a complete CSV row which may contains multi-line fields
+        /// </summary>
+        /// <param name="sr">The stream to read the CSV from.</param>
+        /// <param name="trim">Whether to trim the loaded fields.</param>
+        /// <returns>All the loaded fields of the row.</returns>
         public static IEnumerable<string> GetAndBreakRow(this StreamReader sr, bool trim = false)
         {
             var done = false;
@@ -65,6 +71,13 @@ namespace KMPCommon
             }
         }
 
+        /// <summary>
+        ///  Read a CSV line and returns the fields.
+        /// </summary>
+        /// <param name="line">The line</param>
+        /// <param name="trim">Whether to trim the loaded fields</param>
+        /// <param name="initialStatus">If the line starts with the continuation of a  multiline field</param>
+        /// <returns>All the fields from the line. If the last item is an incomplete multiline item then an additional null is yielded.</returns>
         public static IEnumerable<string?> BreakLine(this string line, bool trim = false, BreakLineStatus initialStatus = BreakLineStatus.Normal)
         {
             BreakLineStatus status = initialStatus;

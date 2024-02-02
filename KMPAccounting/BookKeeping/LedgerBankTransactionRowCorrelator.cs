@@ -19,51 +19,53 @@ namespace KMPAccounting.BookKeeping
             foreach (var row in Emitter.Emit())
             {
                 var table = row.OwnerTable;
-                var rowDescriptor = table.RowDescriptor;
-                var dateTimeStr = row.GetValue(rowDescriptor.DateTimeColumnName);
-                
-                var baseAccountName = table.BaseAccountPrefix + row.GetValue(rowDescriptor.BaseAccountColumnName);
-                
-                var amountStr = row.GetValue(rowDescriptor.AmountColumnName);
-                var amount = decimal.Parse(amountStr);
-
-                var counterAccountsStr = row.GetValue(rowDescriptor.CounterAccountColumnName);
-                var counterAccounts = ParseCounterAccounts(counterAccountsStr, amount);
-
-                var dateTime = CsvUtility.ParseDateTime(dateTimeStr);
-
-                var transactions = new List<Transaction>();
-                if (rowDescriptor.PositiveAmountForCredit)
+                foreach (var rowDescriptor in table.RowDescriptors)
                 {
-                    foreach (var (counterAccountName, counterAccountAmount) in counterAccounts)
+                    var dateTimeStr = row[rowDescriptor.DateTimeKey];
+
+                    var baseAccountName = table.BaseAccountPrefix + row[rowDescriptor.BaseAccountKey];
+
+                    var amountStr = row[rowDescriptor.AccountKey];
+                    var amount = decimal.Parse(amountStr);
+
+                    var counterAccountsStr = row[rowDescriptor.CounterAccountKey];
+                    var counterAccounts = ParseCounterAccounts(counterAccountsStr, amount);
+
+                    var dateTime = CsvUtility.ParseDateTime(dateTimeStr);
+                     
+                    var transactions = new List<Transaction>();
+                    if (rowDescriptor.PositiveAmountForCredit)
                     {
-                        var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
-                        if (counterAccountAmount > 0)
+                        foreach (var (counterAccountName, counterAccountAmount) in counterAccounts)
                         {
-                            transactions.Add(new Transaction(dateTime, new AccountNodeReference(baseAccountName), new AccountNodeReference(actualCounterAccountName), counterAccountAmount));
-                        }
-                        else
-                        {
-                            transactions.Add(new Transaction(dateTime, new AccountNodeReference(actualCounterAccountName), new AccountNodeReference(baseAccountName), -counterAccountAmount));
+                            var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
+                            if (counterAccountAmount > 0)
+                            {
+                                transactions.Add(new Transaction(dateTime, new AccountNodeReference(baseAccountName), new AccountNodeReference(actualCounterAccountName), counterAccountAmount));
+                            }
+                            else
+                            {
+                                transactions.Add(new Transaction(dateTime, new AccountNodeReference(actualCounterAccountName), new AccountNodeReference(baseAccountName), -counterAccountAmount));
+                            }
                         }
                     }
-                }
-                else
-                {
-                    foreach (var (counterAccountName, counterAccountAmount) in counterAccounts)
+                    else
                     {
-                        var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
-                        if (counterAccountAmount > 0)
+                        foreach (var (counterAccountName, counterAccountAmount) in counterAccounts)
                         {
-                            transactions.Add(new Transaction(dateTime, new AccountNodeReference(actualCounterAccountName), new AccountNodeReference(baseAccountName), counterAccountAmount));
-                        }
-                        else
-                        {
-                            transactions.Add(new Transaction(dateTime, new AccountNodeReference(baseAccountName), new AccountNodeReference(actualCounterAccountName), -counterAccountAmount));
+                            var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
+                            if (counterAccountAmount > 0)
+                            {
+                                transactions.Add(new Transaction(dateTime, new AccountNodeReference(actualCounterAccountName), new AccountNodeReference(baseAccountName), counterAccountAmount));
+                            }
+                            else
+                            {
+                                transactions.Add(new Transaction(dateTime, new AccountNodeReference(baseAccountName), new AccountNodeReference(actualCounterAccountName), -counterAccountAmount));
+                            }
                         }
                     }
+                    yield return (row, transactions);
                 }
-                yield return (row, transactions);
             }
         }
 

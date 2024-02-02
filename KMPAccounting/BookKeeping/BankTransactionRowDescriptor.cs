@@ -1,21 +1,26 @@
-﻿namespace KMPAccounting.BookKeeping
+﻿using System.Collections.Generic;
+
+namespace KMPAccounting.BookKeeping
 {
     public class BankTransactionRowDescriptor
     {
-        protected BankTransactionRowDescriptor(string dateTimeColumnName, string amountColumnName, string baseAccountColumnName, string counterAccountColumnName)
+        protected BankTransactionRowDescriptor(string dateTimeColumnKey, string amountColumnKey, string baseAccountKey, string counterAccountKeyName, List<string> keys)
         {
-            DateTimeColumnName = dateTimeColumnName;
-            AmountColumnName = amountColumnName;
-            BaseAccountColumnName = baseAccountColumnName;
-            CounterAccountColumnName = counterAccountColumnName;
+            DateTimeKey = dateTimeColumnKey;
+            AccountKey = amountColumnKey;
+            BaseAccountKey = baseAccountKey;
+            CounterAccountKey = counterAccountKeyName;
+            Keys  = keys;
         }
 
-        public string DateTimeColumnName { get; set; }
-        public string AmountColumnName { get; set; }
-        public string BaseAccountColumnName { get; set; }
-        public string CounterAccountColumnName { get; set; }
+        public string DateTimeKey { get; set; }
+        public string AccountKey { get; set; }
+        public string BaseAccountKey { get; set; }
+        public string CounterAccountKey { get; set; }
         public string? BalanceColumnName { get; set; }
 
         public bool PositiveAmountForCredit { get; set; } = true;
+
+        public List<string> Keys { get; }
     }
 }

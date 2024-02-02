@@ -2,15 +2,41 @@
 
 namespace KMPAccounting.BookKeeping
 {
-    public abstract class BankTransactionRow
+    public class BankTransactionRow
     {
-        public abstract IEnumerable<(string, string)> GetColumnAndValuePairs();
-        public abstract string GetValue(string columnName);
+        public BankTransactionRow(BankTransactionTableDescriptor ownerTable)
+        {
+            OwnerTable = ownerTable;
+        }
 
-        public abstract BankTransactionTableDescriptor OwnerTable { get; }
+        public IEnumerable<(string, string)> GetKeyAndValuePairs()
+        {
+            foreach (var kvp in KeyValueMap)
+            {
+                yield return (kvp.Key, kvp.Value);
+            }
+        }
+
+        public bool KeyHasValue(string key) => KeyValueMap.ContainsKey(key);
+        
+        public string this[string key]
+        {
+            get
+            {
+                return KeyValueMap[key];
+            }
+            set
+            {
+                KeyValueMap[key] = value;
+            }
+        }
+
+        public Dictionary<string, string> KeyValueMap { get; } = new Dictionary<string, string>();
+
+        public BankTransactionTableDescriptor OwnerTable { get; }
 
         public int? OriginalRowNumber { get; }
 
-        public Receipt? Receipt { get; }
+        public ReceiptOrInvoice? Receipt { get; }
     }
 }
