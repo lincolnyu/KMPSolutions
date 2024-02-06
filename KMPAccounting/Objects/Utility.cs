@@ -102,26 +102,26 @@ namespace KMPAccounting.Objects
             }
         }
 
-        public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, string creditedAccountFullName, string debitedAccountFullName, decimal amount, string? remarks = null)
+        public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, string debitedAccountFullName, string creditedAccountFullName, decimal amount, string? remarks = null)
         {
-            var transaction = new Transaction(dateTime, new AccountNodeReference(creditedAccountFullName), new AccountNodeReference(debitedAccountFullName), amount) { Remarks = remarks };
+            var transaction = new Transaction(dateTime, new AccountNodeReference(debitedAccountFullName), new AccountNodeReference(creditedAccountFullName), amount) { Remarks = remarks };
             ledger.Entries.Add(transaction);
             transaction.Redo();
         }
 
-        public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, (string, decimal)[] credited, (string, decimal)[] debited, string? remarks = null)
+        public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, (string, decimal)[] debited, (string, decimal)[] credited, string? remarks = null)
         {
             var transaction = new PackedTransaction(dateTime)
             {
                 Remarks = remarks
             };
-            foreach (var (accountFullName, amount) in credited)
-            {
-                transaction.Credited.Add((new AccountNodeReference(accountFullName)!, amount));
-            }
             foreach (var (accountFullName, amount) in debited)
             {
                 transaction.Debited.Add((new AccountNodeReference(accountFullName), amount));
+            }
+            foreach (var (accountFullName, amount) in credited)
+            {
+                transaction.Credited.Add((new AccountNodeReference(accountFullName)!, amount));
             }
             // TODO Add balance checking assert.
             ledger.Entries.Add(transaction);

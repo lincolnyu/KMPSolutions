@@ -5,7 +5,7 @@ namespace KMPAccounting.Objects.Accounts
     public class AccountsState : AccountNode
     {
         public AccountsState(string name)
-            : base(SideEnum.Credit, name)
+            : base(SideEnum.Debit, name)
         {
         }
 

@@ -68,7 +68,7 @@ namespace KMPAccounting.Objects.BookKeeping
             {
                 sb.Append(ParentAndSide.Value.Item1.FullName);
                 sb.Append('|');
-                sb.Append(ParentAndSide.Value.Item2 == AccountNode.SideEnum.Credit? "c" : "D");
+                sb.Append(ParentAndSide.Value.Item2 == AccountNode.SideEnum.Credit? "C" : "D");
                 sb.Append('|');
             }
             return sb.ToString();

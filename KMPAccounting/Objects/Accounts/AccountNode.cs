@@ -9,8 +9,8 @@ namespace KMPAccounting.Objects.Accounts
     {
         public enum SideEnum
         {
-            Credit,
-            Debit
+            Debit,
+            Credit
         }
 
         public static SideEnum GetOppositeSide(SideEnum side)
