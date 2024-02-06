@@ -10,20 +10,20 @@ namespace KMPAccounting.BankAdapters
     {
         public class CommbankCashTransactionTableDescriptor : BankTransactionTableDescriptor
         {
-            public CommbankCashTransactionTableDescriptor(string tableName) : base(tableName, new List<BankTransactionRowDescriptor> { new CommbankCashTransactionRowDescriptor() })
+            public CommbankCashTransactionTableDescriptor(string tableName) : base(tableName, new CommbankCashTransactionRowDescriptor())
             {
             }
         }
 
         public class CommbankCashTransactionRowDescriptor : BankTransactionRowDescriptor
         {
-            public CommbankCashTransactionRowDescriptor() : base("Date", "Amount", "BaseAccount", "CounterAccount", new List<string> { "Date", "Amount", "Remarks", "Balance", "BaseAccount", "CounterAccount" })
+            public CommbankCashTransactionRowDescriptor() : base("Date", "Amount", "CounterAccount", new List<string> { "Date", "Amount", "Remarks", "Balance", "CounterAccount" })
             {
                 BalanceColumnName = "Balance";
             }
         }
 
-        public class OriginalCsvReader : BaseCsvReader
+        public class OriginalCsvReader : CsvReader
         {
             public OriginalCsvReader(string path, string tableName)
             {
@@ -44,7 +44,7 @@ namespace KMPAccounting.BankAdapters
                     row["Date"] = fields[0];
                     row["Amount"] = fields[1];
                     row["Remarks"] = fields[2];
-                    row["Balance"] = fields[2];
+                    row["Balance"] = fields[3];
                     yield return row;
                 }
             }

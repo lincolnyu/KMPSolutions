@@ -4,18 +4,17 @@ namespace KMPAccounting.BookKeeping
 {
     public class BankTransactionTableDescriptor
     {
-        public BankTransactionTableDescriptor(string tableName, List<BankTransactionRowDescriptor> rowDescriptors)
+        public BankTransactionTableDescriptor(string tableName, BankTransactionRowDescriptor rowDescriptor)
         {
             TableName = tableName;
-            RowDescriptors = rowDescriptors;
+            RowDescriptor = rowDescriptor;
         }
 
         public string TableName { get; }
 
-        // Each row of the table may produce multiple transaction row entries
-        public List<BankTransactionRowDescriptor> RowDescriptors { get; }
+        public BankTransactionRowDescriptor RowDescriptor { get; }
 
-        public string BaseAccountPrefix { get; set; } = "";
+        public string BaseAccountName { get; set; } = "";
         public string CounterAccountPrefix { get; set; } = "";
     }
 }

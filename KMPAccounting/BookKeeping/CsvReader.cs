@@ -2,7 +2,7 @@
 
 namespace KMPAccounting.BookKeeping
 {
-    public abstract class BaseCsvReader
+    public abstract class CsvReader
     {
         public abstract IEnumerable<BankTransactionRow> GetRows();
     }

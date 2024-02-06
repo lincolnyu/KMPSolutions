@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using KMPCommon;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace KMPAccounting.BookKeeping
 {
@@ -18,7 +20,7 @@ namespace KMPAccounting.BookKeeping
         }
 
         public bool KeyHasValue(string key) => KeyValueMap.ContainsKey(key);
-        
+
         public string this[string key]
         {
             get
@@ -38,5 +40,10 @@ namespace KMPAccounting.BookKeeping
         public int? OriginalRowNumber { get; }
 
         public ReceiptOrInvoice? Receipt { get; }
+
+        public override string ToString()
+        {
+            return string.Join(',', OwnerTable.RowDescriptor.Keys.Select(k => CsvUtility.StringToCsvField(this[k])));
+        }
     }
 }

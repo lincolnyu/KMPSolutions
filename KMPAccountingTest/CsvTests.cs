@@ -1,4 +1,5 @@
 ﻿using KMPAccounting.BankAdapters;
+using KMPAccounting.KMPSpecifics;
 
 namespace KMPAccountingTest
 {
@@ -29,6 +30,26 @@ namespace KMPAccountingTest
             var cbaCashCsv = dir.GetFiles().First();
             var cbaCsvReader = new CommbankCashAccountAdapter.OriginalCsvReader(cbaCashCsv.FullName, "CBA Cash");
             Assert.That(cbaCsvReader.GetRows().Count, Is.EqualTo(179));
+            Assert.Pass();
+        }
+
+        [Test]
+        public void CBAGuessTest()
+        {
+            var dir = new DirectoryInfo(Path.Combine(TestDir, "cbacash"));
+            var cbaCashCsv = dir.GetFiles().First();
+            var cbaCsvReader = new CommbankCashAccountAdapter.OriginalCsvReader(cbaCashCsv.FullName, "CBA Cash");
+            var rows = cbaCsvReader.GetRows();
+            var guesser = new CommbankCashCounterAccountGuesser();
+            var guessedRows = guesser.Guess(rows);
+            {
+                using var f = new StreamWriter(@"C:\temp\cbacash_guessed.csv");
+                foreach(var row in guessedRows)
+                {
+                    f.WriteLine(row);
+                }
+            }
+            Assert.Pass();
         }
     }
 }
