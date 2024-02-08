@@ -1,4 +1,5 @@
 ﻿using KMPAccounting.BankAdapters;
+using KMPAccounting.BookKeeping;
 using KMPAccounting.KMPSpecifics;
 
 namespace KMPAccountingTest
@@ -28,26 +29,68 @@ namespace KMPAccountingTest
         {
             var dir = new DirectoryInfo(Path.Combine(TestDir, "cbacash"));
             var cbaCashCsv = dir.GetFiles().First();
-            var cbaCsvReader = new CommbankCashAccountAdapter.OriginalCsvReader(cbaCashCsv.FullName, "CBA Cash");
-            Assert.That(cbaCsvReader.GetRows().Count, Is.EqualTo(179));
+            Assert.That(CsvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTableDescriptor<CommbankCashRowDescriptor> ("CBA Cash")).Count, Is.EqualTo(179));
             Assert.Pass();
         }
 
         [Test]
-        public void CBAGuessTest()
+        public void CBACashGuessTest()
         {
             var dir = new DirectoryInfo(Path.Combine(TestDir, "cbacash"));
             var cbaCashCsv = dir.GetFiles().First();
-            var cbaCsvReader = new CommbankCashAccountAdapter.OriginalCsvReader(cbaCashCsv.FullName, "CBA Cash");
-            var rows = cbaCsvReader.GetRows();
+            var rows = CsvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTableDescriptor<CommbankCashRowDescriptor>("CBA Cash"));
             var guesser = new CommbankCashCounterAccountGuesser();
             var guessedRows = guesser.Guess(rows);
             {
                 using var f = new StreamWriter(@"C:\temp\cbacash_guessed.csv");
+                var emptyCount = 0;
+                var filledCount = 0;
                 foreach(var row in guessedRows)
                 {
+                    if (!string.IsNullOrWhiteSpace(row[row.OwnerTable.RowDescriptor.CounterAccountKey]))
+                    {
+                        filledCount++;
+                    }
+                    else
+                    {
+                        emptyCount++;
+                    }
                     f.WriteLine(row);
                 }
+                var filledPercentage = (double)filledCount / (filledCount + emptyCount);
+                Assert.That(filledPercentage, Is.GreaterThan(0.88));
+            }
+            Assert.Pass();
+        }
+
+        [Test]
+        public void CBACCGuessTest()
+        {
+            var dir = new DirectoryInfo(Path.Combine(TestDir, "cbacc"));
+            var cbaCashCsv = dir.GetFiles().First();
+            CsvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTableDescriptor<CommbankCashRowDescriptor>("CBA Cash"));
+
+            var rows = CsvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTableDescriptor<CommbankCreditCardRowDescriptor>("CBA CreditCard")); 
+            var guesser = new CommbankCreditCardCounterAccountGuesser();
+            var guessedRows = guesser.Guess(rows);
+            {
+                using var f = new StreamWriter(@"C:\temp\cbacc_guessed.csv");
+                var emptyCount = 0;
+                var filledCount = 0;
+                foreach (var row in guessedRows)
+                {
+                    if (!string.IsNullOrWhiteSpace(row[row.OwnerTable.RowDescriptor.CounterAccountKey]))
+                    {
+                        filledCount++;
+                    }
+                    else
+                    {
+                        emptyCount++;
+                    }
+                    f.WriteLine(row);
+                }
+                var filledPercentage = (double)filledCount / (filledCount + emptyCount);
+                Assert.That(filledPercentage, Is.GreaterThan(0.88));
             }
             Assert.Pass();
         }

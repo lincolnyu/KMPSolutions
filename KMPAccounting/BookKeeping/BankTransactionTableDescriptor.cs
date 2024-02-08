@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace KMPAccounting.BookKeeping
+﻿namespace KMPAccounting.BookKeeping
 {
     public class BankTransactionTableDescriptor
     {
@@ -16,5 +14,12 @@ namespace KMPAccounting.BookKeeping
 
         public string BaseAccountName { get; set; } = "";
         public string CounterAccountPrefix { get; set; } = "";
+    }
+
+    public class BankTransactionTableDescriptor<TRowDescriptor> : BankTransactionTableDescriptor where TRowDescriptor : BankTransactionRowDescriptor, new()
+    {
+        public BankTransactionTableDescriptor(string tableName) : base(tableName, new TRowDescriptor())
+        {
+        }
     }
 }

@@ -35,11 +35,13 @@ namespace KMPAccounting.BookKeeping
 
         public Dictionary<string, string> KeyValueMap { get; } = new Dictionary<string, string>();
 
+        public List<string> ExtraColumnData { get; } = new List<string>();
+
         public BankTransactionTableDescriptor OwnerTable { get; }
 
         public int? OriginalRowNumber { get; }
 
-        public ReceiptOrInvoice? Receipt { get; }
+        public ReceiptOrInvoice? Receipt { get; set; }
 
         public override string ToString()
         {

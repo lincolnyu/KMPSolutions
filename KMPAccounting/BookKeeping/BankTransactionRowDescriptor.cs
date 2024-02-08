@@ -25,7 +25,9 @@ namespace KMPAccounting.BookKeeping
         // NOTE: If, for example, the bank account is a loan account (liability), crediting the account is to reduce the loan debt. So if a negative amount is to reduce the loan, then 'PositiveAmountForCredit' needs to be set to false.
         public bool PositiveAmountForCredit { get; set; } = true;
 
-        // Keys in the order of the corresponding columns in the table.
+        // The keys for the columns in the table starting at index 0 (the first column).
+        // So this should at minimum include up to the last column the BankTransactionRow cares about.
+        // Can use dummy key names for those columns that it doesn't care about.
         public List<string> Keys { get; }
     }
 }
