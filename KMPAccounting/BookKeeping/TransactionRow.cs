@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace KMPAccounting.BookKeeping
 {
-    public class BankTransactionRow
+    public class TransactionRow<TTransactionRowDescriptor> where TTransactionRowDescriptor : BaseTransactionRowDescriptor
     {
-        public BankTransactionRow(BankTransactionTableDescriptor ownerTable)
+        public TransactionRow(BaseTransactionTableDescriptor<TTransactionRowDescriptor> ownerTable)
         {
             OwnerTable = ownerTable;
         }
@@ -37,11 +37,9 @@ namespace KMPAccounting.BookKeeping
 
         public List<string> ExtraColumnData { get; } = new List<string>();
 
-        public BankTransactionTableDescriptor OwnerTable { get; }
+        public BaseTransactionTableDescriptor<TTransactionRowDescriptor> OwnerTable { get; }
 
         public int? OriginalRowNumber { get; }
-
-        public ReceiptOrInvoice? Receipt { get; set; }
 
         public override string ToString()
         {

@@ -2,8 +2,8 @@
 
 namespace KMPAccounting.BookKeeping
 {
-    public interface IBankTransactionRowEmitter
+    public interface IBankTransactionRowEmitter<TTransactionRowDescriptor> where TTransactionRowDescriptor : BaseTransactionRowDescriptor
     {
-        IEnumerable<BankTransactionRow> Emit();
+        IEnumerable<TransactionRow<TTransactionRowDescriptor>> Emit();
     }
 }

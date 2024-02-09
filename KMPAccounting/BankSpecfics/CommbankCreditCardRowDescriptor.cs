@@ -1,7 +1,7 @@
 ﻿using KMPAccounting.BookKeeping;
 using System.Collections.Generic;
 
-namespace KMPAccounting.BankAdapters
+namespace KMPAccounting.BankSpecifics
 {
     public class CommbankCreditCardRowDescriptor : BankTransactionRowDescriptor
     {

@@ -6,20 +6,20 @@ using System.Collections.Generic;
 
 namespace KMPAccounting.BookKeeping
 {
-    public class LedgerBankTransactionRowCorrelator
+    public class LedgerBankTransactionRowCorrelator<TTransactionRowDescriptor> where TTransactionRowDescriptor : BankTransactionRowDescriptor, new()
     {
-        public LedgerBankTransactionRowCorrelator(IBankTransactionRowEmitter emitter)
+        public LedgerBankTransactionRowCorrelator(IBankTransactionRowEmitter<TTransactionRowDescriptor> emitter)
         {
             Emitter = emitter;
         }
 
-        public IBankTransactionRowEmitter Emitter { get; }
+        public IBankTransactionRowEmitter<TTransactionRowDescriptor> Emitter { get; }
 
-        public IEnumerable<(BankTransactionRow, List<Transaction>)> Correlate()
+        public IEnumerable<(TransactionRow<TTransactionRowDescriptor>, List<Transaction>)> Correlate()
         {
             foreach (var row in Emitter.Emit())
             {
-                var table = row.OwnerTable;
+                var table = (BankTransactionTableDescriptor<TTransactionRowDescriptor>)row.OwnerTable;
                 var rowDescriptor = table.RowDescriptor;
                 var dateTimeStr = row[rowDescriptor.DateTimeKey];
 
