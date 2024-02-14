@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using KMPCommon;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace KMPAccounting.BookKeeping
+namespace KMPAccounting.BookKeepingTabular
 {
-    public class BaseTransactionRowDescriptor
+    public class BaseTransactionRowDescriptor : ITransactionRowDescriptor
     {
         protected BaseTransactionRowDescriptor(string dateTimeKey, string amountKey , List<string> keys)
         {
@@ -12,15 +14,12 @@ namespace KMPAccounting.BookKeeping
             Keys = keys;
         }
 
-        public string DateTimeKey { get; set; }
+        public string DateTimeKey { get; }
 
         // The key for the amount value (balance change)
-        public string AmountKey { get; set; }
+        public string AmountKey { get; }
 
-        // The keys for the columns in the table starting at index 0 (the first column).
-        // So this should at minimum include up to the last column the actual TransactionRow cares about.
-        // Can use dummy key names for those columns that it doesn't care about.
-        public List<string> Keys { get; }
+        public IList<string> Keys { get; }
 
         public virtual bool EstimateHasHeader(IList<string> loadedFieldsOfFirstRow)
         {
@@ -28,6 +27,11 @@ namespace KMPAccounting.BookKeeping
             Debug.Assert(amountColumnIndex != -1);
             var amountColumeValue = loadedFieldsOfFirstRow[amountColumnIndex].Trim();
             return !decimal.TryParse(amountColumeValue, out _);
+        }
+
+        public virtual DateTime GetDateTime(ITransactionRow row)
+        {
+            return CsvUtility.ParseDateTime(row[DateTimeKey]);
         }
     }
 }

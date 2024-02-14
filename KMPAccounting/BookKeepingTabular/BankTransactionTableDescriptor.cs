@@ -1,4 +1,4 @@
-﻿namespace KMPAccounting.BookKeeping
+﻿namespace KMPAccounting.BookKeepingTabular
 {
     public class BankTransactionTableDescriptor<TRowDescriptor>: BaseTransactionTableDescriptor<TRowDescriptor> where TRowDescriptor : BankTransactionRowDescriptor, new()
     {
@@ -7,6 +7,7 @@
         }
 
         public string BaseAccountName { get; set; } = "";
+
         public string CounterAccountPrefix { get; set; } = "";
     }
 }

@@ -1,10 +1,9 @@
 ﻿using KMPCommon;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace KMPAccounting.BookKeeping
+namespace KMPAccounting.BookKeepingTabular
 {
     public class CsvReader
     {

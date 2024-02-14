@@ -4,20 +4,13 @@ using KMPCommon;
 using System;
 using System.Collections.Generic;
 
-namespace KMPAccounting.BookKeeping
+namespace KMPAccounting.BookKeepingTabular
 {
-    public class LedgerBankTransactionRowCorrelator<TTransactionRowDescriptor> where TTransactionRowDescriptor : BankTransactionRowDescriptor, new()
+    public class LedgerBankTransactionRowCorrelator
     {
-        public LedgerBankTransactionRowCorrelator(IBankTransactionRowEmitter<TTransactionRowDescriptor> emitter)
+        public IEnumerable<(ITransactionRow, List<Transaction>)> Correlate<TTransactionRowDescriptor>(IEnumerable<ITransactionRow> rows) where TTransactionRowDescriptor :  BankTransactionRowDescriptor, new()
         {
-            Emitter = emitter;
-        }
-
-        public IBankTransactionRowEmitter<TTransactionRowDescriptor> Emitter { get; }
-
-        public IEnumerable<(TransactionRow<TTransactionRowDescriptor>, List<Transaction>)> Correlate()
-        {
-            foreach (var row in Emitter.Emit())
+            foreach (var row in rows)
             {
                 var table = (BankTransactionTableDescriptor<TTransactionRowDescriptor>)row.OwnerTable;
                 var rowDescriptor = table.RowDescriptor;
@@ -34,7 +27,7 @@ namespace KMPAccounting.BookKeeping
                 var dateTime = CsvUtility.ParseDateTime(dateTimeStr);
 
                 var transactions = new List<Transaction>();
-                if (rowDescriptor.PositiveAmountForCredit)
+                if (rowDescriptor.PositiveAmountForDebit)
                 {
                     foreach (var (counterAccountName, counterAccountAmount) in counterAccounts)
                     {

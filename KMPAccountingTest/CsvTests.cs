@@ -1,7 +1,7 @@
-﻿using KMPAccounting.BankSpecifics;
-using KMPAccounting.BookKeeping;
+﻿using KMPAccounting.InstitutionSpecifics;
+using KMPAccounting.BookKeepingTabular;
 using KMPAccounting.KMPSpecifics;
-using System.Formats.Asn1;
+using KMPAccounting.BookKeepingTabular.InstitutionSpecifics;
 
 namespace KMPAccountingTest
 {
@@ -54,7 +54,35 @@ namespace KMPAccountingTest
         }
 
         [Test]
-        public void TetstCBACashGuess()
+        public void TestLoadingNABCash()
+        {
+            var dir = new DirectoryInfo(Path.Combine(TestDir, "nabcash"));
+            var cbaCashCsv = dir.GetFiles().First(x => x.Name == "Transactions.csv");
+            var csvReader = new CsvReader();
+            Assert.Multiple(() =>
+            {
+                Assert.That(csvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTableDescriptor<NABCashRowDescriptor>("NAB Cash")).Count, Is.EqualTo(243));
+                Assert.That(csvReader.HasHeader, Is.EqualTo(true));
+            });
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestLoadingNABSaving()
+        {
+            var dir = new DirectoryInfo(Path.Combine(TestDir, "nabsaving"));
+            var cbaCashCsv = dir.GetFiles().First(x => x.Name == "Transactions.csv");
+            var csvReader = new CsvReader();
+            Assert.Multiple(() =>
+            {
+                Assert.That(csvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTableDescriptor<NABCashRowDescriptor>("NAB Saving")).Count, Is.EqualTo(64));
+                Assert.That(csvReader.HasHeader, Is.EqualTo(true));
+            });
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestCBACashGuess()
         {
             var dir = new DirectoryInfo(Path.Combine(TestDir, "cbacash"));
             var cbaCashCsv = dir.GetFiles().First(x => x.Name == "CSVData_withheader.csv");
@@ -95,7 +123,7 @@ namespace KMPAccountingTest
         }
 
         [Test]
-        public void CBACCGuessTest()
+        public void TestCBACCGuess()
         {
             var dir = new DirectoryInfo(Path.Combine(TestDir, "cbacc"));
             var cbaCashCsv = dir.GetFiles().First(x => x.Name == "CSVData_withheader.csv");
@@ -137,6 +165,150 @@ namespace KMPAccountingTest
                 Assert.That(filledPercentage, Is.GreaterThan(0.88));
             }
             Assert.Pass();
+        }
+
+        [Test]
+        public void TestWaveRawLoading()
+        {
+            var dir = new DirectoryInfo(Path.Combine(TestDir, "wavereceipt"));
+            var rawTxtFile = dir.GetFiles().First(x => x.Name == "raw.txt");
+            var rowDescriptor = new WaveRowDescriptor();
+            var rows = WaveRawReader.GetRows(new StreamReader(rawTxtFile.FullName), new BaseTransactionTableDescriptor<WaveRowDescriptor>("Wave", rowDescriptor), false).ToList();
+
+            //Assert.That(rows, Has.Count.EqualTo(131));
+            Assert.That(rows, Has.Count.EqualTo(82));
+
+            {
+                using var f = new StreamWriter(@"C:\temp\wave.csv");
+
+                f.WriteLine(string.Join(',', rowDescriptor.Keys));
+                foreach (var row in rows)
+                {
+                    f.WriteLine(row);
+                }
+            }
+
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestTransactionMatching()
+        {
+            var cbaCash = GetCbaCash().OrderBy(x => x);
+            var cbaCc = GetCbaCc().OrderBy(x => x);
+            var nabCash = GetNabCash().OrderBy(x => x);
+
+            var wave = GetWave().OrderBy(x => x);
+
+            var cbaCashDesc = new CommbankCashRowDescriptor();
+            var cbaCcDesc = new CommbankCreditCardRowDescriptor();
+            var nabCashDesc = new NABCashRowDescriptor();
+            var waveDesc = new WaveRowDescriptor();
+
+            var printer = TransactionRowCsvFormatter.CreateSimpleCombiningRowDescriptors(cbaCashDesc, cbaCcDesc, nabCashDesc, waveDesc);
+
+            var matcher = new TransactionMatcher();
+            var items = matcher.Match(new IEnumerable<ITransactionRow>[] { cbaCash, cbaCc, nabCash }, wave, inputRow =>
+            {
+                var invoice = (TransactionRow<WaveRowDescriptor>)inputRow;
+                var account = invoice[invoice.OwnerTable.RowDescriptor.WaveAccountKey];
+                if (account == "NAB Business")
+                {
+                    return new[] { 2, 1, 0 };
+                }
+                else if (account == "Commbank Personal")
+                {
+                    return new[] { 1, 0, 2 };
+                }
+                return new[] { 1, 2, 0 };
+            }, true);
+
+            var cashInvoices = 0;
+            {
+                using var f = new StreamWriter(@"C:\temp\wave_combined.csv");
+                f.WriteLine("Source" + ',' + string.Join(',', printer.Columns.Select(x => x.TargetColumnName)));
+                foreach (var (index, bankRow, invoiceRow) in items.OrderByDescending(x=> x.Item2?? x.Item3))
+                {
+                    string head = "";
+                    IEnumerable<string> line;
+                    if (bankRow != null)
+                    {
+                        if (invoiceRow != null)
+                        {
+                            head += "W";
+                            line = printer.FieldsToStrings(bankRow, invoiceRow);
+                        }
+                        else
+                        {
+                            line = printer.FieldsToStrings(bankRow);
+                        }
+                        switch (index)
+                        {
+                            case 0:
+                                head += "C";
+                                break;
+                            case 1:
+                                head += "D";
+                                break;
+                            case 2:
+                                head += "N";
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        head += "W";
+                        line = printer.FieldsToStrings(invoiceRow!);
+                        var waveRow = (TransactionRow<WaveRowDescriptor>)invoiceRow;
+                        if (waveRow[waveRow.OwnerTable.RowDescriptor.WaveAccountKey] == "Cash on Hand")
+                        {
+                            head += "H";
+                            cashInvoices++;
+                        }
+                        else
+                        {
+                            head += "(Unmatched)";
+                        }
+                    }
+
+                    f.WriteLine(head + ',' + string.Join(',', line));
+                }
+            }
+
+            Assert.That(matcher.MatchedInvoices + cashInvoices, Is.EqualTo(matcher.TotalInvoices));
+        }
+
+        private IEnumerable<TransactionRow<CommbankCashRowDescriptor>> GetCbaCash()
+        {
+            var dir = new DirectoryInfo(Path.Combine(TestDir, "cbacash"));
+            var cbaCashCsv = dir.GetFiles().First(x => x.Name == "CSVData.csv");
+            var csvReader = new CsvReader();
+            return csvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTableDescriptor<CommbankCashRowDescriptor>("CBA Cash"));
+        }
+
+        private IEnumerable<TransactionRow<CommbankCreditCardRowDescriptor>> GetCbaCc()
+        {
+            var dir = new DirectoryInfo(Path.Combine(TestDir, "cbacc"));
+            var cbaCashCsv = dir.GetFiles().First(x => x.Name == "CSVData.csv");
+
+            var csvReader = new CsvReader();
+            return csvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTableDescriptor<CommbankCreditCardRowDescriptor>("CBA CreditCard"));
+        }
+
+        private IEnumerable<TransactionRow<NABCashRowDescriptor>> GetNabCash()
+        {
+            var dir = new DirectoryInfo(Path.Combine(TestDir, "nabcash"));
+            var cbaCashCsv = dir.GetFiles().First(x => x.Name == "Transactions.csv");
+            var csvReader = new CsvReader();
+            return csvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTableDescriptor<NABCashRowDescriptor>("NAB Cash"));
+        }
+
+        private IEnumerable<TransactionRow<WaveRowDescriptor>> GetWave(bool includeIncome = false)
+        {
+            var dir = new DirectoryInfo(Path.Combine(TestDir, "wavereceipt"));
+            var rawTxtFile = dir.GetFiles().First(x => x.Name == "raw.txt");
+            var rowDescriptor = new WaveRowDescriptor();
+            return WaveRawReader.GetRows(new StreamReader(rawTxtFile.FullName), new BaseTransactionTableDescriptor<WaveRowDescriptor>("Wave", rowDescriptor), includeIncome);
         }
     }
 }
