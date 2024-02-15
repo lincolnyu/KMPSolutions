@@ -241,6 +241,7 @@ namespace KMPAccountingTest
             var waveDesc = new WaveRowDescriptor();
 
             var printer = TransactionRowCsvFormatter.CreateSimpleCombiningRowDescriptors(cbaCashDesc, cbaCcDesc, nabCashDesc, waveDesc);
+            printer.UnifyDateTimeColumnFormatIntoDateOnly = true;
 
             var matcher = new TransactionMatcher();
             var items = matcher.Match(new IEnumerable<ITransactionRow>[] { cbaCash, cbaCc, nabCash }, wave, inputRow =>

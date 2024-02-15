@@ -13,6 +13,9 @@ namespace KMPAccounting.BookKeepingTabular
 
         public IList<string> ExtraColumnData { get; }
 
+        /// <summary>
+        ///  The time the transaction occurs. It has to refer to the column of RowDescriptor.DateTimeKey
+        /// </summary>
         public DateTime DateTime { get; }
 
         public ITransactionTableDescriptor OwnerTable { get; }
