@@ -4,10 +4,10 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
 {
     public class GenericInvoiceRowDescriptor : InvoiceTransactionRowDescriptor
     {
-        public GenericInvoiceRowDescriptor() : base("Date", "Amount", Constants.BusinessClaimableKey, Constants.CounterAccountKey, Constants.InvoiceReferenceKey, new List<string> { "Date", "Amount", Constants.RemarksKey, Constants.BusinessClaimableKey, Constants.CounterAccountKey, Constants.InvoiceReferenceKey })
+        public GenericInvoiceRowDescriptor() : base("Invoice Date", "Amount", Constants.BusinessClaimableKey, Constants.CounterAccountKey, Constants.InvoiceReferenceKey, new List<string> { "Invoice Date", "Amount", Constants.TransactionDetailsKey, Constants.BusinessClaimableKey, Constants.CounterAccountKey, Constants.InvoiceReferenceKey })
         {
         }
 
-        public string RemarksKey { get; } = Constants.RemarksKey;
+        public string TransactionDetailsKey { get; } = Constants.TransactionDetailsKey;
     }
 }

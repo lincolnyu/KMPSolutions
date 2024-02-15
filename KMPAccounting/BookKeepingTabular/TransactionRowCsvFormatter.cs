@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using KMPCommon;
 
 namespace KMPAccounting.BookKeepingTabular
 {
@@ -31,23 +32,41 @@ namespace KMPAccounting.BookKeepingTabular
         {
             var formatter = new TransactionRowCsvFormatter(new List<ColumnPicker>());
             var keySet = new HashSet<string>();
+
+            var dateKeys = new HashSet<string>();
+            var amountKeys = new HashSet<string>();
             foreach (var rowDescriptor in supportedRowDescriptors)
             {
                 foreach (var k in rowDescriptor.Keys)
                 {
-                    if (k != rowDescriptor.AmountKey && k != rowDescriptor.DateTimeKey)
+                    if (k == rowDescriptor.DateTimeKey)
+                    {
+                        dateKeys.Add(k);
+                    }
+                    else if (k == rowDescriptor.AmountKey)
+                    {
+                        amountKeys.Add(k);
+                    }
+                    else if (k != Constants.DummyKey)
                     {
                         keySet.Add(k);
                     }
                 }
             }
 
-            var dateColumn = new ColumnPicker(Constants.DateTimeKey);
-            dateColumn.Generic.Key = Constants.DateTimeKey;
-            var amountColumn = new ColumnPicker(Constants.AmountKey);
-            amountColumn.Generic.Key = Constants.AmountKey;
-            formatter.Columns.Add(dateColumn);
-            formatter.Columns.Add(amountColumn);
+            foreach (var k in dateKeys)
+            {
+                var column = new ColumnPicker(k);
+                column.Generic.Key = k;
+                formatter.Columns.Add(column);
+            }
+
+            foreach (var k in amountKeys)
+            {
+                var column = new ColumnPicker(k);
+                column.Generic.Key = k;
+                formatter.Columns.Add(column);
+            }
 
             foreach (var k in keySet)
             {
@@ -102,7 +121,7 @@ namespace KMPAccounting.BookKeepingTabular
                     }
                     if (columnValue != "") break;
                 }
-                yield return columnValue;
+                yield return columnValue.StringToCsvField();
             }
         }
     }

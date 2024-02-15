@@ -9,7 +9,7 @@ namespace KMPAccounting.InstitutionSpecifics
     public class TransactionMatcher
     {
         // Allow [currentDay - queueAgeBefore, currentDay + queueAgeAfter]
-        public int DefaultQueueAgeNumDaysBefore { get; set; } = 3;
+        public int DefaultQueueAgeNumDaysBefore { get; set; } = 0;
         public int DefaultQueueAgeNumDaysAfter { get; set; } = 7;
 
         public int TotalInvoices { get; private set; } = 0;
@@ -21,7 +21,7 @@ namespace KMPAccounting.InstitutionSpecifics
         /// <param name="bankTransactionLists">Bank transctions lists.</param>
         /// <param name="invoiceTransactionList">All invoice transactions. They have to be in chronicle order.</param>
         /// <returns>Enumerates through tuples of index of source bank transaction list, bank transaction and the invoice transaction if matched</returns>
-        public IEnumerable<(int, ITransactionRow?, ITransactionRow?)> Match(IList<IEnumerable<ITransactionRow>> bankTransactionLists, IEnumerable<ITransactionRow> invoiceTransactionList, Func<ITransactionRow, IList<int>?>? getPreferredAccountIndices = null, bool yieldUnmatchedInvoiceRows = false, IList<(int,int)>? queueAgeNumDaysBeforeAndAfter = null)
+        public IEnumerable<(int, ITransactionRow?, ITransactionRow?)> Match(IList<IEnumerable<ITransactionRow>> bankTransactionLists, IEnumerable<ITransactionRow> invoiceTransactionList, Func<ITransactionRow, IList<int>?>? getPreferredAccountIndices = null, bool yieldUnmatchedInvoiceRows = false, IList<(int?,int?)?>? queueAgeNumDaysBeforeAndAfter = null)
         {
             TotalInvoices = 0;
             MatchedInvoices = 0;
@@ -46,15 +46,37 @@ namespace KMPAccounting.InstitutionSpecifics
             {
                 var invoiceRowDescriptor = (InvoiceTransactionRowDescriptor)invoiceTransaction.OwnerTable.RowDescriptor;
 
-                var positiveForCashOut = invoiceRowDescriptor.PositiveAmountForCashOut;
+                var positiveForIncome = invoiceRowDescriptor.PositiveAmountForIncome;
 
                 var date = invoiceTransaction.DateTime;
+
+                // Return and remove all transactions prior to the invoice.
+                for (var i = 0; i < queues.Count; i++)
+                {
+                    var queueAgeBefore = queueAgeNumDaysBeforeAndAfter?[i]?.Item1 ?? DefaultQueueAgeNumDaysBefore;
+                    var queue = queues[i];
+                    while (queue.First != null)
+                    {
+                        var rowDescriptor = queue.First.Value.OwnerTable.RowDescriptor;
+                        var frontDateStr = queue.First.Value[rowDescriptor.DateTimeKey];
+                        var frontDate = CsvUtility.ParseDateTime(frontDateStr);
+                        if (frontDate.Date < date.Date.AddDays(-queueAgeBefore))
+                        {
+                            yield return (i, queue.First.Value, null);
+                            queue.RemoveFirst();
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
 
                 // Load the transactions within the specified range around the invoice date.
                 for (var i = 0; i < queues.Count; i++)
                 {
-                    var queueAgeBefore = queueAgeNumDaysBeforeAndAfter?[i].Item1 ?? DefaultQueueAgeNumDaysBefore;
-                    var queueAgeAfter = queueAgeNumDaysBeforeAndAfter?[i].Item2 ?? DefaultQueueAgeNumDaysAfter;
+                    var queueAgeBefore = queueAgeNumDaysBeforeAndAfter?[i]?.Item1 ?? DefaultQueueAgeNumDaysBefore;
+                    var queueAgeAfter = queueAgeNumDaysBeforeAndAfter?[i]?.Item2 ?? DefaultQueueAgeNumDaysAfter;
                     var queue = queues[i];
                     while (btEnumerators[i] != null)
                     {
@@ -87,7 +109,7 @@ namespace KMPAccounting.InstitutionSpecifics
                         var item = p.Value;
                         var itemAmount = item.GetDecimalValue(item.OwnerTable.RowDescriptor.AmountKey);
 
-                        var equalAmount = positiveForCashOut ? itemAmount == -amount : itemAmount == amount;
+                        var equalAmount = positiveForIncome ? itemAmount == amount : itemAmount == -amount;
 
                         if (equalAmount)
                         {
@@ -96,6 +118,10 @@ namespace KMPAccounting.InstitutionSpecifics
                             matched = true;
                             break;
                         }
+                    }
+                    if (matched)
+                    {
+                        break;
                     }
                 }
 
@@ -107,27 +133,6 @@ namespace KMPAccounting.InstitutionSpecifics
                 else if (yieldUnmatchedInvoiceRows)
                 {
                     yield return (-1, null, invoiceTransaction);
-                }
-
-                // Return and remove all transactions prior to the invoice.
-                for (var i = 0; i < queues.Count; i++)
-                {
-                    var queueAgeBefore = queueAgeNumDaysBeforeAndAfter?[i].Item1 ?? DefaultQueueAgeNumDaysBefore;
-                    var queue = queues[i];
-                    while (queue.First != null)
-                    {
-                        var frontDateStr = queue.First.Value[invoiceRowDescriptor.DateTimeKey];
-                        var frontDate = CsvUtility.ParseDateTime(frontDateStr);
-                        if (frontDate.Date < date.Date.AddDays(-queueAgeBefore))
-                        {
-                            yield return (i, queue.First.Value, null);
-                            queue.RemoveFirst();
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
                 }
             }
 

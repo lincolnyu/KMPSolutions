@@ -224,6 +224,11 @@ namespace KMPAccountingTest
         [Test]
         public void TestTransactionMatching()
         {
+            const string WaveAccountNABBusiness = "NAB Business";
+            const string WaveAccountCommbankPersonal = "Commbank Personal";
+            const string WaveAccountCashOnHand = "Cash on Hand";
+            const string WaveAccountTBC = "TBC";
+
             var cbaCash = GetCbaCash().OrderBy(x => x);
             var cbaCc = GetCbaCc().OrderBy(x => x);
             var nabCash = GetNabCash().OrderBy(x => x);
@@ -242,23 +247,25 @@ namespace KMPAccountingTest
             {
                 var invoice = (TransactionRow<WaveRowDescriptor>)inputRow;
                 var account = invoice[invoice.OwnerTable.RowDescriptor.WaveAccountKey];
-                if (account == "NAB Business")
+                if (account == WaveAccountNABBusiness)
                 {
                     return new[] { 2, 1, 0 };
                 }
-                else if (account == "Commbank Personal")
+                else if (account == WaveAccountCommbankPersonal)
                 {
                     return new[] { 1, 0, 2 };
                 }
                 return new[] { 1, 2, 0 };
-            }, true);
+            }, true, new (int?, int?)?[] { null, null, (null, 10) });
 
             var cashInvoices = 0;
+            var inconsistentAccountTypes = 0;
             {
                 using var f = new StreamWriter(@"C:\temp\wave_combined.csv");
-                f.WriteLine("Source" + ',' + string.Join(',', printer.Columns.Select(x => x.TargetColumnName)));
+                f.WriteLine("Source,Message," + string.Join(',', printer.Columns.Select(x => x.TargetColumnName)));
                 foreach (var (index, bankRow, invoiceRow) in items.OrderByDescending(x=> x.Item2?? x.Item3))
                 {
+                    string message = "";
                     string head = "";
                     IEnumerable<string> line;
                     if (bankRow != null)
@@ -267,6 +274,15 @@ namespace KMPAccountingTest
                         {
                             head += "W";
                             line = printer.FieldsToStrings(bankRow, invoiceRow);
+                            if ((invoiceRow[waveDesc.WaveAccountKey] == WaveAccountCommbankPersonal && (index != 0 && index != 1)) || (invoiceRow[waveDesc.WaveAccountKey] == WaveAccountNABBusiness && index != 2) || (invoiceRow[waveDesc.WaveAccountKey] == WaveAccountCashOnHand))
+                            {
+                                message = "Error: Inconsistent account types. Invoice is with a bank account that differs.";
+                                inconsistentAccountTypes++;
+                            }
+                            else if (invoiceRow[waveDesc.WaveAccountKey] == WaveAccountTBC)
+                            {
+                                message = "Info: Invoice account type can be updated.";
+                            }
                         }
                         else
                         {
@@ -289,23 +305,31 @@ namespace KMPAccountingTest
                     {
                         head += "W";
                         line = printer.FieldsToStrings(invoiceRow!);
-                        var waveRow = (TransactionRow<WaveRowDescriptor>)invoiceRow;
-                        if (waveRow[waveRow.OwnerTable.RowDescriptor.WaveAccountKey] == "Cash on Hand")
+                        var waveRow = (TransactionRow<WaveRowDescriptor>)invoiceRow!;
+                        if (waveRow[waveRow.OwnerTable.RowDescriptor.WaveAccountKey] == WaveAccountCashOnHand)
                         {
                             head += "H";
                             cashInvoices++;
                         }
+                        else if (waveRow[waveRow.OwnerTable.RowDescriptor.WaveAccountKey] == WaveAccountTBC)
+                        {
+                            message = "Warning: Account type could be 'Cash on Hand'.";
+                        }
                         else
                         {
-                            head += "(Unmatched)";
+                            message = "Error: Unmatched account.";
                         }
                     }
 
-                    f.WriteLine(head + ',' + string.Join(',', line));
+                    f.WriteLine(head + ',' + message + ',' + string.Join(',', line));
                 }
             }
 
-            Assert.That(matcher.MatchedInvoices + cashInvoices, Is.EqualTo(matcher.TotalInvoices));
+            Assert.Multiple(() =>
+            {
+                Assert.That(inconsistentAccountTypes, Is.Zero);
+                Assert.That(matcher.MatchedInvoices + cashInvoices, Is.EqualTo(matcher.TotalInvoices));
+            });
         }
 
         private IEnumerable<TransactionRow<CommbankCashRowDescriptor>> GetCbaCash()

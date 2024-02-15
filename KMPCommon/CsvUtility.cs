@@ -177,9 +177,9 @@ namespace KMPCommon
             return dateTime1.Year.Equals(dateTime2.Year) && dateTime1.Month.Equals(dateTime2.Month) && dateTime1.Day.Equals(dateTime2.Day) && dateTime1.Hour.Equals(dateTime2.Hour) && dateTime1.Minute.Equals(dateTime2.Minute) && dateTime1.Second.Equals(dateTime2.Second);
         }
 
-        public static string StringToCsvField(string field) 
+        public static string StringToCsvField(this string field) 
         { 
-            if (field.Contains(','))
+            if (field.Contains(',') || field.StartsWith('"'))
             {
                 return "\"" + field.Replace("\"", "\\\"") + "\"";
             }

@@ -77,7 +77,7 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
                             {
                                 isRefund = GuessIfIsRefund(description);
                             }
-                            var positive = RowDescriptor.PositiveAmountForCashOut ^ (isIncome||isRefund);
+                            var positive = (!RowDescriptor.PositiveAmountForIncome) ^ (isIncome||isRefund);
                             if (!positive)
                             {
                                 amount = -amount;
@@ -109,7 +109,7 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
                     var subs = description.Substring(i, j - i);
                     var subamount = decimal.Parse(subs);
 
-                    if (!rowDescriptor.PositiveAmountForCashOut)
+                    if (rowDescriptor.PositiveAmountForIncome)
                     { 
                         subamount = -subamount;
                     }

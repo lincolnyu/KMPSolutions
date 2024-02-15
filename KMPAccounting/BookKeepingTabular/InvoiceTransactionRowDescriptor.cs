@@ -25,7 +25,7 @@ namespace KMPAccounting.BookKeepingTabular
         /// </summary>
         public string InvoiceReferenceKey { get; }
 
-        // Whether amount being positive means the cash flows out of the account that has changed due to the invoice.
-        public bool PositiveAmountForCashOut { get; set; } = true;
+        // Whether amount being positive indicates income the account that has changed due to the invoice.
+        public bool PositiveAmountForIncome { get; set; } = true;
     }
 }

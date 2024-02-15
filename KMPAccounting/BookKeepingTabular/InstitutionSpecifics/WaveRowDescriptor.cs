@@ -9,8 +9,8 @@
             Keys.Add(WaveDescriptionKey);
         }
 
-        public string WaveAccountKey { get; } = "WaveAccount";
-        public string WaveCategoryKey { get; } = "WaveCategory";
-        public string WaveDescriptionKey { get; } = "WaveDescription";
+        public string WaveAccountKey { get; } = "Wave Account";
+        public string WaveCategoryKey { get; } = "Wave Category";
+        public string WaveDescriptionKey { get; } = "Wave Description";
     }
 }
