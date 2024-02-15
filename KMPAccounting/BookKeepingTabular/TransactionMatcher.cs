@@ -8,9 +8,9 @@ namespace KMPAccounting.InstitutionSpecifics
 {
     public class TransactionMatcher
     {
-        // TODO on inidvidual accoutns
-        public TimeSpan QueueAgeBefore { get; set; } = TimeSpan.FromDays(3);
-        public TimeSpan QueueAgeAfter { get; set; } = TimeSpan.FromDays(7);
+        // Allow [currentDay - queueAgeBefore, currentDay + queueAgeAfter]
+        public int DefaultQueueAgeNumDaysBefore { get; set; } = 3;
+        public int DefaultQueueAgeNumDaysAfter { get; set; } = 7;
 
         public int TotalInvoices { get; private set; } = 0;
         public int MatchedInvoices { get; private set; } = 0;
@@ -21,7 +21,7 @@ namespace KMPAccounting.InstitutionSpecifics
         /// <param name="bankTransactionLists">Bank transctions lists.</param>
         /// <param name="invoiceTransactionList">All invoice transactions. They have to be in chronicle order.</param>
         /// <returns>Enumerates through tuples of index of source bank transaction list, bank transaction and the invoice transaction if matched</returns>
-        public IEnumerable<(int, ITransactionRow?, ITransactionRow?)> Match(IList<IEnumerable<ITransactionRow>> bankTransactionLists, IEnumerable<ITransactionRow> invoiceTransactionList, Func<ITransactionRow, int[]?>? getPreferredAccountIndices = null, bool yieldUnmatchedInvoiceRows = false)
+        public IEnumerable<(int, ITransactionRow?, ITransactionRow?)> Match(IList<IEnumerable<ITransactionRow>> bankTransactionLists, IEnumerable<ITransactionRow> invoiceTransactionList, Func<ITransactionRow, IList<int>?>? getPreferredAccountIndices = null, bool yieldUnmatchedInvoiceRows = false, IList<(int,int)>? queueAgeNumDaysBeforeAndAfter = null)
         {
             TotalInvoices = 0;
             MatchedInvoices = 0;
@@ -50,19 +50,21 @@ namespace KMPAccounting.InstitutionSpecifics
 
                 var date = invoiceTransaction.DateTime;
 
-                // Load the transactions up to QueueAge after the invoice.
+                // Load the transactions within the specified range around the invoice date.
                 for (var i = 0; i < queues.Count; i++)
                 {
+                    var queueAgeBefore = queueAgeNumDaysBeforeAndAfter?[i].Item1 ?? DefaultQueueAgeNumDaysBefore;
+                    var queueAgeAfter = queueAgeNumDaysBeforeAndAfter?[i].Item2 ?? DefaultQueueAgeNumDaysAfter;
                     var queue = queues[i];
                     while (btEnumerators[i] != null)
                     {
                         var bt = btEnumerators[i]!.Current;
                         var dt = bt.DateTime;
-                        if (dt >= date + QueueAgeAfter)
+                        if (dt.Date > date.Date.AddDays(queueAgeAfter))
                         {
                             break;
                         }
-                        else if (dt >= date - QueueAgeBefore)
+                        else if (dt >= date.Date.AddDays(-queueAgeBefore))
                         {
                             queue.AddLast(bt);
                         }
@@ -110,14 +112,14 @@ namespace KMPAccounting.InstitutionSpecifics
                 // Return and remove all transactions prior to the invoice.
                 for (var i = 0; i < queues.Count; i++)
                 {
+                    var queueAgeBefore = queueAgeNumDaysBeforeAndAfter?[i].Item1 ?? DefaultQueueAgeNumDaysBefore;
                     var queue = queues[i];
                     while (queue.First != null)
                     {
                         var frontDateStr = queue.First.Value[invoiceRowDescriptor.DateTimeKey];
                         var frontDate = CsvUtility.ParseDateTime(frontDateStr);
-                        if (frontDate.Date < date.Date)
+                        if (frontDate.Date < date.Date.AddDays(-queueAgeBefore))
                         {
-                            // No way the bank transaction occurs before the invoice date.
                             yield return (i, queue.First.Value, null);
                             queue.RemoveFirst();
                         }

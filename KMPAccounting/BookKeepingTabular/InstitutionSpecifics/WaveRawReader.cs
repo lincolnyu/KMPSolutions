@@ -9,18 +9,22 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
     ///  Reads text copy-pasted from the transaction list on the page and turns it to
     ///  TransactionRow base don GenericInvoiceRowDescriptor
     /// </summary>
-    public static class WaveRawReader
+    public class WaveRawReader
     {
-        public static IEnumerable<TransactionRow<WaveRowDescriptor>> GetRows(StreamReader sr, BaseTransactionTableDescriptor<WaveRowDescriptor> tableDescriptor, bool includeIncome = true)
+        public int ReadRowCount { get; private set; }
+
+        public WaveRowDescriptor? RowDescriptor { get; private set; }
+
+        public IEnumerable<TransactionRow<WaveRowDescriptor>> GetRows(StreamReader sr, BaseTransactionTableDescriptor<WaveRowDescriptor> tableDescriptor, bool includeIncome)
         {
-            var rowDescriptor = tableDescriptor.RowDescriptor;
+            RowDescriptor = tableDescriptor.RowDescriptor;
             DateTime? date = default;
             string description = "";
             string account = "";
             string category = "";
             decimal amount = default;
             int readStatus = 0;
-            var readRowCount = 0;
+            ReadRowCount = 0;
             bool isIncome = false;
             while (!sr.EndOfStream)
             {
@@ -41,7 +45,7 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
                                 yield return r;
                             }
                         }
-                        readRowCount++;
+                        ReadRowCount++;
 
                         readStatus = 0;
                     }
@@ -52,7 +56,7 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
                     case 0: date = ParseDate(line); 
                         if (!date.HasValue)
                         {
-                            if (readRowCount == 0)
+                            if (ReadRowCount == 0)
                             {
                                 continue;
                             }
@@ -73,7 +77,7 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
                             {
                                 isRefund = GuessIfIsRefund(description);
                             }
-                            var positive = rowDescriptor.PositiveAmountForCashOut ^ (isIncome||isRefund);
+                            var positive = RowDescriptor.PositiveAmountForCashOut ^ (isIncome||isRefund);
                             if (!positive)
                             {
                                 amount = -amount;

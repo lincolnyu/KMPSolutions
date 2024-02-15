@@ -1,7 +1,7 @@
-﻿using KMPAccounting.InstitutionSpecifics;
-using KMPAccounting.BookKeepingTabular;
-using KMPAccounting.KMPSpecifics;
+﻿using KMPAccounting.BookKeepingTabular;
 using KMPAccounting.BookKeepingTabular.InstitutionSpecifics;
+using KMPAccounting.InstitutionSpecifics;
+using KMPAccounting.KMPSpecifics;
 
 namespace KMPAccountingTest
 {
@@ -168,20 +168,50 @@ namespace KMPAccountingTest
         }
 
         [Test]
-        public void TestWaveRawLoading()
+        public void TestWaveRawLoadingExcludingIncome()
         {
             var dir = new DirectoryInfo(Path.Combine(TestDir, "wavereceipt"));
             var rawTxtFile = dir.GetFiles().First(x => x.Name == "raw.txt");
-            var rowDescriptor = new WaveRowDescriptor();
-            var rows = WaveRawReader.GetRows(new StreamReader(rawTxtFile.FullName), new BaseTransactionTableDescriptor<WaveRowDescriptor>("Wave", rowDescriptor), false).ToList();
+            var waveReader = new WaveRawReader();
+            var rows = waveReader.GetRows(new StreamReader(rawTxtFile.FullName), new BaseTransactionTableDescriptor<WaveRowDescriptor>("Wave", new WaveRowDescriptor()), false).ToList();
 
-            //Assert.That(rows, Has.Count.EqualTo(131));
-            Assert.That(rows, Has.Count.EqualTo(82));
+            Assert.Multiple(() =>
+            {
+                Assert.That(waveReader.ReadRowCount, Is.EqualTo(134));
+                Assert.That(rows, Has.Count.EqualTo(83));
+            });
 
             {
                 using var f = new StreamWriter(@"C:\temp\wave.csv");
 
-                f.WriteLine(string.Join(',', rowDescriptor.Keys));
+                f.WriteLine(string.Join(',', waveReader.RowDescriptor!.Keys));
+                foreach (var row in rows)
+                {
+                    f.WriteLine(row);
+                }
+            }
+
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestWaveRawLoadingIncludingIncome()
+        {
+            var dir = new DirectoryInfo(Path.Combine(TestDir, "wavereceipt"));
+            var rawTxtFile = dir.GetFiles().First(x => x.Name == "raw.txt");
+            var waveReader = new WaveRawReader();
+            var rows = waveReader.GetRows(new StreamReader(rawTxtFile.FullName), new BaseTransactionTableDescriptor<WaveRowDescriptor>("Wave", new WaveRowDescriptor()), true).ToList();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(waveReader.ReadRowCount, Is.EqualTo(134));
+                Assert.That(rows, Has.Count.EqualTo(136));
+            });
+
+            {
+                using var f = new StreamWriter(@"C:\temp\wave.csv");
+
+                f.WriteLine(string.Join(',', waveReader.RowDescriptor!.Keys));
                 foreach (var row in rows)
                 {
                     f.WriteLine(row);
@@ -308,7 +338,7 @@ namespace KMPAccountingTest
             var dir = new DirectoryInfo(Path.Combine(TestDir, "wavereceipt"));
             var rawTxtFile = dir.GetFiles().First(x => x.Name == "raw.txt");
             var rowDescriptor = new WaveRowDescriptor();
-            return WaveRawReader.GetRows(new StreamReader(rawTxtFile.FullName), new BaseTransactionTableDescriptor<WaveRowDescriptor>("Wave", rowDescriptor), includeIncome);
+            return new WaveRawReader().GetRows(new StreamReader(rawTxtFile.FullName), new BaseTransactionTableDescriptor<WaveRowDescriptor>("Wave", rowDescriptor), includeIncome);
         }
     }
 }
