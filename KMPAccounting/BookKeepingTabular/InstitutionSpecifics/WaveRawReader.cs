@@ -103,28 +103,42 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
             var endIndex = description.IndexOf('}', startIndex + 1);
             if (startIndex >= 0 && endIndex >= 0)
             {
-                for (var i = startIndex + 1; i < endIndex;)
+                var nextI = 0;
+                for (var i = startIndex + 1; i < endIndex; i = nextI)
                 {
                     var j = description.IndexOfAny(new[] { '+', '-', '}' }, i + 1);
-                    var subs = description.Substring(i, j - i);
-                    var subamount = decimal.Parse(subs);
+                    nextI = j;
+                    var substr = description.Substring(i, j - i);
+                    decimal subTotalAmount, subBusinessAmount;
+                    if (substr.Contains(':'))
+                    {
+                        var ss = substr.Split(':');
+                        subTotalAmount = decimal.Parse(ss[0]);
+                        // If business component breakdown is specified the user is responsible for ensuring they add up to amount.
+                        subBusinessAmount = decimal.Parse(ss[1]);
+                    }
+                    else
+                    {
+                        subTotalAmount = decimal.Parse(substr);
+                        // Only show business component on the first transaction.
+                        subBusinessAmount = (i == startIndex+1)? amount : 0;
+                    }
 
                     if (rowDescriptor.PositiveAmountForIncome)
-                    { 
-                        subamount = -subamount;
+                    {
+                        subTotalAmount = -subTotalAmount;
+                        subBusinessAmount = -subBusinessAmount;
                     }
 
                     var r = new TransactionRow<WaveRowDescriptor>(tableDescriptor);
                     r[rowDescriptor.DateTimeKey] = date.ToString();
-                    r[rowDescriptor.AmountKey] = subamount.ToString();
+                    r[rowDescriptor.AmountKey] = subTotalAmount.ToString();
                     r[rowDescriptor.WaveAccountKey] = account!;
                     r[rowDescriptor.WaveCategoryKey] = category!.ToString();
                     r[rowDescriptor.WaveDescriptionKey] = description!;
-                    r[rowDescriptor.BusinessClaimableAmountKey] = amount.ToString();
+                    r[rowDescriptor.BusinessClaimableAmountKey] = subBusinessAmount.ToString();
 
                     yield return r;
-
-                    i = j;
                 }
             }
             else
