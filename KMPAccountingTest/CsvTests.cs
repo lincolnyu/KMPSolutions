@@ -89,8 +89,8 @@ namespace KMPAccountingTest
             var csvReader = new CsvReader();
             var rows = csvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTableDescriptor<CommbankCashRowDescriptor>("CBA Cash"));
 
-            var guesser = new CommbankCashCounterAccountPrefiller();
-            var guessedRows = guesser.Guess(rows);
+            var guessedRows = rows.Select(x => { CommbankCashCounterAccountPrefiller.Prefill(x, null, false); return x; });
+
             {
                 using var f = new StreamWriter(@"C:\temp\cbacash_guessed.csv");
                 var headerChecked = false;
@@ -129,9 +129,8 @@ namespace KMPAccountingTest
             var cbaCashCsv = dir.GetFiles().First(x => x.Name == "CSVData_withheader.csv");
 
             var csvReader = new CsvReader();
-            var rows = csvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTableDescriptor<CommbankCreditCardRowDescriptor>("CBA CreditCard")); 
-            var guesser = new CommbankCreditCardCounterAccountPrefiller();
-            var guessedRows = guesser.Guess(rows);
+            var rows = csvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTableDescriptor<CommbankCreditCardRowDescriptor>("CBA CreditCard"));
+            var guessedRows = rows.Select(x => {CommbankCreditCardCounterAccountPrefiller.Guess(x, null, false); return x; });
             {
                 using var f = new StreamWriter(@"C:\temp\cbacc_guessed.csv");
                 if (csvReader.HasHeader == true)
