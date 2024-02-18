@@ -2,7 +2,6 @@
 using KMPAccounting.BookKeepingTabular.InstitutionSpecifics;
 using KMPAccounting.InstitutionSpecifics;
 using KMPAccounting.KMPSpecifics;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 
 namespace KMPAccountingTest
 {
