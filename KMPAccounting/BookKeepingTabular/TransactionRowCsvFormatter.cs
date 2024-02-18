@@ -19,6 +19,8 @@ namespace KMPAccounting.BookKeepingTabular
             ///  A source with lower precedence will be overwritten by higher.
             /// </summary>
             public int? Precedence { get; set; }
+
+            public Func<string, string>? Formatter { get; set; }
         }
 
         public class ColumnPicker
@@ -47,14 +49,35 @@ namespace KMPAccounting.BookKeepingTabular
             ///  The column name in the target table.
             /// </summary>
             public string TargetColumnName { get; }
+
+            public Func<string, string>? Formatter { get; set; }
+        }
+
+        private readonly Dictionary<string, int> _targetNameToColumnIndex = new Dictionary<string, int>();
+
+        public ColumnPicker? GetColumn(string targetName)
+        {
+            if (!_targetNameToColumnIndex.TryGetValue(targetName, out var columnIndex))
+            {
+                return null;
+            }
+            return Columns[columnIndex];
         }
 
         public TransactionRowCsvFormatter(List<ColumnPicker> columns) 
         {
             Columns = columns;
+            UpdateColumnMap();
         }
 
-        public bool UnifyDateTimeColumnFormatIntoDateOnly { get; set; } = false;
+        private void UpdateColumnMap()
+        {
+            for (int i = 0; i < Columns.Count; i++)
+            {
+                ColumnPicker? column = Columns[i];
+                _targetNameToColumnIndex[column.TargetColumnName] = i;
+            }
+        }
 
         public static TransactionRowCsvFormatter CreateSimpleCombiningRowDescriptors(params ITransactionRowDescriptor[] supportedRowDescriptors)
         {
@@ -102,20 +125,16 @@ namespace KMPAccounting.BookKeepingTabular
                 column.Generic.Key = k;
                 formatter.Columns.Add(column);
             }
-
+            formatter.UpdateColumnMap();
             return formatter;
         }
 
         public List<ColumnPicker> Columns { get; }
 
-        private string GetColumnValue(ITransactionRow row, string columnKey)
+        private string GetColumnValue(ITransactionRow row, TypedColumnPicker picker, ColumnPicker column)
         {
-            var val = row[columnKey].Trim();
-            if (UnifyDateTimeColumnFormatIntoDateOnly && columnKey == row.OwnerTable.RowDescriptor.DateTimeKey)
-            {
-                val = CsvUtility.ParseDateTime(val).Date.ToShortDateString();
-            }
-            return val;
+            var val = row[picker.Key!].Trim();
+            return picker.Formatter?.Invoke(val) ?? column.Formatter?.Invoke(val) ?? val;
         }
 
         public IEnumerable<string> FieldsToStrings(params ITransactionRow[] rowSouces)
@@ -143,7 +162,7 @@ namespace KMPAccounting.BookKeepingTabular
                                 {
                                     if (row.KeyHasValue(typed.Key!))
                                     {
-                                        columnValue = GetColumnValue(row, typed.Key!);
+                                        columnValue = GetColumnValue(row, typed, column);
                                     }
                                 }
                                 else
@@ -165,7 +184,7 @@ namespace KMPAccounting.BookKeepingTabular
                         {
                             if (row.KeyHasValue(column.Generic.Key!))
                             {
-                                columnValue = GetColumnValue(row, column.Generic.Key);
+                                columnValue = GetColumnValue(row, column.Generic, column);
                             }
                         }
                         else

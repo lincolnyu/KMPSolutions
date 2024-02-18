@@ -2,6 +2,7 @@
 using KMPAccounting.BookKeepingTabular.InstitutionSpecifics;
 using KMPAccounting.InstitutionSpecifics;
 using KMPAccounting.KMPSpecifics;
+using KMPCommon;
 
 namespace KMPAccountingTest
 {
@@ -263,7 +264,9 @@ namespace KMPAccountingTest
             var items = MatchTransactions();
 
             var printer = TransactionRowCsvFormatter.CreateSimpleCombiningRowDescriptors(CbaCashDesc, CbaCcDesc, NabCashDesc, WaveDesc);
-            printer.UnifyDateTimeColumnFormatIntoDateOnly = true;
+
+            printer.GetColumn("Date")!.Formatter = DateFormatter;
+            printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
 
             var cashInvoices = 0;
             var inconsistentAccountTypes = 0;
@@ -339,6 +342,10 @@ namespace KMPAccountingTest
             });
         }
 
+        private string DateFormatter(string arg)
+        {
+            return CsvUtility.ParseDateTime(arg).Date.ToShortDateString();
+        }
 
         [Test]
         public void TestCBACCGuessWithInvoice()
@@ -350,6 +357,9 @@ namespace KMPAccountingTest
             var guessedRows = cbaccRows.Select(x => { CommbankCreditCardCounterAccountPrefiller.Guess((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2, false); return x; });
 
             var printer = TransactionRowCsvFormatter.CreateSimpleCombiningRowDescriptors(CbaCcDesc, WaveDesc);
+
+            printer.GetColumn("Date")!.Formatter = DateFormatter;
+            printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
 
             {
                 using var f = new StreamWriter(@"C:\temp\cbacc_joint_guessed.csv");
