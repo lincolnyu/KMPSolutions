@@ -6,16 +6,16 @@ using System.Text;
 
 namespace KMPAccounting.Objects.BookKeeping
 {
-    public class PackedTransaction : Entry
+    public class CompositeTransaction : Entry
     {
-        public PackedTransaction(DateTime dateTime)
+        public CompositeTransaction(DateTime dateTime)
             : base(dateTime)
         {
         }
 
         public override bool Equals(Entry other)
         {
-            if (other is PackedTransaction otherPt)
+            if (other is CompositeTransaction otherPt)
             {
                 if (!CsvUtility.TimestampsAreEqual(DateTime, other.DateTime))
                 {
@@ -52,9 +52,9 @@ namespace KMPAccounting.Objects.BookKeeping
             return false;
         }
 
-        public static PackedTransaction ParseLine(DateTime dateTime, string line)
+        public static CompositeTransaction ParseLine(DateTime dateTime, string line)
         {
-            var pt = new PackedTransaction(dateTime);
+            var pt = new CompositeTransaction(dateTime);
 
             int p = 0;
             int newp;
@@ -102,7 +102,7 @@ namespace KMPAccounting.Objects.BookKeeping
 
             sb.Append(CsvUtility.TimestampToString(DateTime));
             sb.Append("|");
-            sb.Append("PackedTransaction|");
+            sb.Append("CompositeTransaction|");
 
             sb.Append($"{Debited.Count}|");
             foreach (var (acc, amount) in Debited)

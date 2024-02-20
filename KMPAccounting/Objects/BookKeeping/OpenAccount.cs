@@ -18,7 +18,7 @@ namespace KMPAccounting.Objects.BookKeeping
         {
             if (other is OpenAccount otherOa) 
             {
-                if (DateTime != other.DateTime)
+                if (!CsvUtility.TimestampsAreEqual(DateTime, other.DateTime))
                 {
                     return false;
                 }

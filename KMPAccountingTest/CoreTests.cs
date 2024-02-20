@@ -17,6 +17,8 @@ namespace KMPCoreObjectsTest
         [Test]
         public void BachelorTest()
         {
+            AccountsState.Clear();
+
             var ledger = new Ledger();
 
             OU.EnsureCreateAccount(ledger, "Tom.Assets", false);
@@ -103,18 +105,95 @@ namespace KMPCoreObjectsTest
         }
 
         [Test]
-        public void TestReckonInstantly()
+        public void TestReckoningInstantly()
         {
+            AccountsState.Clear();
+
             var ledger = new Ledger();
 
+            OU.EnsureCreateAccount(ledger, "Tom.Assets", false);
             OU.EnsureCreateAccount(ledger, "Tom.Equity", true);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Base", false);
             OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1", false);
             OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity2", false);
+            
             OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_2", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_2.Equity1_2_1", true);
             OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1.Equity1_1_1", false);
             OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1.Equity1_1_2", true);
+
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_2", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_2.Equity1_2_1", true);
+            
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets", "Tom.Equity.Equity1.Equity1_1.Equity1_1_1", 300);
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets", "Tom.Equity.Equity1.Equity1_1.Equity1_1_2", 200);
+
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Equity.Equity2", "Tom.Assets", 100);
+
+            var tomState = AccountsState.GetAccountsState("Tom")!;
+            Assert.Multiple(() =>
+            {
+                Assert.That(tomState.Balance, Is.EqualTo(0));
+                Assert.That(OU.GetAccount("Tom.Assets")!.Balance, Is.EqualTo(400));
+                Assert.That(OU.GetAccount("Tom.Equity")!.Balance, Is.EqualTo(400));
+                Assert.That(OU.GetAccount("Tom.Equity.Base")!.Balance, Is.EqualTo(0));
+
+                Assert.That(OU.GetAccount("Tom.Equity.Equity1.Equity1_1.Equity1_1_1")!.Balance, Is.EqualTo(300));
+                Assert.That(OU.GetAccount("Tom.Equity.Equity1.Equity1_1.Equity1_1_2")!.Balance, Is.EqualTo(-200));
+                Assert.That(OU.GetAccount("Tom.Equity.Equity2")!.Balance, Is.EqualTo(-100));
+            });
+
+            OU.GetAccount("Tom.Equity")!.ReckonInstantly();
+            
+            Assert.Multiple(() =>
+            {
+                Assert.That(OU.GetAccount("Tom.Assets")!.Balance, Is.EqualTo(400));
+                Assert.That(OU.GetAccount("Tom.Equity")!.Balance, Is.EqualTo(400));
+                Assert.That(OU.GetAccount("Tom.Equity.Base")!.Balance, Is.EqualTo(400));
+
+                Assert.That(OU.GetAccount("Tom.Equity.Equity1.Equity1_1.Equity1_1_1")!.Balance, Is.EqualTo(0));
+                Assert.That(OU.GetAccount("Tom.Equity.Equity1.Equity1_1.Equity1_1_2")!.Balance, Is.EqualTo(0));
+                Assert.That(OU.GetAccount("Tom.Equity.Equity2")!.Balance, Is.EqualTo(0));
+            });
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestReckoningByTransactions()
+        {
+            AccountsState.Clear();
+
+            var ledger = new Ledger();
+
+            OU.EnsureCreateAccount(ledger, "Tom.Assets", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity", true);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Base", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity2", false);
+
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1.Equity1_1_1", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1.Equity1_1_2", true);
+
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_2", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_2.Equity1_2_1", true);
+
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets", "Tom.Equity.Equity1.Equity1_1.Equity1_1_1", 300);
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets", "Tom.Equity.Equity1.Equity1_1.Equity1_1_2", 200);
+
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Equity.Equity2", "Tom.Assets", 100);
+
+            OU.GetAccount("Tom.Equity")!.ReckonAccountByTransactions(out var toDebit, out var toCredit);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(toDebit, Has.Count.EqualTo(2));
+                Assert.That(toDebit[0], Is.EqualTo(("Tom.Equity.Equity1.Equity1_1.Equity1_1_1", 300)));
+                Assert.That(toDebit[1], Is.EqualTo(("Tom.Equity.Equity1.Equity1_1.Equity1_1_2", 200)));
+
+                Assert.That(toCredit, Has.Count.EqualTo(2));
+                Assert.That(toCredit[0], Is.EqualTo(("Tom.Equity.Equity2", 100)));
+                Assert.That(toCredit[1], Is.EqualTo(("Tom.Equity.Base", 400)));
+            });
 
             Assert.Pass();
         }
@@ -122,6 +201,8 @@ namespace KMPCoreObjectsTest
         [Test]
         public void TestLedgerSerialization()
         {
+            AccountsState.Clear();
+
             var ledger = new Ledger();
 
             OU.EnsureCreateAccount(ledger, "Tom.Assets", false);

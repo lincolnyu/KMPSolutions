@@ -67,9 +67,26 @@ namespace KMPAccounting.Objects.Accounts
                 if (balance_ != value)
                 {
                     balance_ = value;
+                    balanceInvalidated_ = false;
 
                     InvalidateParentsBalances();
                 }
+            }
+        }
+
+        public AccountNode? BaseNode
+        {
+            get
+            {
+                if (Children.TryGetValue("Base", out var baseNode))
+                {
+                    if (baseNode.Children.Count > 0)
+                    {
+                        throw new InvalidOperationException("Base node does not allow to have chldren.");
+                    }
+                    return baseNode;
+                }
+                return null;
             }
         }
 
@@ -151,6 +168,16 @@ namespace KMPAccounting.Objects.Accounts
         {
             that.balance_ = balance_;
             that.balanceInvalidated_ = balanceInvalidated_;
+        }
+
+        public void ReckonInstantly()
+        {
+            BaseNode!.balance_ = Balance;
+
+            foreach (var child in Children.Values.Where(x=>x!=BaseNode))
+            {
+                child.ZeroOutBalanceOfTreeWithoutInvalidatingParents();
+            }
         }
 
         private decimal balance_ = 0;

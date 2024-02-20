@@ -455,7 +455,7 @@ namespace KMPAccountingTest
             Assert.Multiple(() =>
             {
                 Assert.That(filledCount + emptyCount, Is.EqualTo(179));
-                Assert.That(filledPercentage, Is.GreaterThanOrEqualTo(0.86));    // TODO improve it.
+                Assert.That(filledPercentage, Is.GreaterThanOrEqualTo(0.88));    // TODO improve it.
             });
             Assert.Pass();
         }

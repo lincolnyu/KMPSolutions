@@ -20,8 +20,8 @@ namespace KMPAccounting.Objects.BookKeeping
             var content = line.Substring(p);
             switch (type)
             {
-                case "PackedTransaction":
-                    return PackedTransaction.ParseLine(timestamp, content);
+                case "CompositeTransaction":
+                    return CompositeTransaction.ParseLine(timestamp, content);
                 case "Transaction":
                     return Transaction.ParseLine(timestamp, content);
                 case "OpenAccount":

@@ -1,7 +1,9 @@
 ﻿using KMPAccounting.Objects.Accounts;
 using KMPAccounting.Objects.BookKeeping;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace KMPAccounting.Objects
 {
@@ -35,14 +37,56 @@ namespace KMPAccounting.Objects
             return p;
         }
 
-        public static void ReckonAccountInstantly(this AccountNode node)
+        public static void ReckonAccountByTransactions(this AccountNode node, out List<(string, decimal)> toDebit, out List<(string, decimal)> toCredit)
         {
-            //node.Children["Base"]
+            toDebit = new List<(string, decimal)>();
+            toCredit = new List<(string, decimal)>();
+            decimal netDebited = 0;
+            foreach (var leaf in GetNonZeroLeafNodesForReckoning(node))
+            {
+                var leafPositiveBalance = leaf.Balance > 0;
+                var leafDebitSide = leaf.Side == AccountNode.SideEnum.Debit;
+                var amount = Math.Abs(leaf.Balance);
+                if (leafPositiveBalance ^ leafDebitSide)
+                {
+                    // Debit leaf and credit base
+                    toDebit.Add((leaf.FullName, amount));
+                    netDebited += amount;
+                }
+                else
+                {
+                    // Credit leaf and debit base
+                    toCredit.Add((leaf.FullName, amount));
+                    netDebited -= amount;
+                }
+            }
+            // There's a chance these accounts cancel themselves out
+            if (netDebited > 0)
+            {
+                toCredit.Add((node.BaseNode!.FullName, netDebited));
+            }
+            else if (netDebited < 0)
+            {
+                toDebit.Add((node.BaseNode!.FullName, -netDebited));
+            }
         }
 
-        public static void ReckonAccountByTransactions(this AccountNode node)
+        private static IEnumerable<AccountNode> GetNonZeroLeafNodesForReckoning(AccountNode node)
         {
-            // TODO implement it...
+            foreach (var child in node.Children.Values.Where(x => x != node.BaseNode))
+            {
+                if (child.Children.Count > 0)
+                {
+                    foreach (var l in GetNonZeroLeafNodesForReckoning(child))
+                    {
+                        yield return l;
+                    }
+                }
+                else if (child.Balance != 0)
+                {
+                    yield return child;
+                }
+            }
         }
 
         /// <summary>
@@ -119,9 +163,9 @@ namespace KMPAccounting.Objects
             transaction.Redo();
         }
 
-        public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, (string, decimal)[] debited, (string, decimal)[] credited, string? remarks = null)
+        public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, IEnumerable<(string, decimal)> debited, IEnumerable<(string, decimal)> credited, string? remarks = null)
         {
-            var transaction = new PackedTransaction(dateTime)
+            var transaction = new CompositeTransaction(dateTime)
             {
                 Remarks = remarks
             };

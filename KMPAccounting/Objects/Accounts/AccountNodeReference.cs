@@ -20,7 +20,7 @@ namespace KMPAccounting.Objects.Accounts
             return FullName;
         }
 
-        // Including the states name as the root
+        // Including the states name as the root.
         public string FullName { get; }
 
         public AccountNode? Get()
@@ -37,7 +37,6 @@ namespace KMPAccounting.Objects.Accounts
             return account;
         }
 
-
-        WeakPointer<AccountNode>? nodeCache_ = null;
+        private WeakPointer<AccountNode>? nodeCache_ = null;
     }
 }

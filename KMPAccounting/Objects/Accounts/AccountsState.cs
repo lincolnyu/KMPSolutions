@@ -9,6 +9,11 @@ namespace KMPAccounting.Objects.Accounts
         {
         }
 
+        public static void Clear()
+        {
+            accountStates_.Clear();
+        }
+
         public static AccountsState? GetAccountsState(string name)
         {
             if (accountStates_.TryGetValue(name, out AccountsState state))
