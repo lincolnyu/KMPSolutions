@@ -7,9 +7,10 @@ namespace KMPAccounting.BookKeepingTabular
 {
     public class TransactionRow<TTransactionRowDescriptor> : ITransactionRow where TTransactionRowDescriptor : BaseTransactionRowDescriptor
     {
-        public TransactionRow(BaseTransactionTableDescriptor<TTransactionRowDescriptor> ownerTable)
+        public TransactionRow(BaseTransactionTable<TTransactionRowDescriptor> ownerTable, int index)
         {
             OwnerTable = ownerTable;
+            Index = index;
         }
 
         public IEnumerable<(string, string)> GetKeyAndValuePairs()
@@ -34,15 +35,17 @@ namespace KMPAccounting.BookKeepingTabular
             }
         }
 
+        public int Index { get; set;  }
+
         public Dictionary<string, string> KeyValueMap { get; } = new Dictionary<string, string>();
 
         public IList<string> ExtraColumnData { get; } = new List<string>();
 
-        public BaseTransactionTableDescriptor<TTransactionRowDescriptor> OwnerTable { get; }
+        public BaseTransactionTable<TTransactionRowDescriptor> OwnerTable { get; }
 
         public int? OriginalRowNumber { get; }
 
-        ITransactionTableDescriptor ITransactionRow.OwnerTable => OwnerTable;
+        ITransactionTable ITransactionRow.OwnerTable => OwnerTable;
 
         public DateTime DateTime => OwnerTable.RowDescriptor.GetDateTime(this);
 
@@ -71,17 +74,6 @@ namespace KMPAccounting.BookKeepingTabular
                     this[k] = v;
                 }
             }
-        }
-
-        public int CompareTo(ITransactionRow that)
-        {
-            var c = DateTime.CompareTo(that.DateTime);
-            if (c != 0) return c;
-
-            var thisAmount = this.GetDecimalValue(OwnerTable.RowDescriptor.AmountKey);
-            var thatAmount = that.GetDecimalValue(OwnerTable.RowDescriptor.AmountKey);
-
-            return -Math.Abs(thisAmount).CompareTo(Math.Abs(thatAmount));   // Larger amount first
         }
     }
 }

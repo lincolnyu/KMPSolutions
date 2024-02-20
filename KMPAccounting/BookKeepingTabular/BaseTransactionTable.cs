@@ -1,6 +1,7 @@
 ﻿namespace KMPAccounting.BookKeepingTabular
 {
-    public class BaseTransactionTableDescriptor<TTransactionRowDescriptor> : ITransactionTableDescriptor where TTransactionRowDescriptor : BaseTransactionRowDescriptor
+    public class BaseTransactionTable
+        <TTransactionRowDescriptor> : ITransactionTable where TTransactionRowDescriptor : BaseTransactionRowDescriptor
     {
         public enum HeaderType
         {
@@ -9,7 +10,7 @@
             AutoDetect
         }
 
-        public BaseTransactionTableDescriptor(string tableName, TTransactionRowDescriptor rowDescriptor) 
+        public BaseTransactionTable(string tableName, TTransactionRowDescriptor rowDescriptor) 
         {
             TableName = tableName;
             RowDescriptor = rowDescriptor;
@@ -21,6 +22,6 @@
 
         public HeaderType Header { get; set; } = HeaderType.AutoDetect;
 
-        ITransactionRowDescriptor ITransactionTableDescriptor.RowDescriptor => RowDescriptor;
+        ITransactionRowDescriptor ITransactionTable.RowDescriptor => RowDescriptor;
     }
 }

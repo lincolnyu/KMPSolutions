@@ -49,10 +49,10 @@ namespace KMPAccounting.Objects.Accounts
             {
                 if (Children.Count > 0)
                 {
-                    if (balanceInvalidated)
+                    if (balanceInvalidated_)
                     {
                         balance_ = Children.Values.Sum(x => SameAccountSide(x) ? x.Balance : -x.Balance);
-                        balanceInvalidated = false;
+                        balanceInvalidated_ = false;
                     }
                 }
                 return balance_;
@@ -111,6 +111,12 @@ namespace KMPAccounting.Objects.Accounts
             }
         }
 
+        /// <summary>
+        ///  Force the balance of every node on the tree starting from this account to zero.
+        /// </summary>
+        /// <remarks>
+        ///  This is not a balanced accounting operation.
+        /// </remarks>
         public void ZeroOutBalanceOfTree()
         {
             var needToInvalidateParentsBalances = balance_ != 0;
@@ -127,14 +133,14 @@ namespace KMPAccounting.Objects.Accounts
         {
             for (var p = Parent; p != null; p = p.Parent)
             {
-                p.balanceInvalidated = true;
+                p.balanceInvalidated_ = true;
             }
         }
 
         private void ZeroOutBalanceOfTreeWithoutInvalidatingParents()
         {
             balance_ = 0;
-            balanceInvalidated = false;
+            balanceInvalidated_ = false;
             foreach (var child in Children.Values)
             {
                 child.ZeroOutBalanceOfTreeWithoutInvalidatingParents();
@@ -144,10 +150,10 @@ namespace KMPAccounting.Objects.Accounts
         private void CopyBasicFieldsTo(AccountNode that)
         {
             that.balance_ = balance_;
-            that.balanceInvalidated = balanceInvalidated;
+            that.balanceInvalidated_ = balanceInvalidated_;
         }
 
         private decimal balance_ = 0;
-        private bool balanceInvalidated = false;
+        private bool balanceInvalidated_ = false;
     }
 }

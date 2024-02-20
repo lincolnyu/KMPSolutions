@@ -12,7 +12,7 @@ namespace KMPAccounting.BookKeepingTabular
         {
             foreach (var row in rows)
             {
-                var table = (BankTransactionTableDescriptor<TTransactionRowDescriptor>)row.OwnerTable;
+                var table = (BankTransactionTable<TTransactionRowDescriptor>)row.OwnerTable;
                 var rowDescriptor = table.RowDescriptor;
                 var dateTimeStr = row[rowDescriptor.DateTimeKey];
 
@@ -27,34 +27,16 @@ namespace KMPAccounting.BookKeepingTabular
                 var dateTime = CsvUtility.ParseDateTime(dateTimeStr);
 
                 var transactions = new List<Transaction>();
-                if (rowDescriptor.PositiveAmountForDebit)
+                foreach (var (counterAccountName, counterAccountAmount) in counterAccounts)
                 {
-                    foreach (var (counterAccountName, counterAccountAmount) in counterAccounts)
+                    var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
+                    if (counterAccountAmount > 0)
                     {
-                        var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
-                        if (counterAccountAmount > 0)
-                        {
-                            transactions.Add(new Transaction(dateTime, new AccountNodeReference(baseAccountName), new AccountNodeReference(actualCounterAccountName), counterAccountAmount));
-                        }
-                        else
-                        {
-                            transactions.Add(new Transaction(dateTime, new AccountNodeReference(actualCounterAccountName), new AccountNodeReference(baseAccountName), -counterAccountAmount));
-                        }
+                        transactions.Add(new Transaction(dateTime, new AccountNodeReference(baseAccountName), new AccountNodeReference(actualCounterAccountName), counterAccountAmount));
                     }
-                }
-                else
-                {
-                    foreach (var (counterAccountName, counterAccountAmount) in counterAccounts)
+                    else
                     {
-                        var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
-                        if (counterAccountAmount > 0)
-                        {
-                            transactions.Add(new Transaction(dateTime, new AccountNodeReference(actualCounterAccountName), new AccountNodeReference(baseAccountName), counterAccountAmount));
-                        }
-                        else
-                        {
-                            transactions.Add(new Transaction(dateTime, new AccountNodeReference(baseAccountName), new AccountNodeReference(actualCounterAccountName), -counterAccountAmount));
-                        }
+                        transactions.Add(new Transaction(dateTime, new AccountNodeReference(actualCounterAccountName), new AccountNodeReference(baseAccountName), -counterAccountAmount));
                     }
                 }
                 yield return (row, transactions);

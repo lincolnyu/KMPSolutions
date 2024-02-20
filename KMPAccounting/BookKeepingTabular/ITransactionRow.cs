@@ -3,9 +3,14 @@ using System.Collections.Generic;
 
 namespace KMPAccounting.BookKeepingTabular
 {
-    public interface ITransactionRow : IComparable<ITransactionRow>
+    public interface ITransactionRow
     {
         public IEnumerable<(string, string)> GetKeyAndValuePairs();
+
+        /// <summary>
+        ///  Index in the table (OwnerTable)
+        /// </summary>
+        public int Index { get; set; }
 
         public bool KeyHasValue(string key);
 
@@ -18,7 +23,7 @@ namespace KMPAccounting.BookKeepingTabular
         /// </summary>
         public DateTime DateTime { get; }
 
-        public ITransactionTableDescriptor OwnerTable { get; }
+        public ITransactionTable OwnerTable { get; }
 
         public bool MergableWith(ITransactionRow other);
         public void MergeFrom(ITransactionRow other);

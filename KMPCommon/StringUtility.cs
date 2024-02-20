@@ -27,8 +27,8 @@
                 p = str.IndexOf(substr, p, ignoreCase ? System.StringComparison.OrdinalIgnoreCase : System.StringComparison.Ordinal);
                 if (p >= 0)
                 {
-                    if (p > 0 && !char.IsWhiteSpace(str[p - 1])) continue;
-                    if (p + substr.Length < str.Length && !char.IsWhiteSpace(str[p + substr.Length])) continue;
+                    if (p > 0 && char.IsLetter(str[p - 1])) continue;
+                    if (p + substr.Length < str.Length && char.IsLetter(str[p + substr.Length])) continue;
                     return true;
                 }
                 else

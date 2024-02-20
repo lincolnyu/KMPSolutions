@@ -1,6 +1,6 @@
 ﻿namespace KMPAccounting.BookKeepingTabular
 {
-    public interface ITransactionTableDescriptor
+    public interface ITransactionTable
     {
         public ITransactionRowDescriptor RowDescriptor { get; }
     }

@@ -7,18 +7,25 @@ namespace KMPAccounting.BookKeepingTabular
 {
     public class CsvReader
     {
+        #region Output Data Reset Every Call of Main Method
+        
         public bool? HasHeader { get; private set; }
         public List<string>? LoadedHeader { get; private set; }
 
-        public IEnumerable<TransactionRow<TTransactionRowDescriptor>> GetRows<TTransactionRowDescriptor>(StreamReader sr, BaseTransactionTableDescriptor<TTransactionRowDescriptor> tableDescriptor) where TTransactionRowDescriptor : BaseTransactionRowDescriptor
+        #endregion
+
+        #region Main Method
+
+        public IEnumerable<TransactionRow<TTransactionRowDescriptor>> GetRows<TTransactionRowDescriptor>(StreamReader sr, BaseTransactionTable<TTransactionRowDescriptor> tableDescriptor) where TTransactionRowDescriptor : BaseTransactionRowDescriptor
         {
             HasHeader = null;
+            var index = 0;
             while (!sr.EndOfStream)
             {
                 var fields = CsvUtility.GetAndBreakRow(sr).ToList();
                 if (LoadedHeader == null)
                 {
-                    if (tableDescriptor.Header == BaseTransactionTableDescriptor<TTransactionRowDescriptor>.HeaderType.Present || (tableDescriptor.Header == BaseTransactionTableDescriptor<TTransactionRowDescriptor>.HeaderType.AutoDetect && tableDescriptor.RowDescriptor.EstimateHasHeader(fields)))
+                    if (tableDescriptor.Header == BaseTransactionTable<TTransactionRowDescriptor>.HeaderType.Present || (tableDescriptor.Header == BaseTransactionTable<TTransactionRowDescriptor>.HeaderType.AutoDetect && tableDescriptor.RowDescriptor.EstimateHasHeader(fields)))
                     {
                         HasHeader = true;
                         LoadedHeader = fields;
@@ -31,7 +38,7 @@ namespace KMPAccounting.BookKeepingTabular
                         LoadedHeader = null;
                     }
                 }
-                var row = new TransactionRow<TTransactionRowDescriptor>(tableDescriptor);
+                var row = new TransactionRow<TTransactionRowDescriptor>(tableDescriptor, index++);
                 var rowDescriptor = tableDescriptor.RowDescriptor;
                 var i = 0;
                 for (; i < rowDescriptor.Keys.Count && i < fields.Count; i++)
@@ -46,5 +53,7 @@ namespace KMPAccounting.BookKeepingTabular
                 yield return row;
             }
         }
+
+        #endregion
     }
 }

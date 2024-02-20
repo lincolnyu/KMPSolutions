@@ -2,22 +2,25 @@
 
 namespace KMPAccounting.BookKeepingTabular
 {
+    /// <summary>
+    ///  Descriptor that describes a invoice transaction row.
+    /// </summary>
+    /// <remarks>
+    ///  Positive amount always stands for income. To simplify implementation this is not made configurable.
+    /// </remarks>
     public class InvoiceTransactionRowDescriptor : BaseTransactionRowDescriptor
     {
         protected InvoiceTransactionRowDescriptor(string dateTimeKey, string amountKey, string businessClaimableAmountKey, string invoiceReferenceKey, List<string> keys) : base(dateTimeKey, amountKey, keys)
         {
-            BusinessClaimableAmountKey = businessClaimableAmountKey;
+            BusinessClaimableKey = businessClaimableAmountKey;
             InvoiceReferenceKey = invoiceReferenceKey;
         }
 
-        public string BusinessClaimableAmountKey { get; }
+        public string BusinessClaimableKey { get; }
 
         /// <summary>
         ///  The column that has the information of the invoice in agreed format.
         /// </summary>
         public string InvoiceReferenceKey { get; }
-
-        // Whether amount being positive indicates income the account that has changed due to the invoice.
-        public bool PositiveAmountForIncome { get; set; } = true;
     }
 }

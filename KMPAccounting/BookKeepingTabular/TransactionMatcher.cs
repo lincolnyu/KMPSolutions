@@ -2,6 +2,7 @@
 using KMPCommon;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace KMPAccounting.InstitutionSpecifics
@@ -16,7 +17,8 @@ namespace KMPAccounting.InstitutionSpecifics
         public int MatchedInvoices { get; private set; } = 0;
 
         /// <summary>
-        ///  Matches at the best effort the bank transactions and their invoice transactions
+        ///  Matches at the best effort the bank transactions and their invoice transactions.
+        ///  The input transactions must be sorted in ascending temporal order.
         /// </summary>
         /// <param name="bankTransactionLists">Bank transctions lists.</param>
         /// <param name="invoiceTransactionList">All invoice transactions. They have to be in chronicle order.</param>
@@ -45,8 +47,6 @@ namespace KMPAccounting.InstitutionSpecifics
             foreach (var invoiceTransaction in invoiceTransactionList)
             {
                 var invoiceRowDescriptor = (InvoiceTransactionRowDescriptor)invoiceTransaction.OwnerTable.RowDescriptor;
-
-                var positiveForIncome = invoiceRowDescriptor.PositiveAmountForIncome;
 
                 var date = invoiceTransaction.DateTime;
 
@@ -90,6 +90,10 @@ namespace KMPAccounting.InstitutionSpecifics
                         {
                             queue.AddLast(bt);
                         }
+                        else
+                        {
+                            yield return (i, bt, null);
+                        }
                         if (!btEnumerators[i]!.MoveNext())
                         {
                             btEnumerators[i] = null;
@@ -109,9 +113,7 @@ namespace KMPAccounting.InstitutionSpecifics
                         var item = p.Value;
                         var itemAmount = item.GetDecimalValue(item.OwnerTable.RowDescriptor.AmountKey);
 
-                        var equalAmount = positiveForIncome ? itemAmount == amount : itemAmount == -amount;
-
-                        if (equalAmount)
+                        if (itemAmount == amount)
                         {
                             yield return (i, item, invoiceTransaction);
                             queue.Remove(p);
@@ -146,5 +148,51 @@ namespace KMPAccounting.InstitutionSpecifics
                 }
             }
         }
+
+        class MatchComparer : IComparer<(int, ITransactionRow?, ITransactionRow?)>
+        {
+            public int Compare((int, ITransactionRow?, ITransactionRow?) x, (int, ITransactionRow?, ITransactionRow?) y)
+            {
+                if (x.Item2 != null && y.Item2 != null)
+                {
+                    if (x.Item1 == y.Item1)
+                    {
+                        Debug.Assert(x.Item2.OwnerTable == y.Item2.OwnerTable);
+                        return x.Item2.Index.CompareTo(y.Item2.Index);
+                    }
+                    return Compare(x.Item1, x.Item2, y.Item1, y.Item2);
+                }
+                else if (x.Item2 != null)
+                {
+                    Debug.Assert(y.Item3 != null);
+                    return Compare(x.Item1, x.Item2, null, y.Item3);
+                }
+                else if (y.Item2 != null)
+                {
+                    Debug.Assert(x.Item3 != null);
+                    return Compare(null, x.Item3, y.Item1, y.Item2);
+                }
+                else
+                {
+                    Debug.Assert(x.Item3 != null);
+                    Debug.Assert(y.Item3 != null);
+                    return x.Item3.Index.CompareTo(y.Item3.Index);
+                }
+            }
+
+            private int Compare(int? bankIndexX, ITransactionRow rowX, int? bankIndexY, ITransactionRow rowY)
+            {
+                var c = rowX.DateTime.CompareTo(rowY.DateTime);
+                if (c != 0) return c;
+                // Unmatched invoice rows take precendence.
+                if (bankIndexX == null) return -1;
+                if (bankIndexY == null) return 1;
+                return bankIndexX.Value.CompareTo(bankIndexY.Value);
+            }
+
+            public static MatchComparer Instance { get; } = new MatchComparer();
+        }
+
+        public static IEnumerable<(int, ITransactionRow?, ITransactionRow?)> OrderMatch(IEnumerable<(int, ITransactionRow?, ITransactionRow?)> input) => input.OrderBy(x => x, MatchComparer.Instance);
     }
 }

@@ -103,7 +103,24 @@ namespace KMPCoreObjectsTest
         }
 
         [Test]
-        public void LedgerSerializationTest()
+        public void TestReckonInstantly()
+        {
+            var ledger = new Ledger();
+
+            OU.EnsureCreateAccount(ledger, "Tom.Equity", true);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity2", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_2", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_2.Equity1_2_1", true);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1.Equity1_1_1", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1.Equity1_1_2", true);
+
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestLedgerSerialization()
         {
             var ledger = new Ledger();
 

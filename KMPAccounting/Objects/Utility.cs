@@ -35,6 +35,16 @@ namespace KMPAccounting.Objects
             return p;
         }
 
+        public static void ReckonAccountInstantly(this AccountNode node)
+        {
+            //node.Children["Base"]
+        }
+
+        public static void ReckonAccountByTransactions(this AccountNode node)
+        {
+            // TODO implement it...
+        }
+
         /// <summary>
         ///  Ensure the specified account is created in the specified state by executing the OpenAccount entries it creates as required.
         /// </summary>

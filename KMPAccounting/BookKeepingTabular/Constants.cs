@@ -12,5 +12,10 @@
 
         public static string BusinessClaimableKey = "business_claimable";
         public static string InvoiceReferenceKey = "invoice_reference";
+
+        public static string MessageKey = "message";
+
+        public static char CommonPrompt = ':';
+        public static char CommonSeparator = ';';
     }
 }

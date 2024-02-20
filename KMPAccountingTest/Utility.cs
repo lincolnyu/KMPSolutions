@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using KMPAccounting.BookKeepingTabular;
+using System.Runtime.CompilerServices;
+using KMPAccounting.BookKeepingTabular;
 
 namespace KMPAccountingTest
 {
@@ -12,6 +14,25 @@ namespace KMPAccountingTest
         public static string GetThisFilePath([CallerFilePath] string path = null)
         {
             return path;
+        }
+
+        public static IEnumerable<TTransactionRow> AssertChangeToAscendingInDate<TTransactionRow>(this IEnumerable<TTransactionRow> input) where TTransactionRow : ITransactionRow
+        {
+            DateTime? last = null;
+            return input.Reverse().Select(x =>
+            {
+                if (last != null)
+                {
+                    Assert.That(last, Is.LessThanOrEqualTo(x.DateTime));
+                }
+                last = x.DateTime;
+                return x;
+            }).ResetIndex();
+        }
+
+        public static IEnumerable<TTransactionRow> ChangeToAscendingInDate<TTransactionRow>(this IEnumerable<TTransactionRow> input) where TTransactionRow : ITransactionRow
+        {
+            return input.OrderBy(x=>x, TransactionComparers.IndexSecond.Instance).ResetIndex();
         }
     }
 }
