@@ -150,12 +150,12 @@ namespace KMPCommon
 
         public static DateTime ParseTimestamp(string timestamp)
         {
-            var yearStr = timestamp.Substring(0, 4);
-            var monthStr = timestamp.Substring(4, 2);
-            var dateStr = timestamp.Substring(6, 2);
-            var hrStr = timestamp.Substring(8, 2);
-            var minStr = timestamp.Substring(10, 2);
-            var secStr = timestamp.Substring(12, 2);
+            var yearStr = timestamp[..4];
+            var monthStr = timestamp[4..6];
+            var dateStr = timestamp[6..8];
+            var hrStr = timestamp[8..10];
+            var minStr = timestamp[10..12];
+            var secStr = timestamp[12..14];
 
             var year = int.Parse(yearStr);
             var month = int.Parse(monthStr);

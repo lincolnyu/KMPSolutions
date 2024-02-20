@@ -54,7 +54,7 @@ namespace KMPAccounting.Objects.BookKeeping
             p = newp + 1;
             var amount = decimal.Parse(amountStr);
 
-            line.GetNextWord('|', p, out newp, out string? remarks);
+            line.GetNextWord('|', p, out _, out string? remarks);
 
             return new Transaction(dateTime, new AccountNodeReference(debitedAccountName!), new AccountNodeReference(creditedAccountName!), amount)
             {

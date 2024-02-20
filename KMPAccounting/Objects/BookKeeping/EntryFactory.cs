@@ -18,17 +18,13 @@ namespace KMPAccounting.Objects.BookKeeping
 
             p = newp + 1;
             var content = line.Substring(p);
-            switch (type)
+            return type switch
             {
-                case "CompositeTransaction":
-                    return CompositeTransaction.ParseLine(timestamp, content);
-                case "Transaction":
-                    return Transaction.ParseLine(timestamp, content);
-                case "OpenAccount":
-                    return OpenAccount.ParseLine(timestamp, content);
-                default:
-                    throw new ArgumentException($"Unknown entry type {type}");
-            }
+                "CompositeTransaction" => CompositeTransaction.ParseLine(timestamp, content),
+                "Transaction" => Transaction.ParseLine(timestamp, content),
+                "OpenAccount" => OpenAccount.ParseLine(timestamp, content),
+                _ => throw new ArgumentException($"Unknown entry type {type}"),
+            };
         }
     }
 }

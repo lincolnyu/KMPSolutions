@@ -1,6 +1,5 @@
 ﻿using KMPAccounting.BookKeepingTabular;
 using System.Runtime.CompilerServices;
-using KMPAccounting.BookKeepingTabular;
 
 namespace KMPAccountingTest
 {

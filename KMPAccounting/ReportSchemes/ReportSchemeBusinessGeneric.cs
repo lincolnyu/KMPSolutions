@@ -50,7 +50,7 @@ namespace KMPAccounting.ReportSchemes
 
         private decimal GetBusinessTaxDefault(decimal taxableIncome)
         {
-            const decimal FullRate = 0.3m;
+            //const decimal FullRate = 0.3m;
             const decimal LowerRate = 0.275m;
             // TODO Update this to the correct.
             return taxableIncome * LowerRate;

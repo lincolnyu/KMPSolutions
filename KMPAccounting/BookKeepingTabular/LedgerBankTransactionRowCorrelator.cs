@@ -8,7 +8,7 @@ namespace KMPAccounting.BookKeepingTabular
 {
     public class LedgerBankTransactionRowCorrelator
     {
-        public IEnumerable<(ITransactionRow, List<Transaction>)> Correlate<TTransactionRowDescriptor>(IEnumerable<ITransactionRow> rows) where TTransactionRowDescriptor :  BankTransactionRowDescriptor, new()
+        public IEnumerable<(ITransactionRow, List<Transaction>)> Correlate<TTransactionRowDescriptor>(IEnumerable<ITransactionRow> rows) where TTransactionRowDescriptor : BankTransactionRowDescriptor, new()
         {
             foreach (var row in rows)
             {
