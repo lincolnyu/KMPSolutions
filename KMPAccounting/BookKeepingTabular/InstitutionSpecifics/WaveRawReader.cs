@@ -17,7 +17,7 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
 
         public string FallbackBusinessAccount { get; set; } = "Uncategorized";
 
-        public IEnumerable<TransactionRow<WaveRowDescriptor>> GetRows(StreamReader sr, BaseTransactionTable<WaveRowDescriptor> tableDescriptor, bool includeIncome)
+        public IEnumerable<TransactionRow<WaveRowDescriptor>> GetRows(StreamReader sr, TransactionTable<WaveRowDescriptor> tableDescriptor, bool includeIncome)
         {
             RowDescriptor = tableDescriptor.RowDescriptor;
             DateTime? date = default;
@@ -101,7 +101,7 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
             }
         }
 
-        private IEnumerable<TransactionRow<WaveRowDescriptor>> GenerateRows(BaseTransactionTable<WaveRowDescriptor> table, DateTime? date, decimal amount, string account, string category, string description, string inferredBusinessAccount, int rowIndex)
+        private IEnumerable<TransactionRow<WaveRowDescriptor>> GenerateRows(TransactionTable<WaveRowDescriptor> table, DateTime? date, decimal amount, string account, string category, string description, string inferredBusinessAccount, int rowIndex)
         {
             var rowDescriptor = table.RowDescriptor;
 

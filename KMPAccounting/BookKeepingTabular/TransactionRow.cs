@@ -7,7 +7,7 @@ namespace KMPAccounting.BookKeepingTabular
 {
     public class TransactionRow<TTransactionRowDescriptor> : ITransactionRow where TTransactionRowDescriptor : BaseTransactionRowDescriptor
     {
-        public TransactionRow(BaseTransactionTable<TTransactionRowDescriptor> ownerTable, int index)
+        public TransactionRow(TransactionTable<TTransactionRowDescriptor> ownerTable, int index)
         {
             OwnerTable = ownerTable;
             Index = index;
@@ -41,7 +41,7 @@ namespace KMPAccounting.BookKeepingTabular
 
         public IList<string> ExtraColumnData { get; } = new List<string>();
 
-        public BaseTransactionTable<TTransactionRowDescriptor> OwnerTable { get; }
+        public TransactionTable<TTransactionRowDescriptor> OwnerTable { get; }
 
         public int? OriginalRowNumber { get; }
 

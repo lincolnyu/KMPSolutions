@@ -490,7 +490,7 @@ namespace KMPAccountingTest
             var dir = new DirectoryInfo(Path.Combine(TestDir, "wavereceipt"));
             var rawTxtFile = dir.GetFiles().First(x => x.Name == fileName);
             var rowDescriptor = new WaveRowDescriptor();
-            return SharedWaveRawReader.GetRows(new StreamReader(rawTxtFile.FullName), new BaseTransactionTable<WaveRowDescriptor>(tableName, rowDescriptor), includeIncome);
+            return SharedWaveRawReader.GetRows(new StreamReader(rawTxtFile.FullName), new TransactionTable<WaveRowDescriptor>(tableName, rowDescriptor), includeIncome);
         }
     }
 }

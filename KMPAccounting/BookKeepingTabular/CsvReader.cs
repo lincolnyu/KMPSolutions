@@ -16,7 +16,7 @@ namespace KMPAccounting.BookKeepingTabular
 
         #region Main Method
 
-        public IEnumerable<TransactionRow<TTransactionRowDescriptor>> GetRows<TTransactionRowDescriptor>(StreamReader sr, BaseTransactionTable<TTransactionRowDescriptor> tableDescriptor) where TTransactionRowDescriptor : BaseTransactionRowDescriptor
+        public IEnumerable<TransactionRow<TTransactionRowDescriptor>> GetRows<TTransactionRowDescriptor>(StreamReader sr, TransactionTable<TTransactionRowDescriptor> tableDescriptor) where TTransactionRowDescriptor : BaseTransactionRowDescriptor
         {
             HasHeader = null;
             var index = 0;
@@ -25,7 +25,7 @@ namespace KMPAccounting.BookKeepingTabular
                 var fields = CsvUtility.GetAndBreakRow(sr).ToList();
                 if (LoadedHeader == null)
                 {
-                    if (tableDescriptor.Header == BaseTransactionTable<TTransactionRowDescriptor>.HeaderType.Present || (tableDescriptor.Header == BaseTransactionTable<TTransactionRowDescriptor>.HeaderType.AutoDetect && tableDescriptor.RowDescriptor.EstimateHasHeader(fields)))
+                    if (tableDescriptor.Header == TransactionTable<TTransactionRowDescriptor>.HeaderType.Present || (tableDescriptor.Header == TransactionTable<TTransactionRowDescriptor>.HeaderType.AutoDetect && tableDescriptor.RowDescriptor.EstimateHasHeader(fields)))
                     {
                         HasHeader = true;
                         LoadedHeader = fields;

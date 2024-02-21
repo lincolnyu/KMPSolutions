@@ -1,6 +1,6 @@
 ﻿namespace KMPAccounting.BookKeepingTabular
 {
-    public class BaseTransactionTable
+    public class TransactionTable
         <TTransactionRowDescriptor> : ITransactionTable where TTransactionRowDescriptor : BaseTransactionRowDescriptor
     {
         public enum HeaderType
@@ -10,7 +10,7 @@
             AutoDetect
         }
 
-        public BaseTransactionTable(string tableName, TTransactionRowDescriptor rowDescriptor) 
+        public TransactionTable(string tableName, TTransactionRowDescriptor rowDescriptor) 
         {
             TableName = tableName;
             RowDescriptor = rowDescriptor;
