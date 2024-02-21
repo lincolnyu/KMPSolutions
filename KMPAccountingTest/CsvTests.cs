@@ -3,7 +3,6 @@ using KMPAccounting.BookKeepingTabular.InstitutionSpecifics;
 using KMPAccounting.InstitutionSpecifics;
 using KMPAccounting.KMPSpecifics;
 using KMPCommon;
-using NUnit.Framework.Interfaces;
 
 namespace KMPAccountingTest
 {
@@ -399,14 +398,14 @@ namespace KMPAccountingTest
 
             }
             var filledPercentage = (double)filledCount / (filledCount + emptyCount);
-            
-            Assert.That(filledCount + emptyCount, Is.EqualTo(1435));
+            Assert.Multiple(() =>
+            {
+                Assert.That(filledCount + emptyCount, Is.EqualTo(1435));
 
-            Assert.That(filledPercentage, Is.GreaterThanOrEqualTo(0.58));    // TODO improve it.
-
+                Assert.That(filledPercentage, Is.GreaterThanOrEqualTo(0.58));    // TODO improve it.
+            });
             Assert.Pass();
         }
-
 
         [Test]
         public void TestCBACCGuessWithInvoiceAndFallback()
@@ -445,6 +444,111 @@ namespace KMPAccountingTest
                 }
 
             }
+
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestGuessAllWithInvoice()
+        {
+            var items = MatchTransactions().ToArray();
+
+            {
+                var cbaCashRows = items.Where(x => x.Item1 == 0).Select(x => (x.Item2, x.Item3));
+                var guesser = new CommbankCreditCardCounterAccountPrefiller();
+                foreach (var x in cbaCashRows)
+                {
+                    guesser.PrefillPersonalBankTransaction((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2, false, false);
+                }
+            }
+
+            {
+                var cbaccRows = items.Where(x => x.Item1 == 1).Select(x => (x.Item2, x.Item3));
+                var guesser = new CommbankCreditCardCounterAccountPrefiller();
+                foreach (var x in cbaccRows)
+                {
+                    guesser.PrefillPersonalBankTransaction((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2, false, false);
+                }
+            }
+
+            var printer = TransactionRowCsvFormatter.CreateSimpleCombiningRowDescriptors(CbaCashDesc, CbaCcDesc, NabCashDesc, WaveDesc);
+
+            printer.GetColumn("Date")!.Formatter = DateFormatter;
+            printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
+
+            var cashInvoices = 0;
+            var inconsistentAccountTypes = 0;
+
+            {
+                using var f = new StreamWriter(@"C:\temp\wave_combined_guessed.csv");
+                f.WriteLine("Source,Message," + string.Join(',', printer.Columns.Select(x => x.TargetColumnName)));
+                foreach (var (index, bankRow, invoiceRow) in items)
+                {
+                    string message = "";
+                    string head = "";
+                    IEnumerable<string> line;
+                    if (bankRow != null)
+                    {
+                        if (invoiceRow != null)
+                        {
+                            head += "W";
+                            line = printer.FieldsToStrings(bankRow, invoiceRow);
+                            if ((invoiceRow[WaveDesc.WaveAccountKey] == WaveAccountCommbankPersonal && (index != 0 && index != 1)) || (invoiceRow[WaveDesc.WaveAccountKey] == WaveAccountNABBusiness && index != 2) || (invoiceRow[WaveDesc.WaveAccountKey] == WaveAccountCashOnHand))
+                            {
+                                message = "Error: Inconsistent account types. Invoice is with a bank account that differs.";
+                                inconsistentAccountTypes++;
+                            }
+                            else if (invoiceRow[WaveDesc.WaveAccountKey] == WaveAccountTBC)
+                            {
+                                message = "Info: Invoice account type can be updated.";
+                            }
+                        }
+                        else
+                        {
+                            line = printer.FieldsToStrings(bankRow);
+                        }
+                        switch (index)
+                        {
+                            case 0:
+                                head += "C";
+                                break;
+                            case 1:
+                                head += "D";
+                                break;
+                            case 2:
+                                head += "N";
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        head += "W";
+                        line = printer.FieldsToStrings(invoiceRow!);
+                        var waveRow = (TransactionRow<WaveRowDescriptor>)invoiceRow!;
+                        if (waveRow[waveRow.OwnerTable.RowDescriptor.WaveAccountKey] == WaveAccountCashOnHand)
+                        {
+                            head += "H";
+                            cashInvoices++;
+                        }
+                        else if (waveRow[waveRow.OwnerTable.RowDescriptor.WaveAccountKey] == WaveAccountTBC)
+                        {
+                            message = "Warning: Account type could be 'Cash on Hand'.";
+                        }
+                        else
+                        {
+                            message = "Error: Unmatched account.";
+                        }
+                    }
+
+                    f.WriteLine(head + ',' + message + ',' + string.Join(',', line));
+                }
+            }
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(inconsistentAccountTypes, Is.Zero);
+                Assert.That(Matcher.MatchedInvoices + cashInvoices, Is.EqualTo(Matcher.TotalInvoices));
+            });
 
             Assert.Pass();
         }
@@ -503,7 +607,7 @@ namespace KMPAccountingTest
             Assert.Pass();
         }
 
-        public void TEstCbaCreditCardCorrelation()
+        public void TestCbaCreditCardCorrelation()
         {
             var items = MatchTransactions();
 
