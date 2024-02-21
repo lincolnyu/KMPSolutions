@@ -4,14 +4,16 @@ namespace KMPAccounting.BookKeepingTabular
 {
     public abstract class BaseCounterAccountPrefiller
     {
-        protected BaseCounterAccountPrefiller(string businessLiabilityAccountGroup)
+        protected BaseCounterAccountPrefiller(string businessLiabilityAccountGroup, string fallbackCouterAccount)
         {
-            BusinessLiabilityAccountGroup = businessLiabilityAccountGroup;
+            BusinessOwingPersonalAccountGroup = businessLiabilityAccountGroup;
+            FallbackCouterAccount = fallbackCouterAccount;
         }
 
-        public string BusinessLiabilityAccountGroup { get; }
+        public string BusinessOwingPersonalAccountGroup { get; }
+        public string FallbackCouterAccount { get; }
 
-        public void Prefill<TRowDescriptor>(TransactionRow<TRowDescriptor> row, ITransactionRow? invoiceRow, bool overwrite) where TRowDescriptor : BankTransactionRowDescriptor
+        public void PrefillPersonalBankTransaction<TRowDescriptor>(TransactionRow<TRowDescriptor> row, ITransactionRow? invoiceRow, bool overwrite, bool populateFallbackCounterAccount = false) where TRowDescriptor : BankTransactionRowDescriptor
         {
             var rowDescriptor = row.OwnerTable.RowDescriptor;
             var counterAccountKey = rowDescriptor.CounterAccountKey;
@@ -39,7 +41,7 @@ namespace KMPAccounting.BookKeepingTabular
                     {
                         var es = entry.Split('=');
 
-                        var businessAccount = BusinessLiabilityAccountGroup + es[0];
+                        var businessAccount = BusinessOwingPersonalAccountGroup + es[0];
                         var businessAmount = decimal.Parse(es[1]);
                         slist.Add($"{businessAccount}={businessAmount}");
                         claimedAmount += businessAmount;
@@ -54,7 +56,10 @@ namespace KMPAccounting.BookKeepingTabular
 
                 var details = row[Constants.TransactionDetailsKey].Trim();
 
-                Prefill(row, details, claimedAmount, remainingAmount, slist);
+                if (!Prefill(row, details, claimedAmount, remainingAmount, slist) && populateFallbackCounterAccount)
+                {
+                    slist.Add($"{FallbackCouterAccount}={remainingAmount}");
+                }
             }
 
             row[counterAccountKey] = string.Join(Constants.CommonSeparator, slist);

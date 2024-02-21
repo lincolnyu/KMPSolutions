@@ -5,7 +5,7 @@ namespace KMPAccounting.Objects.BookKeeping
 {
     public class EntryFactory
     {
-        public static Entry ParseEntry(string line)
+        public static Entry DeserializeFromLine(string line)
         {
             int p = 0;
             int newp;
@@ -21,7 +21,7 @@ namespace KMPAccounting.Objects.BookKeeping
             return type switch
             {
                 "CompositeTransaction" => CompositeTransaction.ParseLine(timestamp, content),
-                "Transaction" => Transaction.ParseLine(timestamp, content),
+                "Transaction" => SimpleTransaction.ParseLine(timestamp, content),
                 "OpenAccount" => OpenAccount.ParseLine(timestamp, content),
                 _ => throw new ArgumentException($"Unknown entry type {type}"),
             };

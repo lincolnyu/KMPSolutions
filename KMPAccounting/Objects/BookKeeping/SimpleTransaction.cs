@@ -5,9 +5,9 @@ using KMPCommon;
 
 namespace KMPAccounting.Objects.BookKeeping
 {
-    public class Transaction : Entry
+    public class SimpleTransaction : Entry
     {
-        public Transaction(DateTime dateTime, AccountNodeReference debited, AccountNodeReference credited, decimal amount)
+        public SimpleTransaction(DateTime dateTime, AccountNodeReference debited, AccountNodeReference credited, decimal amount)
             : base(dateTime)
         {
             Debited = debited;
@@ -17,7 +17,7 @@ namespace KMPAccounting.Objects.BookKeeping
 
         public override bool Equals(Entry other)
         {
-            if (other is Transaction otherT)
+            if (other is SimpleTransaction otherT)
             {
                 if (!CsvUtility.TimestampsAreEqual(DateTime, other.DateTime))
                 {
@@ -40,7 +40,7 @@ namespace KMPAccounting.Objects.BookKeeping
             return false;
         }
 
-        public static Transaction ParseLine(DateTime dateTime, string line)
+        public static SimpleTransaction ParseLine(DateTime dateTime, string line)
         {
             int p = 0;
 
@@ -56,13 +56,13 @@ namespace KMPAccounting.Objects.BookKeeping
 
             line.GetNextWord('|', p, out _, out string? remarks);
 
-            return new Transaction(dateTime, new AccountNodeReference(debitedAccountName!), new AccountNodeReference(creditedAccountName!), amount)
+            return new SimpleTransaction(dateTime, new AccountNodeReference(debitedAccountName!), new AccountNodeReference(creditedAccountName!), amount)
             {
                 Remarks = remarks
             };
         }
 
-        public override string ToString()
+        public override string SerializeToLine()
         {
             var sb = new StringBuilder();
 
@@ -79,10 +79,30 @@ namespace KMPAccounting.Objects.BookKeeping
             sb.Append(Amount.ToString());
             sb.Append("|");
 
+            if (!string.IsNullOrEmpty(Remarks))
+            {
+                sb.Append($"Remarks: {Remarks}" );
+                sb.Append("|");
+            }
+
+            return sb.ToString();
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine(DateTime.ToShortDateOnlyString());
+            sb.AppendLine("Debit");
+            sb.AppendLine($"  {Amount} to {Debited.FullName}");
+
+            sb.AppendLine("Credit");
+            sb.AppendLine($"  {Amount} to {Credited.FullName}");
+
             if (Remarks != null)
             {
-                sb.Append(Remarks);
-                sb.Append("|");
+                sb.AppendLine($"Remarks: {Remarks}");
+                sb.AppendLine();
             }
 
             return sb.ToString();

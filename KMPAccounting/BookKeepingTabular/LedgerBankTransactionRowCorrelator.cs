@@ -3,50 +3,113 @@ using KMPAccounting.Objects.BookKeeping;
 using KMPCommon;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace KMPAccounting.BookKeepingTabular
 {
-    public class LedgerBankTransactionRowCorrelator
+    public static class LedgerBankTransactionRowCorrelator
     {
-        public IEnumerable<(ITransactionRow, List<Transaction>)> Correlate<TTransactionRowDescriptor>(IEnumerable<ITransactionRow> rows) where TTransactionRowDescriptor : BankTransactionRowDescriptor, new()
+        public static List<SimpleTransaction> CorrelateToMultipleTransaction(ITransactionRow row)
         {
-            foreach (var row in rows)
+            var table = (IBankTransactionTable)row.OwnerTable;
+            var rowDescriptor = (BankTransactionRowDescriptor)table.RowDescriptor;
+            var dateTimeStr = row[rowDescriptor.DateTimeKey];
+
+            var baseAccountName = table.BaseAccountName;
+
+            var amountStr = row[rowDescriptor.AmountKey];
+            var amount = decimal.Parse(amountStr);
+
+            var counterAccountsStr = row[rowDescriptor.CounterAccountKey];
+            var counterAccounts = ParseCounterAccounts(counterAccountsStr, amount);
+
+            var dateTime = CsvUtility.ParseDateTime(dateTimeStr);
+
+            var transactions = new List<SimpleTransaction>();
+
+            foreach (var (counterAccountName, counterAccountAmount) in counterAccounts)
             {
-                var table = (BankTransactionTable<TTransactionRowDescriptor>)row.OwnerTable;
-                var rowDescriptor = table.RowDescriptor;
-                var dateTimeStr = row[rowDescriptor.DateTimeKey];
+                var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
+                if (counterAccountAmount > 0)
+                {
+                    transactions.Add(new SimpleTransaction(dateTime, new AccountNodeReference(baseAccountName), new AccountNodeReference(actualCounterAccountName), counterAccountAmount));
+                }
+                else
+                {
+                    transactions.Add(new SimpleTransaction(dateTime, new AccountNodeReference(actualCounterAccountName), new AccountNodeReference(baseAccountName), -counterAccountAmount));
+                }
+            }
 
-                var baseAccountName = table.BaseAccountName;
+            return transactions;
+        }
 
-                var amountStr = row[rowDescriptor.AmountKey];
-                var amount = decimal.Parse(amountStr);
+        public static Entry CorrelateToSingleTransaction(ITransactionRow row) 
+        {
+            var table = (IBankTransactionTable)row.OwnerTable;
+            var rowDescriptor = (BankTransactionRowDescriptor)table.RowDescriptor;
+            var dateTimeStr = row[rowDescriptor.DateTimeKey];
 
-                var counterAccountsStr = row[rowDescriptor.CounterAccountKey];
-                var counterAccounts = ParseCounterAccounts(counterAccountsStr, amount);
+            var baseAccountName = table.BaseAccountName;
 
-                var dateTime = CsvUtility.ParseDateTime(dateTimeStr);
+            var amountStr = row[rowDescriptor.AmountKey];
+            var amount = decimal.Parse(amountStr);
 
-                var transactions = new List<Transaction>();
+            var counterAccountsStr = row[rowDescriptor.CounterAccountKey];
+            var counterAccounts = ParseCounterAccounts(counterAccountsStr, amount).ToArray();
+
+            var dateTime = CsvUtility.ParseDateTime(dateTimeStr);
+
+            if (counterAccounts.Length > 1)
+            {
+                var compositeTransaction = new CompositeTransaction(dateTime);
+
                 foreach (var (counterAccountName, counterAccountAmount) in counterAccounts)
                 {
                     var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
                     if (counterAccountAmount > 0)
                     {
-                        transactions.Add(new Transaction(dateTime, new AccountNodeReference(baseAccountName), new AccountNodeReference(actualCounterAccountName), counterAccountAmount));
+                        compositeTransaction.Credited.Add((new AccountNodeReference(actualCounterAccountName), counterAccountAmount));
                     }
                     else
                     {
-                        transactions.Add(new Transaction(dateTime, new AccountNodeReference(actualCounterAccountName), new AccountNodeReference(baseAccountName), -counterAccountAmount));
+                        compositeTransaction.Debited.Add((new AccountNodeReference(actualCounterAccountName), -counterAccountAmount));
                     }
                 }
-                yield return (row, transactions);
+
+                if (amount > 0)
+                {
+                    compositeTransaction.Debited.Add((new AccountNodeReference(baseAccountName), amount));
+                }
+                else
+                {
+                    compositeTransaction.Credited.Add((new AccountNodeReference(baseAccountName), -amount));
+                }
+
+                return compositeTransaction;
+            }
+            else
+            {
+                var (counterAccountName, counterAccountAmount) = counterAccounts[0];
+                var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
+
+                SimpleTransaction singleTransaction;
+                if (counterAccountAmount > 0)
+                {
+                    singleTransaction = new SimpleTransaction(dateTime, new AccountNodeReference(baseAccountName), new AccountNodeReference(actualCounterAccountName), counterAccountAmount);
+                }
+                else
+                {
+                    singleTransaction = new SimpleTransaction(dateTime, new AccountNodeReference(actualCounterAccountName), new AccountNodeReference(baseAccountName), -counterAccountAmount);
+                }
+
+                return singleTransaction;
             }
         }
 
-        private IEnumerable<(string, decimal)> ParseCounterAccounts(string counterAccountsStr, decimal totalAmount)
+        private static IEnumerable<(string, decimal)> ParseCounterAccounts(string counterAccountsStr, decimal totalAmount)
         {
             var counterAccounts = counterAccountsStr.Split(';');
-            if (counterAccounts.Length > 2)
+            if (counterAccounts.Length > 1)
             {
                 decimal added = 0;
 
@@ -82,7 +145,9 @@ namespace KMPAccounting.BookKeepingTabular
             }
             else
             {
-                yield return (counterAccounts[0], totalAmount);
+                var ca = counterAccounts[0];
+                var caSplit = ca.Split('=');
+                yield return (caSplit[0], totalAmount);
             }
         }
     }

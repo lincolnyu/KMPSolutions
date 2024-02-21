@@ -158,7 +158,7 @@ namespace KMPAccounting.Objects
 
         public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, string debitedAccountFullName, string creditedAccountFullName, decimal amount, string? remarks = null)
         {
-            var transaction = new Transaction(dateTime, new AccountNodeReference(debitedAccountFullName), new AccountNodeReference(creditedAccountFullName), amount) { Remarks = remarks };
+            var transaction = new SimpleTransaction(dateTime, new AccountNodeReference(debitedAccountFullName), new AccountNodeReference(creditedAccountFullName), amount) { Remarks = remarks };
             ledger.Entries.Add(transaction);
             transaction.Redo();
         }

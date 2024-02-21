@@ -96,7 +96,7 @@ namespace KMPAccounting.Objects.BookKeeping
             return pt;
         }
 
-        public override string ToString()
+        public override string SerializeToLine()
         {
             var sb = new StringBuilder();
 
@@ -126,6 +126,28 @@ namespace KMPAccounting.Objects.BookKeeping
             {
                 sb.Append(Remarks);
                 sb.Append("|");
+            }
+
+            return sb.ToString();
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine(DateTime.ToShortDateOnlyString());
+            sb.AppendLine("Debit");
+
+            foreach (var (acc, amount) in Debited)
+            {
+                sb.AppendLine($"  {amount} to {acc.FullName}");
+            }
+            
+            sb.AppendLine("Credit");
+
+            foreach (var (acc, amount) in Credited)
+            {
+                sb.AppendLine($"  {amount} to {acc.FullName}");
             }
 
             return sb.ToString();

@@ -148,6 +148,9 @@ namespace KMPCommon
             return DateTime.Parse(fieldValue);
         }
 
+        public static string ToShortDateOnlyString(this DateTime date)
+            => date.Date.ToShortDateString();
+
         public static DateTime ParseTimestamp(string timestamp)
         {
             var yearStr = timestamp[..4];

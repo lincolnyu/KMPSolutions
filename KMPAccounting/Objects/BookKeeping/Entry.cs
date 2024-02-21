@@ -16,5 +16,7 @@ namespace KMPAccounting.Objects.BookKeeping
 
         public abstract void Redo();
         public abstract void Undo();
+
+        public abstract string SerializeToLine();
     }
 }

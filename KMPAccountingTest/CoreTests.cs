@@ -238,12 +238,12 @@ namespace KMPCoreObjectsTest
 
             {
                 using var sw = new StreamWriter("test.txt");
-                ledger.WriteToStream(sw);
+                ledger.SerializeToStream(sw);
             }
             {
                 using var sr = new StreamReader("test.txt");
                 var loadedLedger = new Ledger();
-                loadedLedger.LoadFromStream(sr);
+                loadedLedger.DeserializeFromStream(sr);
 
                 Assert.That(loadedLedger, Is.EqualTo(ledger));
             }

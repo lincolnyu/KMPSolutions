@@ -54,7 +54,7 @@ namespace KMPAccounting.Objects.BookKeeping
             return new OpenAccount(dateTime, parentAndSide, name!);
         }
 
-        public override string ToString()
+        public override string SerializeToLine()
         {
             var sb = new StringBuilder();
 
@@ -68,9 +68,20 @@ namespace KMPAccounting.Objects.BookKeeping
             {
                 sb.Append(ParentAndSide.Value.Item1.FullName);
                 sb.Append('|');
-                sb.Append(ParentAndSide.Value.Item2 == AccountNode.SideEnum.Credit? "C" : "D");
+                sb.Append(ParentAndSide.Value.Item2 == AccountNode.SideEnum.Credit ? "C" : "D");
                 sb.Append('|');
             }
+            return sb.ToString();
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine(DateTime.ToShortDateOnlyString());
+            var type = ParentAndSide == null? "" : (ParentAndSide.Value.Item2 == AccountNode.SideEnum.Credit ? "Credit " : "Debit ");
+            sb.AppendLine($"Open {type}Account {Name}");
+
             return sb.ToString();
         }
 

@@ -3,6 +3,7 @@ using KMPAccounting.BookKeepingTabular.InstitutionSpecifics;
 using KMPAccounting.InstitutionSpecifics;
 using KMPAccounting.KMPSpecifics;
 using KMPCommon;
+using NUnit.Framework.Interfaces;
 
 namespace KMPAccountingTest
 {
@@ -104,7 +105,7 @@ namespace KMPAccountingTest
             var rows = GetCbaCash("CSVData_withheader.csv", "CBA Cash").AssertChangeToAscendingInDate();
 
             var guesser = new CommbankCashCounterAccountPrefiller();
-            var guessedRows = rows.Select(x => { guesser.Prefill(x, null, false); return x; });
+            var guessedRows = rows.Select(x => { guesser.PrefillPersonalBankTransaction(x, null, false); return x; });
 
             var emptyCount = 0;
             var filledCount = 0;
@@ -149,7 +150,7 @@ namespace KMPAccountingTest
             var rows = GetCbaCc("CSVData_withheader.csv", "CBA Credit Card").AssertChangeToAscendingInDate();
 
             var guesser = new CommbankCreditCardCounterAccountPrefiller();
-            var guessedRows = rows.Select(x => { guesser.Prefill(x, null, false); return x; });
+            var guessedRows = rows.Select(x => { guesser.PrefillPersonalBankTransaction(x, null, false); return x; });
             {
                 using var f = new StreamWriter(@"C:\temp\cbacc_guessed.csv");
                 if (SharedCsvReader.HasHeader == true)
@@ -349,7 +350,7 @@ namespace KMPAccountingTest
 
         private string DateFormatter(string arg)
         {
-            return CsvUtility.ParseDateTime(arg).Date.ToShortDateString();
+            return CsvUtility.ParseDateTime(arg).ToShortDateOnlyString();
         }
 
         [Test]
@@ -360,7 +361,7 @@ namespace KMPAccountingTest
             var cbaccRows = items.Where(x => x.Item1 == 1).Select(x => (x.Item2, x.Item3));
 
             var guesser = new CommbankCreditCardCounterAccountPrefiller();
-            var guessedRows = cbaccRows.Select(x => { guesser.Prefill((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2, false); return ((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2); });
+            var guessedRows = cbaccRows.Select(x => { guesser.PrefillPersonalBankTransaction((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2, false); return ((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2); });
 
             var printer = TransactionRowCsvFormatter.CreateSimpleCombiningRowDescriptors(CbaCcDesc, WaveDesc);
 
@@ -399,9 +400,51 @@ namespace KMPAccountingTest
             }
             var filledPercentage = (double)filledCount / (filledCount + emptyCount);
             
-            //Assert.That(filledCount + emptyCount, Is.EqualTo(1435));
+            Assert.That(filledCount + emptyCount, Is.EqualTo(1435));
 
             Assert.That(filledPercentage, Is.GreaterThanOrEqualTo(0.58));    // TODO improve it.
+
+            Assert.Pass();
+        }
+
+
+        [Test]
+        public void TestCBACCGuessWithInvoiceAndFallback()
+        {
+            var items = MatchTransactions();
+
+            var cbaccRows = items.Where(x => x.Item1 == 1).Select(x => (x.Item2, x.Item3));
+
+            var guesser = new CommbankCreditCardCounterAccountPrefiller();
+            var guessedRows = cbaccRows.Select(x => { guesser.PrefillPersonalBankTransaction((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2, false, true); return ((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2); });
+
+            var printer = TransactionRowCsvFormatter.CreateSimpleCombiningRowDescriptors(CbaCcDesc, WaveDesc);
+
+            printer.GetColumn("Date")!.Formatter = DateFormatter;
+            printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
+
+            {
+                using var f = new StreamWriter(@"C:\temp\cbacc_joint_guessed_fallback.csv");
+                f.WriteLine(string.Join(',', printer.Columns.Select(x => x.TargetColumnName)));
+
+                foreach (var (bankRow, invoiceRow) in guessedRows)
+                {
+                    Assert.IsTrue(!string.IsNullOrWhiteSpace(bankRow[bankRow.OwnerTable.RowDescriptor.CounterAccountKey]));
+
+                    IEnumerable<string> line;
+                    if (invoiceRow != null)
+                    {
+                        line = printer.FieldsToStrings(bankRow!, invoiceRow);
+                    }
+                    else
+                    {
+                        line = printer.FieldsToStrings(bankRow!);
+                    }
+
+                    f.WriteLine(string.Join(',', line));
+                }
+
+            }
 
             Assert.Pass();
         }
@@ -414,7 +457,7 @@ namespace KMPAccountingTest
             var cbaCashRows = items.Where(x => x.Item1 == 0).Select(x => (x.Item2, x.Item3));
 
             var guesser = new CommbankCashCounterAccountPrefiller();
-            var guessedRows = cbaCashRows.Select(x => { guesser.Prefill((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2, false); return ((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2); });
+            var guessedRows = cbaCashRows.Select(x => { guesser.PrefillPersonalBankTransaction((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2, false); return ((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2); });
 
             var printer = TransactionRowCsvFormatter.CreateSimpleCombiningRowDescriptors(CbaCcDesc, WaveDesc);
 
@@ -460,12 +503,57 @@ namespace KMPAccountingTest
             Assert.Pass();
         }
 
+        public void TEstCbaCreditCardCorrelation()
+        {
+            var items = MatchTransactions();
+
+            var cbaccRows = items.Where(x => x.Item1 == 1).Select(x => (x.Item2, x.Item3));
+
+            var guesser = new CommbankCreditCardCounterAccountPrefiller();
+            var guessedRows = cbaccRows.Select(x => { guesser.PrefillPersonalBankTransaction((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2, false, true); return ((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2); });
+
+            {
+                using var f = new StreamWriter(@"C:\temp\cbacc_correlation.txt");
+                foreach (var (bankRow, invoiceRow) in guessedRows)
+                {
+                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
+
+                    f.WriteLine(transaction.ToString());
+                    f.WriteLine("--------------------------------------------------------------------------------");
+                }
+            }
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestCbaCashCorrelation()
+        {
+            var items = MatchTransactions();
+
+            var cbaCashRows = items.Where(x => x.Item1 == 0).Select(x => (x.Item2, x.Item3));
+
+            var guesser = new CommbankCashCounterAccountPrefiller();
+            var guessedRows = cbaCashRows.Select(x => { guesser.PrefillPersonalBankTransaction((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2, false, true); return ((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2); });
+
+            {
+                using var f = new StreamWriter(@"C:\temp\cbacash_correlation.txt");
+                foreach (var (bankRow, invoiceRow) in guessedRows)
+                {
+                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
+
+                    f.WriteLine(transaction.ToString());
+                    f.WriteLine("--------------------------------------------------------------------------------");
+                }
+            }
+            Assert.Pass();
+        }
+
         private IEnumerable<TransactionRow<CommbankCashRowDescriptor>> GetCbaCash(string fileName, string tableName)
         {
             ResetCsvReader();
             var dir = new DirectoryInfo(Path.Combine(TestDir, "cbacash"));
             var cbaCashCsv = dir.GetFiles().First(x => x.Name == fileName);
-            return SharedCsvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTable<CommbankCashRowDescriptor>(tableName));
+            return SharedCsvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTable<CommbankCashRowDescriptor>(tableName) { BaseAccountName = AccountConstants.PersonalCashAccount } );
         }
 
         private IEnumerable<TransactionRow<CommbankCreditCardRowDescriptor>> GetCbaCc(string fileName, string tableName)
@@ -473,7 +561,7 @@ namespace KMPAccountingTest
             ResetCsvReader();
             var dir = new DirectoryInfo(Path.Combine(TestDir, "cbacc"));
             var cbaCashCsv = dir.GetFiles().First(x => x.Name == fileName);
-            return SharedCsvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTable<CommbankCreditCardRowDescriptor>(tableName));
+            return SharedCsvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTable<CommbankCreditCardRowDescriptor>(tableName) { BaseAccountName = AccountConstants.PersonalCommbankCreditCardRepayment });
         }
 
         private IEnumerable<TransactionRow<NABCashRowDescriptor>> GetNab(string folder, string fileName, string tableName)
