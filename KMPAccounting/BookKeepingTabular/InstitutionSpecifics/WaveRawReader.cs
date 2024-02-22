@@ -77,7 +77,7 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
                             // Amounts in raw txt copied from wave have lost the signs.
                             amount = Math.Abs(amount); // Still make sure it is positive first. 
                             inferredBusinessAccount = InferBusinessAccount(category);
-                            isIncome = inferredBusinessAccount == "Income";
+                            isIncome = inferredBusinessAccount == KMPSpecifics.AccountConstants.Business.AccountSuffixes.Income;
                             bool isRefund = false;
                             if (!isIncome)
                             {
@@ -194,48 +194,48 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
             category = category.Trim();
             if (category.ContainsCaseIgnored("Payment from"))
             {
-                return "Income";
+                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Income;
             }
             if (category.ContainsWholeWord("Office Supplies"))
             {
-                return "OfficeSupplies";
+                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.OfficeSupplies;
             }
             else if (category.ContainsWholeWord("Medical Supplies"))
             {
-                return "MedicalSupplies";
+                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.MedicalSupplies;
             }
             else if (category.ContainsCaseIgnored("Fuel"))
             {
-                return "Fuel";
+                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Fuel;
             }
             else if (category.ContainsWholeWord("Vehicle") || category.ContainsWholeWord("Vehicles"))
             {
-                return "Vehicles";
+                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Vehicles;
             }
             else if (category.ContainsWholeWord("Uniform") || category.ContainsWholeWord("Uniforms"))
             {
-                return "Uniforms";
+                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Uniforms;
             }
             else if (category.ContainsWholeWord("Subscription") || category.ContainsWholeWord("Subscriptions"))
             {
-                return "Subscriptions";
+                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Subscriptions;
             }
             else if (category.ContainsWholeWord("Advertising") || category.ContainsWholeWord("Promotion"))
             {
-                return "Promotion";
+                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Promotion;
             }
             else if (category.ContainsWholeWord("Computer"))
             {
                 // TODO update...
-                return "Computer";
+                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Computer;
             }
             else if (category.ContainsWholeWord("Repairs"))
             {
-                return "Maintenance";
+                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Maintenance;
             }
             else if (category.ContainsWholeWord("Cleaning"))
             {
-                return "Cleaning";
+                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Cleaning;
             }
             return FallbackBusinessAccount;
         }

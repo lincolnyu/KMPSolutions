@@ -2,18 +2,16 @@
 
 namespace KMPAccounting.BookKeepingTabular
 {
-    public abstract class BaseCounterAccountPrefiller
+    public abstract class BaseBusinessBankCounterAccountPrefiller
     {
-        protected BaseCounterAccountPrefiller(string businessLiabilityAccountGroup, string fallbackCouterAccount)
+        protected BaseBusinessBankCounterAccountPrefiller(string businessFallbackCounterAccount)
         {
-            BusinessOwingPersonalAccountGroup = businessLiabilityAccountGroup;
-            FallbackCouterAccount = fallbackCouterAccount;
+            BusinessFallbackCounterAccount = businessFallbackCounterAccount;
         }
 
-        public string BusinessOwingPersonalAccountGroup { get; }
-        public string FallbackCouterAccount { get; }
+        public string BusinessFallbackCounterAccount { get; }
 
-        public void PrefillPersonalBankTransaction<TRowDescriptor>(TransactionRow<TRowDescriptor> row, ITransactionRow? invoiceRow, bool overwrite, bool populateFallbackCounterAccount = false) where TRowDescriptor : BankTransactionRowDescriptor
+        public void Prefill<TRowDescriptor>(TransactionRow<TRowDescriptor> row, ITransactionRow? invoiceRow, bool overwrite, bool populateFallbackCounterAccount = false) where TRowDescriptor : BankTransactionRowDescriptor
         {
             var rowDescriptor = row.OwnerTable.RowDescriptor;
             var counterAccountKey = rowDescriptor.CounterAccountKey;
@@ -41,7 +39,7 @@ namespace KMPAccounting.BookKeepingTabular
                     {
                         var es = entry.Split('=');
 
-                        var businessAccount = BusinessOwingPersonalAccountGroup + es[0];
+                        var businessAccount = KMPSpecifics.AccountConstants.Business.AccountGroups.Expense + es[0];
                         var businessAmount = decimal.Parse(es[1]);
                         slist.Add($"{businessAccount}={businessAmount}");
                         claimedAmount += businessAmount;
@@ -58,11 +56,9 @@ namespace KMPAccounting.BookKeepingTabular
 
                 if (!Prefill(row, details, claimedAmount, remainingAmount, slist) && populateFallbackCounterAccount)
                 {
-                    slist.Add($"{FallbackCouterAccount}={remainingAmount}");
+                    slist.Add($"{BusinessFallbackCounterAccount}={remainingAmount}");
                 }
             }
-
-            row[counterAccountKey] = string.Join(Constants.CommonSeparator, slist);
         }
 
         protected abstract bool Prefill(ITransactionRow row, string transactionDetails, decimal claimedAmount, decimal remainingAmount, List<string> slist);

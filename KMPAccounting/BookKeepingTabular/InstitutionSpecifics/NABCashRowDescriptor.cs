@@ -7,6 +7,11 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
         public NABCashRowDescriptor() : base("Date", "Amount", Constants.CounterAccountKey, new List<string> { "Date", "Amount", "Account Number", "_", "Transaction Type", Constants.TransactionDetailsKey, "Balance", "Category", "Merchant Name", Constants.CounterAccountKey })
         {
             BalanceKey = "Balance";
+            CategoryKey = "Category";
+            MerchantNameKey = "Merchant Name";
         }
+
+        public string CategoryKey { get; }
+        public string MerchantNameKey { get; }
     }
 }
