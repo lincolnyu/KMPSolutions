@@ -5,21 +5,20 @@ namespace KMPAccounting.BookKeepingTabular
 {
     public interface ITransactionRow
     {
-        public IEnumerable<(string, string)> GetKeyAndValuePairs();
-
         /// <summary>
-        ///  Index in the table (OwnerTable)
+        ///  Index in the table (OwnerTable).
         /// </summary>
         public int Index { get; set; }
 
-        public bool KeyHasValue(string key);
-
-        public string this[string key] { get; set; }
-
-        public IList<string> ExtraColumnData { get; }
+        /// <summary>
+        ///  Returns the value for the key if it exists.
+        /// </summary>
+        /// <param name="key">The key to get value for.</param>
+        /// <returns>The value or null.</returns>
+        public string? this[string key] { get; set; }
 
         /// <summary>
-        ///  The time the transaction occurs. It has to refer to the column of RowDescriptor.DateTimeKey
+        ///  The time the transaction occurs. It has to refer to the column of RowDescriptor.DateTimeKey.
         /// </summary>
         public DateTime DateTime { get; }
 

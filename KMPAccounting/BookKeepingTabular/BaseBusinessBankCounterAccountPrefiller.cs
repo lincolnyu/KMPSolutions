@@ -16,7 +16,7 @@ namespace KMPAccounting.BookKeepingTabular
             var rowDescriptor = row.OwnerTable.RowDescriptor;
             var counterAccountKey = rowDescriptor.CounterAccountKey;
 
-            if (!overwrite && row.KeyHasValue(counterAccountKey) && !string.IsNullOrWhiteSpace(row[counterAccountKey]))
+            if (!overwrite && row[counterAccountKey] != null && !string.IsNullOrWhiteSpace(row[counterAccountKey]))
             {
                 return;
             }
@@ -39,7 +39,7 @@ namespace KMPAccounting.BookKeepingTabular
                     {
                         var es = entry.Split('=');
 
-                        var businessAccount = KMPSpecifics.AccountConstants.Business.AccountGroups.Expense + es[0];
+                        var businessAccount = es[0];
                         var businessAmount = decimal.Parse(es[1]);
                         slist.Add($"{businessAccount}={businessAmount}");
                         claimedAmount += businessAmount;
@@ -52,13 +52,15 @@ namespace KMPAccounting.BookKeepingTabular
             {
                 var remainingAmount = amount - claimedAmount;
 
-                var details = row[Constants.TransactionDetailsKey].Trim();
+                var details = row[Constants.TransactionDetailsKey]!.Trim();
 
                 if (!Prefill(row, details, claimedAmount, remainingAmount, slist) && populateFallbackCounterAccount)
                 {
                     slist.Add($"{BusinessFallbackCounterAccount}={remainingAmount}");
                 }
             }
+
+            row[counterAccountKey] = string.Join(Constants.CommonSeparator, slist);
         }
 
         protected abstract bool Prefill(ITransactionRow row, string transactionDetails, decimal claimedAmount, decimal remainingAmount, List<string> slist);

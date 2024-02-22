@@ -59,7 +59,7 @@ namespace KMPAccounting.InstitutionSpecifics
                     {
                         var rowDescriptor = queue.First.Value.OwnerTable.RowDescriptor;
                         var frontDateStr = queue.First.Value[rowDescriptor.DateTimeKey];
-                        var frontDate = CsvUtility.ParseDateTime(frontDateStr);
+                        var frontDate = CsvUtility.ParseDateTime(frontDateStr!);
                         if (frontDate.Date < date.Date.AddDays(-queueAgeBefore))
                         {
                             yield return (i, queue.First.Value, null);

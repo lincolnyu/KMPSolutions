@@ -15,8 +15,6 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
 
         public WaveRowDescriptor? RowDescriptor { get; private set; }
 
-        public string FallbackBusinessAccount { get; set; } = "Uncategorized";
-
         public IEnumerable<TransactionRow<WaveRowDescriptor>> GetRows(StreamReader sr, TransactionTable<WaveRowDescriptor> tableDescriptor, bool includeIncome)
         {
             RowDescriptor = tableDescriptor.RowDescriptor;
@@ -77,7 +75,7 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
                             // Amounts in raw txt copied from wave have lost the signs.
                             amount = Math.Abs(amount); // Still make sure it is positive first. 
                             inferredBusinessAccount = InferBusinessAccount(category);
-                            isIncome = inferredBusinessAccount == KMPSpecifics.AccountConstants.Business.AccountSuffixes.Income;
+                            isIncome = inferredBusinessAccount == KMPSpecifics.AccountConstants.Business.Accounts.Income;
                             bool isRefund = false;
                             if (!isIncome)
                             {
@@ -194,50 +192,51 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
             category = category.Trim();
             if (category.ContainsCaseIgnored("Payment from"))
             {
-                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Income;
+                return KMPSpecifics.AccountConstants.Business.Accounts.Income;
             }
+            var expenseGroup = KMPSpecifics.AccountConstants.Business.AccountGroups.Expense;
             if (category.ContainsWholeWord("Office Supplies"))
             {
-                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.OfficeSupplies;
+                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.OfficeSupplies;
             }
             else if (category.ContainsWholeWord("Medical Supplies"))
             {
-                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.MedicalSupplies;
+                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.MedicalSupplies;
             }
             else if (category.ContainsCaseIgnored("Fuel"))
             {
-                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Fuel;
+                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Fuel;
             }
             else if (category.ContainsWholeWord("Vehicle") || category.ContainsWholeWord("Vehicles"))
             {
-                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Vehicles;
+                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Vehicles;
             }
             else if (category.ContainsWholeWord("Uniform") || category.ContainsWholeWord("Uniforms"))
             {
-                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Uniforms;
+                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Uniforms;
             }
             else if (category.ContainsWholeWord("Subscription") || category.ContainsWholeWord("Subscriptions"))
             {
-                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Subscriptions;
+                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Subscriptions;
             }
             else if (category.ContainsWholeWord("Advertising") || category.ContainsWholeWord("Promotion"))
             {
-                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Promotion;
+                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Promotion;
             }
             else if (category.ContainsWholeWord("Computer"))
             {
                 // TODO update...
-                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Computer;
+                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.ITHardware;
             }
             else if (category.ContainsWholeWord("Repairs"))
             {
-                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Maintenance;
+                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Maintenance;
             }
             else if (category.ContainsWholeWord("Cleaning"))
             {
-                return KMPSpecifics.AccountConstants.Business.AccountSuffixes.Cleaning;
+                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Cleaning;
             }
-            return FallbackBusinessAccount;
+            return expenseGroup + KMPSpecifics.AccountConstants.Business.Accounts.ExpenseFallback;
         }
 
         private bool ParseBusinessClaimable(string businessSubstring, string buisnessAccount, out string businessClaimable, out decimal claimedAmount)

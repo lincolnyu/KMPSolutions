@@ -7,12 +7,11 @@ namespace KMPAccounting.BookKeepingTabular
     /// <summary>
     ///  Generate uniform rows from multiple row sources
     /// </summary>
-    public class TransactionRowCsvFormatter
+    public class MultiTransactionRowSourceCsvCombiner
     {
         public class TypedColumnPicker
         {
             public string? Key { get; set; }
-            public int? ExtraIndex { get; set; }
 
             /// <summary>
             ///  The smaller the number the higher the precedence.
@@ -53,18 +52,35 @@ namespace KMPAccounting.BookKeepingTabular
             public Func<string, string>? Formatter { get; set; }
         }
 
-        private readonly Dictionary<string, int> _targetNameToColumnIndex = new Dictionary<string, int>();
+        private readonly Dictionary<string, int> targetNameToColumnIndex_ = new Dictionary<string, int>();
 
         public ColumnPicker? GetColumn(string targetName)
         {
-            if (!_targetNameToColumnIndex.TryGetValue(targetName, out var columnIndex))
+            if (!targetNameToColumnIndex_.TryGetValue(targetName, out var columnIndex))
             {
                 return null;
             }
             return Columns[columnIndex];
         }
 
-        public TransactionRowCsvFormatter(List<ColumnPicker> columns) 
+        public int GetColumnIndex(Type rowDescriptorType, string key)
+        {
+            for (var i=0; i < Columns.Count;i++)
+            {
+                var col = Columns[i];
+                if (col.Typed.TryGetValue(rowDescriptorType, out var val) && val.Key == key)
+                {
+                    return i;
+                }
+                if (col.Generic.Key == key)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        public MultiTransactionRowSourceCsvCombiner(List<ColumnPicker> columns) 
         {
             Columns = columns;
             UpdateColumnMap();
@@ -75,13 +91,13 @@ namespace KMPAccounting.BookKeepingTabular
             for (int i = 0; i < Columns.Count; i++)
             {
                 ColumnPicker? column = Columns[i];
-                _targetNameToColumnIndex[column.TargetColumnName] = i;
+                targetNameToColumnIndex_[column.TargetColumnName] = i;
             }
         }
 
-        public static TransactionRowCsvFormatter CreateSimpleCombiningRowDescriptors(params ITransactionRowDescriptor[] supportedRowDescriptors)
+        public static MultiTransactionRowSourceCsvCombiner CreateSimpleCombiningRowDescriptors(params ITransactionRowDescriptor[] supportedRowDescriptors)
         {
-            var formatter = new TransactionRowCsvFormatter(new List<ColumnPicker>());
+            var formatter = new MultiTransactionRowSourceCsvCombiner(new List<ColumnPicker>());
             var keySet = new HashSet<string>();
 
             var dateKeys = new HashSet<string>();
@@ -133,7 +149,7 @@ namespace KMPAccounting.BookKeepingTabular
 
         private string GetColumnValue(ITransactionRow row, TypedColumnPicker picker, ColumnPicker column)
         {
-            var val = row[picker.Key!].Trim();
+            var val = row[picker.Key!]!.Trim();
             return picker.Formatter?.Invoke(val) ?? column.Formatter?.Invoke(val) ?? val;
         }
 
@@ -160,14 +176,10 @@ namespace KMPAccounting.BookKeepingTabular
                             {
                                 if (typed.Key != null)
                                 {
-                                    if (row.KeyHasValue(typed.Key!))
+                                    if (row[typed.Key!] != null)
                                     {
                                         columnValue = GetColumnValue(row, typed, column);
                                     }
-                                }
-                                else
-                                {
-                                    columnValue = row.ExtraColumnData[typed.ExtraIndex!.Value].Trim();
                                 }
                                 if (checkPrecedence)
                                 {
@@ -182,14 +194,10 @@ namespace KMPAccounting.BookKeepingTabular
                     {
                         if (column.Generic.Key != null)
                         {
-                            if (row.KeyHasValue(column.Generic.Key!))
+                            if (row[column.Generic.Key!] != null)
                             {
                                 columnValue = GetColumnValue(row, column.Generic, column);
                             }
-                        }
-                        else
-                        {
-                            columnValue = row.ExtraColumnData[column.Generic.ExtraIndex!.Value].Trim();
                         }
                         if (checkPrecedence)
                         {

@@ -31,7 +31,7 @@ namespace KMPAccounting.BookKeepingTabular
 
         public virtual DateTime GetDateTime(ITransactionRow row)
         {
-            return CsvUtility.ParseDateTime(row[DateTimeKey]);
+            return CsvUtility.ParseDateTime(row[DateTimeKey]!);
         }
     }
 }

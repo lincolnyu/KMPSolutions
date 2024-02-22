@@ -16,7 +16,7 @@ namespace KMPAccounting.BookKeepingTabular
 
         #region Main Method
 
-        public IEnumerable<TransactionRow<TTransactionRowDescriptor>> GetRows<TTransactionRowDescriptor>(StreamReader sr, TransactionTable<TTransactionRowDescriptor> tableDescriptor) where TTransactionRowDescriptor : BaseTransactionRowDescriptor
+        public IEnumerable<TransactionRow<TTransactionRowDescriptor>> GetRows<TTransactionRowDescriptor>(StreamReader sr, TransactionTable<TTransactionRowDescriptor> tableDescriptor, bool ignoreDummyKey=true) where TTransactionRowDescriptor : BaseTransactionRowDescriptor
         {
             HasHeader = null;
             var index = 0;
@@ -43,12 +43,73 @@ namespace KMPAccounting.BookKeepingTabular
                 var i = 0;
                 for (; i < rowDescriptor.Keys.Count && i < fields.Count; i++)
                 {
-                    row[rowDescriptor.Keys[i]] = fields[i];
+                    if (!ignoreDummyKey || rowDescriptor.Keys[i] != Constants.DummyKey)
+                    {
+                        row[rowDescriptor.Keys[i]] = fields[i];
+                    }
                 }
-                row.ExtraColumnData.Clear();
-                for (; i < fields.Count; i++)
+                yield return row;
+            }
+        }
+
+        public IEnumerable<TransactionRow<TTransactionRowDescriptor>> GetRows<TTransactionRowDescriptor>(StreamReader sr, TransactionTable<TTransactionRowDescriptor> tableDescriptor, IList<int> fieldsSelector, bool hasHeader, bool ignoreDummyKey = true) where TTransactionRowDescriptor : BaseTransactionRowDescriptor
+        {
+            HasHeader = null;
+            var index = 0;
+            while (!sr.EndOfStream)
+            {
+                var originalFields = CsvUtility.GetAndBreakRow(sr).ToList();
+                var fields = new List<string>();
+
+                foreach (var s in fieldsSelector)
                 {
-                    row.ExtraColumnData.Add(fields[i]);
+                    if (s >= 0)
+                    {
+                        fields.Add(originalFields[s]);
+                    }
+                    else
+                    {
+                        fields.Add("");
+                    }
+                }
+
+                if (LoadedHeader == null)
+                {
+                    if (hasHeader)
+                    {
+                        HasHeader = true;
+                        LoadedHeader = fields;
+                        // Skip the loaded header
+                        originalFields = CsvUtility.GetAndBreakRow(sr).ToList();
+
+                        fields = new List<string>();
+                        foreach (var s in fieldsSelector)
+                        {
+                            if (s >= 0)
+                            {
+                                fields.Add(originalFields[s]);
+                            }
+                            else
+                            {
+                                fields.Add("");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        HasHeader = false;
+                        LoadedHeader = null;
+                    }
+                }
+                var row = new TransactionRow<TTransactionRowDescriptor>(tableDescriptor, index++);
+                var rowDescriptor = tableDescriptor.RowDescriptor;
+                var i = 0;
+                for (; i < rowDescriptor.Keys.Count && i < fields.Count; i++)
+                {
+                    if (!ignoreDummyKey || rowDescriptor.Keys[i] != Constants.DummyKey)
+                    {
+                        row[rowDescriptor.Keys[i]] = fields[i];
+                    }
                 }
                 yield return row;
             }

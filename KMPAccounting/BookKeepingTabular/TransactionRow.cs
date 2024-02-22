@@ -13,33 +13,32 @@ namespace KMPAccounting.BookKeepingTabular
             Index = index;
         }
 
-        public IEnumerable<(string, string)> GetKeyAndValuePairs()
-        {
-            foreach (var kvp in KeyValueMap)
-            {
-                yield return (kvp.Key, kvp.Value);
-            }
-        }
-
-        public bool KeyHasValue(string key) => KeyValueMap.ContainsKey(key);
-
-        public string this[string key]
+        public string? this[string key]
         {
             get
             {
-                return KeyValueMap[key];
+                if (KeyValueMap.TryGetValue(key, out var val))
+                {
+                    return val;
+                }
+                return null;
             }
             set
             {
-                KeyValueMap[key] = value;
+                if (value != null)
+                {
+                    KeyValueMap[key] = value;
+                }
+                else
+                {
+                    KeyValueMap.Remove(key);
+                }
             }
         }
 
         public int Index { get; set;  }
 
         public Dictionary<string, string> KeyValueMap { get; } = new Dictionary<string, string>();
-
-        public IList<string> ExtraColumnData { get; } = new List<string>();
 
         public TransactionTable<TTransactionRowDescriptor> OwnerTable { get; }
 
@@ -51,8 +50,7 @@ namespace KMPAccounting.BookKeepingTabular
 
         public override string ToString()
         {
-            return string.Join(',', OwnerTable.RowDescriptor.Keys.Select(k =>
-            KeyHasValue(k) ? CsvUtility.StringToCsvField(this[k]) : ""));
+            return string.Join(',', OwnerTable.RowDescriptor.Keys.Select(k => this[k]?.StringToCsvField()?? ""));
         }
 
         public virtual bool MergableWith(ITransactionRow that)
