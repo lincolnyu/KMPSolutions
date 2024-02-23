@@ -764,28 +764,28 @@ namespace KMPAccountingTest
         }
 
 
-        //[Test]
-        //public void TestNabCashCorrelation()
-        //{
-        //    var items = MatchTransactionsAndKeep();
+        [Test]
+        public void TestNabCashCorrelation()
+        {
+            var items = MatchTransactionsAndKeep();
 
-        //    var cbaCashRows = items.Where(x => x.Item1 == 2).Select(x => (x.Item2, x.Item3));
+            var cbaCashRows = items.Where(x => x.Item1 == 2).Select(x => (x.Item2, x.Item3));
 
-        //    var guesser = new ();
-        //    var guessedRows = cbaCashRows.Select(x => { guesser.PrefillPersonalBankTransaction((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2, false, true); return ((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2); });
+            var guesser = new NABCashCounterAccountPrefiller();
+            var guessedRows = cbaCashRows.Select(x => { guesser.Prefill((TransactionRow<NABCashRowDescriptor>)x.Item1!, x.Item2, false, true); return ((TransactionRow<NABCashRowDescriptor>)x.Item1!, x.Item2); });
 
-        //    {
-        //        using var f = new StreamWriter(@"C:\temp\cbacash_correlation.txt");
-        //        foreach (var (bankRow, invoiceRow) in guessedRows)
-        //        {
-        //            var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
+            {
+                using var f = new StreamWriter(@"C:\temp\nabcash_correlation.txt");
+                foreach (var (bankRow, invoiceRow) in guessedRows)
+                {
+                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
 
-        //            f.WriteLine(transaction.ToString());
-        //            f.WriteLine("--------------------------------------------------------------------------------");
-        //        }
-        //    }
-        //    Assert.Pass();
-        //}
+                    f.WriteLine(transaction.ToString());
+                    f.WriteLine("--------------------------------------------------------------------------------");
+                }
+            }
+            Assert.Pass();
+        }
 
         private IEnumerable<TransactionRow<CommbankCashRowDescriptor>> GetCbaCash(string fileName, string tableName)
         {
@@ -808,7 +808,7 @@ namespace KMPAccountingTest
             ResetCsvReader();
             var dir = new DirectoryInfo(Path.Combine(TestDir, folder));
             var nabCsv = dir.GetFiles().First(x => x.Name == fileName);
-            return SharedCsvReader.GetRows(new StreamReader(nabCsv.FullName), new BankTransactionTable<NABCashRowDescriptor>(tableName)).ToList();
+            return SharedCsvReader.GetRows(new StreamReader(nabCsv.FullName), new BankTransactionTable<NABCashRowDescriptor>(tableName) {  BaseAccountName = AccountConstants.Business.Accounts.CashAccount}).ToList();
         }
 
         private IEnumerable<TransactionRow<WaveRowDescriptor>> GetWave(string fileName, string tableName, bool includeIncome = false)
