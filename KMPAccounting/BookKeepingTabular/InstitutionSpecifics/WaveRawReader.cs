@@ -236,7 +236,7 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
             {
                 return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Cleaning;
             }
-            return expenseGroup + KMPSpecifics.AccountConstants.Business.Accounts.ExpenseFallback;
+            return KMPSpecifics.AccountConstants.Business.Accounts.ExpenseFallback;
         }
 
         private bool ParseBusinessClaimable(string businessSubstring, string buisnessAccount, out string businessClaimable, out decimal claimedAmount)

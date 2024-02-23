@@ -695,7 +695,7 @@ namespace KMPAccountingTest
             {
                 Assert.That(guessedRows.Count, Is.EqualTo(243));
                 Assert.That(filledCount + emptyCount, Is.EqualTo(243));
-                //Assert.That(filledPercentage, Is.GreaterThanOrEqualTo(0.88));    // TODO improve it.
+                Assert.That(filledPercentage, Is.GreaterThanOrEqualTo(0.89));   // TODO: improve.
             });
 
             {
