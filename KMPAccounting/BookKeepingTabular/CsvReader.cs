@@ -52,7 +52,7 @@ namespace KMPAccounting.BookKeepingTabular
             }
         }
 
-        public IEnumerable<TransactionRow<TTransactionRowDescriptor>> GetRows<TTransactionRowDescriptor>(StreamReader sr, TransactionTable<TTransactionRowDescriptor> tableDescriptor, IList<int> fieldsSelector, bool hasHeader, bool ignoreDummyKey = true) where TTransactionRowDescriptor : BaseTransactionRowDescriptor
+        public IEnumerable<(TransactionRow<TTransactionRowDescriptor>, List<string>)> GetRows<TTransactionRowDescriptor>(StreamReader sr, TransactionTable<TTransactionRowDescriptor> tableDescriptor, IList<int> fieldsSelector, bool hasHeader, bool ignoreDummyKey = true) where TTransactionRowDescriptor : BaseTransactionRowDescriptor
         {
             HasHeader = null;
             var index = 0;
@@ -111,7 +111,7 @@ namespace KMPAccounting.BookKeepingTabular
                         row[rowDescriptor.Keys[i]] = fields[i];
                     }
                 }
-                yield return row;
+                yield return (row, originalFields);
             }
         }
 

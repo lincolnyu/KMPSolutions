@@ -27,11 +27,6 @@ namespace KMPAccountingTest
         static TransactionMatcher Matcher = new TransactionMatcher();
         static List<(int, ITransactionRow?, ITransactionRow?)>? MatchResult = null;
 
-        void ResetCsvReader()
-        {
-            SharedCsvReader = new CsvReader();
-        }
-
         [SetUp]
         public void Setup()
         {
@@ -370,7 +365,7 @@ namespace KMPAccountingTest
             var cbaccRows = items.Where(x => x.Item1 == 1).Select(x => (x.Item2, x.Item3));
 
             var guesser = new CommbankCreditCardCounterAccountPrefiller();
-            var guessedRows = cbaccRows.Select(x => { guesser.Prefill((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2, false); return ((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2); });
+            var guessedRows = cbaccRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false); return ((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2); });
 
             var printer = MultiTransactionRowSourceCsvCombiner.CreateSimpleCombiningRowDescriptors(CbaCcDesc, WaveDesc);
 
@@ -452,9 +447,206 @@ namespace KMPAccountingTest
 
                     f.WriteLine(string.Join(',', line));
                 }
-
             }
 
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestCBACashGuessWithInvoice()
+        {
+            var items = MatchTransactionsAndKeep();
+
+            var cbaCashRows = items.Where(x => x.Item1 == 0).Select(x => (x.Item2, x.Item3));
+
+            var guesser = new CommbankCashCounterAccountPrefiller();
+            var guessedRows = cbaCashRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false); return ((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2); });
+
+            var printer = MultiTransactionRowSourceCsvCombiner.CreateSimpleCombiningRowDescriptors(CbaCcDesc, WaveDesc);
+
+            printer.GetColumn("Date")!.Formatter = DateFormatter;
+            printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
+
+            var emptyCount = 0;
+            var filledCount = 0;
+            {
+                using var f = new StreamWriter(@"C:\temp\cbacash_joint_guessed.csv");
+                f.WriteLine(string.Join(',', printer.Columns.Select(x => x.TargetColumnName)));
+
+                foreach (var (bankRow, invoiceRow) in guessedRows)
+                {
+                    if (!string.IsNullOrWhiteSpace(bankRow[bankRow.OwnerTable.RowDescriptor.CounterAccountKey]))
+                    {
+                        filledCount++;
+                    }
+                    else
+                    {
+                        emptyCount++;
+                    }
+                    IEnumerable<string> line;
+                    if (invoiceRow != null)
+                    {
+                        line = printer.FieldsToStrings(bankRow!, invoiceRow);
+                    }
+                    else
+                    {
+                        line = printer.FieldsToStrings(bankRow!);
+                    }
+
+                    f.WriteLine(string.Join(',', line));
+                }
+
+            }
+            var filledPercentage = (double)filledCount / (filledCount + emptyCount);
+            Assert.Multiple(() =>
+            {
+                Assert.That(filledCount + emptyCount, Is.EqualTo(179));
+                Assert.That(filledPercentage, Is.GreaterThanOrEqualTo(0.88));    // TODO improve it.
+            });
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestNabGuessWithInvoiceAndCsvLoading()
+        {
+            var items = MatchTransactionsAndKeep();
+
+            var nabCashRows = items.Where(x => x.Item1 == 2).Select(x => (x.Item2, x.Item3));
+
+            var guesser = new NABCashCounterAccountPrefiller();
+            var guessedRows = nabCashRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false); return ((TransactionRow<NABCashRowDescriptor>)x.Item1!, x.Item2); }).ToList();
+
+            var printer = MultiTransactionRowSourceCsvCombiner.CreateSimpleCombiningRowDescriptors(NabCashDesc, WaveDesc);
+
+            printer.GetColumn("Date")!.Formatter = DateFormatter;
+            printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
+
+            var columnSelector = new NABCashRowDescriptor().Keys.Select(k => printer.GetColumnIndex(typeof(NABCashRowDescriptor), k)).ToList();
+
+            var emptyCount = 0;
+            var filledCount = 0;
+            {
+                using var f = new StreamWriter(@"C:\temp\nabcash_joint_guessed.csv");
+                f.WriteLine(string.Join(',', printer.Columns.Select(x => x.TargetColumnName)));
+
+                foreach (var (bankRow, invoiceRow) in guessedRows)
+                {
+                    if (!string.IsNullOrWhiteSpace(bankRow[bankRow.OwnerTable.RowDescriptor.CounterAccountKey]))
+                    {
+                        filledCount++;
+                    }
+                    else
+                    {
+                        emptyCount++;
+                    }
+                    IEnumerable<string> line;
+                    if (invoiceRow != null)
+                    {
+                        line = printer.FieldsToStrings(bankRow!, invoiceRow);
+                    }
+                    else
+                    {
+                        line = printer.FieldsToStrings(bankRow!);
+                    }
+
+                    f.WriteLine(string.Join(',', line));
+                }
+            }
+
+            var filledPercentage = (double)filledCount / (filledCount + emptyCount);
+            Assert.Multiple(() =>
+            {
+                Assert.That(guessedRows.Count, Is.EqualTo(243));
+                Assert.That(filledCount + emptyCount, Is.EqualTo(243));
+                Assert.That(filledPercentage, Is.GreaterThanOrEqualTo(0.89));   // TODO: improve.
+            });
+
+            {
+                ResetCsvReader();
+
+                var srNabJointGuessed = new StreamReader(@"C:\temp\nabcash_joint_guessed.csv");
+                var loadedNabRows = SharedCsvReader.GetRows(srNabJointGuessed, new BankTransactionTable<NABCashRowDescriptor>("NAB Cash Reviewed"), columnSelector, true).ToList();
+
+                Assert.That(loadedNabRows.Count, Is.EqualTo(243));
+
+                for (var i = 0; i < 243; i++)
+                {
+                    var row = guessedRows[i].Item1;
+                    var loadedRow = loadedNabRows[i].Item1;
+                    AssertRowsAreEqual(row, loadedRow);
+                }
+            }
+
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestCbaCreditCardCorrelation()
+        {
+            var items = MatchTransactionsAndKeep();
+
+            var cbaccRows = items.Where(x => x.Item1 == 1).Select(x => (x.Item2, x.Item3));
+
+            var guesser = new CommbankCreditCardCounterAccountPrefiller();
+            var guessedRows = cbaccRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false, true); return ((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2); });
+
+            {
+                using var f = new StreamWriter(@"C:\temp\cbacc_correlation.txt");
+                foreach (var (bankRow, invoiceRow) in guessedRows)
+                {
+                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
+
+                    f.WriteLine(transaction.ToString());
+                    f.WriteLine("--------------------------------------------------------------------------------");
+                }
+            }
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestCbaCashCorrelation()
+        {
+            var items = MatchTransactionsAndKeep();
+
+            var cbaCashRows = items.Where(x => x.Item1 == 0).Select(x => (x.Item2, x.Item3));
+
+            var guesser = new CommbankCashCounterAccountPrefiller();
+            var guessedRows = cbaCashRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false, true); return ((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2); });
+
+            {
+                using var f = new StreamWriter(@"C:\temp\cbacash_correlation.txt");
+                foreach (var (bankRow, invoiceRow) in guessedRows)
+                {
+                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
+
+                    f.WriteLine(transaction.ToString());
+                    f.WriteLine("--------------------------------------------------------------------------------");
+                }
+            }
+            Assert.Pass();
+        }
+
+
+        [Test]
+        public void TestNabCashCorrelation()
+        {
+            var items = MatchTransactionsAndKeep();
+
+            var cbaCashRows = items.Where(x => x.Item1 == 2).Select(x => (x.Item2, x.Item3));
+
+            var guesser = new NABCashCounterAccountPrefiller();
+            var guessedRows = cbaCashRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false, true); return ((TransactionRow<NABCashRowDescriptor>)x.Item1!, x.Item2); });
+
+            {
+                using var f = new StreamWriter(@"C:\temp\nabcash_correlation.txt");
+                foreach (var (bankRow, invoiceRow) in guessedRows)
+                {
+                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
+
+                    f.WriteLine(transaction.ToString());
+                    f.WriteLine("--------------------------------------------------------------------------------");
+                }
+            }
             Assert.Pass();
         }
 
@@ -463,21 +655,30 @@ namespace KMPAccountingTest
         {
             var items = MatchTransactionsAndKeep();
 
+            var cbaCashRows = items.Where(x => x.Item1 == 0).Select(x => (x.Item2, x.Item3));
             {
-                var cbaCashRows = items.Where(x => x.Item1 == 0).Select(x => (x.Item2, x.Item3));
-                var guesser = new CommbankCreditCardCounterAccountPrefiller();
+                var guesser = new CommbankCashCounterAccountPrefiller();
                 foreach (var x in cbaCashRows)
                 {
-                    guesser.Prefill((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2, false, false);
+                    guesser.Prefill(x.Item1!, x.Item2, false, false);
                 }
             }
 
+            var cbaccRows = items.Where(x => x.Item1 == 1).Select(x => (x.Item2, x.Item3));
             {
-                var cbaccRows = items.Where(x => x.Item1 == 1).Select(x => (x.Item2, x.Item3));
                 var guesser = new CommbankCreditCardCounterAccountPrefiller();
                 foreach (var x in cbaccRows)
                 {
-                    guesser.Prefill((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2, false, false);
+                    guesser.Prefill(x.Item1!, x.Item2, false, false);
+                }
+            }
+
+            var nabRows = items.Where(x => x.Item1 == 2).Select(x => (x.Item2, x.Item3)).ToList();
+            {
+                var guesser = new NABCashCounterAccountPrefiller();
+                foreach (var x in nabRows)
+                {
+                    guesser.Prefill(x.Item1!, x.Item2, false, false);
                 }
             }
 
@@ -485,6 +686,11 @@ namespace KMPAccountingTest
 
             printer.GetColumn("Date")!.Formatter = DateFormatter;
             printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
+
+
+            // +2 for the extra beginning columns.
+            var nabColumnSelector = new NABCashRowDescriptor().Keys.Select(k => printer.GetColumnIndex(typeof(NABCashRowDescriptor), k)+2).ToList();
+
 
             var cashInvoices = 0;
             var inconsistentAccountTypes = 0;
@@ -560,231 +766,28 @@ namespace KMPAccountingTest
                 Assert.That(Matcher.MatchedInvoices + cashInvoices, Is.EqualTo(Matcher.TotalInvoices));
             });
 
-            Assert.Pass();
-        }
-
-        [Test]
-        public void TestCBACashGuessWithInvoice()
-        {
-            var items = MatchTransactionsAndKeep();
-
-            var cbaCashRows = items.Where(x => x.Item1 == 0).Select(x => (x.Item2, x.Item3));
-
-            var guesser = new CommbankCashCounterAccountPrefiller();
-            var guessedRows = cbaCashRows.Select(x => { guesser.Prefill((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2, false); return ((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2); });
-
-            var printer = MultiTransactionRowSourceCsvCombiner.CreateSimpleCombiningRowDescriptors(CbaCcDesc, WaveDesc);
-
-            printer.GetColumn("Date")!.Formatter = DateFormatter;
-            printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
-
-            var emptyCount = 0;
-            var filledCount = 0;
-            {
-                using var f = new StreamWriter(@"C:\temp\cbacash_joint_guessed.csv");
-                f.WriteLine(string.Join(',', printer.Columns.Select(x => x.TargetColumnName)));
-
-                foreach (var (bankRow, invoiceRow) in guessedRows)
-                {
-                    if (!string.IsNullOrWhiteSpace(bankRow[bankRow.OwnerTable.RowDescriptor.CounterAccountKey]))
-                    {
-                        filledCount++;
-                    }
-                    else
-                    {
-                        emptyCount++;
-                    }
-                    IEnumerable<string> line;
-                    if (invoiceRow != null)
-                    {
-                        line = printer.FieldsToStrings(bankRow!, invoiceRow);
-                    }
-                    else
-                    {
-                        line = printer.FieldsToStrings(bankRow!);
-                    }
-
-                    f.WriteLine(string.Join(',', line));
-                }
-
-            }
-            var filledPercentage = (double)filledCount / (filledCount + emptyCount);
-            Assert.Multiple(() =>
-            {
-                Assert.That(filledCount + emptyCount, Is.EqualTo(179));
-                Assert.That(filledPercentage, Is.GreaterThanOrEqualTo(0.88));    // TODO improve it.
-            });
-            Assert.Pass();
-        }
-
-        void AssertRowsAreEqual(ITransactionRow row1, ITransactionRow row2)
-        {
-            var desc1 = row1.OwnerTable.RowDescriptor;
-            var desc2 = row2.OwnerTable.RowDescriptor;
-            Assert.That(desc1.Keys.Count, Is.EqualTo(desc2.Keys.Count));
-            for (var i = 0; i < desc1.Keys.Count; i++)
-            {
-                Assert.That(desc1.Keys[i] == desc2.Keys[i]);
-            }
-            foreach (var key in desc1.Keys)
-            {
-                if (key == desc1.DateTimeKey)
-                {
-                    Assert.That(CsvUtility.ParseDateTime(row1[key]!), Is.EqualTo(CsvUtility.ParseDateTime(row2[key]!)));
-                }
-                else
-                {
-                    if ((row1[key] == null || string.IsNullOrEmpty(row1[key])) && (row2[key] == null || string.IsNullOrEmpty(row2[key])))
-                    {
-                        continue;
-                    }
-                    Assert.That(row1[key], Is.EqualTo(row2[key]));
-                }
-            }       
-        }
-
-        [Test]
-        public void TestNabGuessWithInvoice()
-        {
-            var items = MatchTransactionsAndKeep();
-
-            var nabCashRows = items.Where(x => x.Item1 == 2).Select(x => (x.Item2, x.Item3));
-
-            var guesser = new NABCashCounterAccountPrefiller();
-            var guessedRows = nabCashRows.Select(x => { guesser.Prefill((TransactionRow<NABCashRowDescriptor>)x.Item1!, x.Item2, false); return ((TransactionRow<NABCashRowDescriptor>)x.Item1!, x.Item2); }).ToList();
-
-            var printer = MultiTransactionRowSourceCsvCombiner.CreateSimpleCombiningRowDescriptors(NabCashDesc, WaveDesc);
-
-            printer.GetColumn("Date")!.Formatter = DateFormatter;
-            printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
-
-            var columnSelector = new NABCashRowDescriptor().Keys.Select(k => printer.GetColumnIndex(typeof(NABCashRowDescriptor), k)).ToList();
-
-            var emptyCount = 0;
-            var filledCount = 0;
-            {
-                using var f = new StreamWriter(@"C:\temp\nabcash_joint_guessed.csv");
-                f.WriteLine(string.Join(',', printer.Columns.Select(x => x.TargetColumnName)));
-
-                foreach (var (bankRow, invoiceRow) in guessedRows)
-                {
-                    if (!string.IsNullOrWhiteSpace(bankRow[bankRow.OwnerTable.RowDescriptor.CounterAccountKey]))
-                    {
-                        filledCount++;
-                    }
-                    else
-                    {
-                        emptyCount++;
-                    }
-                    IEnumerable<string> line;
-                    if (invoiceRow != null)
-                    {
-                        line = printer.FieldsToStrings(bankRow!, invoiceRow);
-                    }
-                    else
-                    {
-                        line = printer.FieldsToStrings(bankRow!);
-                    }
-
-                    f.WriteLine(string.Join(',', line));
-                }
-            }
-
-            var filledPercentage = (double)filledCount / (filledCount + emptyCount);
-            Assert.Multiple(() =>
-            {
-                Assert.That(guessedRows.Count, Is.EqualTo(243));
-                Assert.That(filledCount + emptyCount, Is.EqualTo(243));
-                Assert.That(filledPercentage, Is.GreaterThanOrEqualTo(0.89));   // TODO: improve.
-            });
-
             {
                 ResetCsvReader();
 
-                var srNabJointGuessed = new StreamReader(@"C:\temp\nabcash_joint_guessed.csv");
-                var loadedNabRows = SharedCsvReader.GetRows(srNabJointGuessed, new BankTransactionTable<NABCashRowDescriptor>("NAB Cash Reviewed"), columnSelector, true).ToList();
+                var srNabJointGuessed = new StreamReader(@"C:\temp\wave_combined_guessed.csv");
+                var loadedNabRows = SharedCsvReader.GetRows(srNabJointGuessed, new BankTransactionTable<NABCashRowDescriptor>("NAB Cash Reviewed"), nabColumnSelector, true).Where(x => x.Item2[0].Contains('N')).ToList();
 
                 Assert.That(loadedNabRows.Count, Is.EqualTo(243));
 
                 for (var i = 0; i < 243; i++)
                 {
-                    var row = guessedRows[i].Item1;
+                    var row = nabRows[i].Item1;
                     var loadedRow = loadedNabRows[i];
-                    AssertRowsAreEqual(row, loadedRow);
+                    AssertRowsAreEqual(row!, loadedRow.Item1);
                 }
             }
 
             Assert.Pass();
         }
 
-        [Test]
-        public void TestCbaCreditCardCorrelation()
+        void ResetCsvReader()
         {
-            var items = MatchTransactionsAndKeep();
-
-            var cbaccRows = items.Where(x => x.Item1 == 1).Select(x => (x.Item2, x.Item3));
-
-            var guesser = new CommbankCreditCardCounterAccountPrefiller();
-            var guessedRows = cbaccRows.Select(x => { guesser.Prefill((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2, false, true); return ((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2); });
-
-            {
-                using var f = new StreamWriter(@"C:\temp\cbacc_correlation.txt");
-                foreach (var (bankRow, invoiceRow) in guessedRows)
-                {
-                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
-
-                    f.WriteLine(transaction.ToString());
-                    f.WriteLine("--------------------------------------------------------------------------------");
-                }
-            }
-            Assert.Pass();
-        }
-
-        [Test]
-        public void TestCbaCashCorrelation()
-        {
-            var items = MatchTransactionsAndKeep();
-
-            var cbaCashRows = items.Where(x => x.Item1 == 0).Select(x => (x.Item2, x.Item3));
-
-            var guesser = new CommbankCashCounterAccountPrefiller();
-            var guessedRows = cbaCashRows.Select(x => { guesser.Prefill((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2, false, true); return ((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2); });
-
-            {
-                using var f = new StreamWriter(@"C:\temp\cbacash_correlation.txt");
-                foreach (var (bankRow, invoiceRow) in guessedRows)
-                {
-                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
-
-                    f.WriteLine(transaction.ToString());
-                    f.WriteLine("--------------------------------------------------------------------------------");
-                }
-            }
-            Assert.Pass();
-        }
-
-
-        [Test]
-        public void TestNabCashCorrelation()
-        {
-            var items = MatchTransactionsAndKeep();
-
-            var cbaCashRows = items.Where(x => x.Item1 == 2).Select(x => (x.Item2, x.Item3));
-
-            var guesser = new NABCashCounterAccountPrefiller();
-            var guessedRows = cbaCashRows.Select(x => { guesser.Prefill((TransactionRow<NABCashRowDescriptor>)x.Item1!, x.Item2, false, true); return ((TransactionRow<NABCashRowDescriptor>)x.Item1!, x.Item2); });
-
-            {
-                using var f = new StreamWriter(@"C:\temp\nabcash_correlation.txt");
-                foreach (var (bankRow, invoiceRow) in guessedRows)
-                {
-                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
-
-                    f.WriteLine(transaction.ToString());
-                    f.WriteLine("--------------------------------------------------------------------------------");
-                }
-            }
-            Assert.Pass();
+            SharedCsvReader = new CsvReader();
         }
 
         private IEnumerable<TransactionRow<CommbankCashRowDescriptor>> GetCbaCash(string fileName, string tableName)
@@ -818,6 +821,32 @@ namespace KMPAccountingTest
             var rawTxtFile = dir.GetFiles().First(x => x.Name == fileName);
             var rowDescriptor = new WaveRowDescriptor();
             return SharedWaveRawReader.GetRows(new StreamReader(rawTxtFile.FullName), new TransactionTable<WaveRowDescriptor>(tableName, rowDescriptor), includeIncome);
+        }
+
+        void AssertRowsAreEqual(ITransactionRow row1, ITransactionRow row2)
+        {
+            var desc1 = row1.OwnerTable.RowDescriptor;
+            var desc2 = row2.OwnerTable.RowDescriptor;
+            Assert.That(desc1.Keys.Count, Is.EqualTo(desc2.Keys.Count));
+            for (var i = 0; i < desc1.Keys.Count; i++)
+            {
+                Assert.That(desc1.Keys[i] == desc2.Keys[i]);
+            }
+            foreach (var key in desc1.Keys)
+            {
+                if (key == desc1.DateTimeKey)
+                {
+                    Assert.That(CsvUtility.ParseDateTime(row1[key]!), Is.EqualTo(CsvUtility.ParseDateTime(row2[key]!)));
+                }
+                else
+                {
+                    if ((row1[key] == null || string.IsNullOrEmpty(row1[key])) && (row2[key] == null || string.IsNullOrEmpty(row2[key])))
+                    {
+                        continue;
+                    }
+                    Assert.That(row1[key], Is.EqualTo(row2[key]));
+                }
+            }
         }
     }
 }

@@ -11,10 +11,10 @@ namespace KMPAccounting.BookKeepingTabular
 
         public string BusinessExpenseFallbackCounterAccount { get; }
 
-        public void Prefill<TRowDescriptor>(TransactionRow<TRowDescriptor> row, ITransactionRow? invoiceRow, bool overwrite, bool populateFallbackCounterAccount = false) where TRowDescriptor : BankTransactionRowDescriptor
+        public void Prefill(ITransactionRow row, ITransactionRow? invoiceRow, bool overwrite, bool populateFallbackCounterAccount = false)
         {
             var rowDescriptor = row.OwnerTable.RowDescriptor;
-            var counterAccountKey = rowDescriptor.CounterAccountKey;
+            var counterAccountKey = ((BankTransactionRowDescriptor)rowDescriptor).CounterAccountKey;
 
             if (!overwrite && row[counterAccountKey] != null && !string.IsNullOrWhiteSpace(row[counterAccountKey]))
             {
