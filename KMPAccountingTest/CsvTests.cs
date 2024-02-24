@@ -2,7 +2,10 @@
 using KMPAccounting.BookKeepingTabular.InstitutionSpecifics;
 using KMPAccounting.InstitutionSpecifics;
 using KMPAccounting.KMPSpecifics;
+using KMPAccounting.Objects.BookKeeping;
+using OU = KMPAccounting.Objects.Utility;
 using KMPCommon;
+using KMPAccounting.Objects.Accounts;
 
 namespace KMPAccountingTest
 {
@@ -630,6 +633,8 @@ namespace KMPAccountingTest
         [Test]
         public void TestNabCashCorrelation()
         {
+            AccountsState.Clear();
+
             var items = MatchTransactionsAndKeep();
 
             var cbaCashRows = items.Where(x => x.Item1 == 2).Select(x => (x.Item2, x.Item3));
@@ -637,16 +642,34 @@ namespace KMPAccountingTest
             var guesser = new NABCashCounterAccountPrefiller();
             var guessedRows = cbaCashRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false, true); return ((TransactionRow<NABCashRowDescriptor>)x.Item1!, x.Item2); });
 
+            var ledger = new Ledger();
+
+            AccountConstants.EnsureCreateAllAccounts(ledger);
+
+            var startIndex = ledger.Entries.Count;
+
             {
                 using var f = new StreamWriter(@"C:\temp\nabcash_correlation.txt");
                 foreach (var (bankRow, invoiceRow) in guessedRows)
                 {
+                    var amount = bankRow.GetDecimalValue(bankRow.OwnerTable.RowDescriptor.AmountKey);
+                    if (amount == 0) continue;
+
                     var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
 
                     f.WriteLine(transaction.ToString());
                     f.WriteLine("--------------------------------------------------------------------------------");
+
+                    ledger.Entries.Add(transaction);
                 }
             }
+
+            for (var i = startIndex; i < ledger.Entries.Count; i++)
+            {
+                var e = ledger.Entries[i];
+                e.Redo();
+            }    
+
             Assert.Pass();
         }
 

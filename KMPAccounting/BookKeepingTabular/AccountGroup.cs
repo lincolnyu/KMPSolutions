@@ -12,6 +12,11 @@
             return new AccountGroup(path);
         }
 
+        public static implicit operator string(AccountGroup accountGroup)
+        {
+            return accountGroup.Path;
+        }
+
         public string Account(string suffix)
         {
             return $"{Path.TrimEnd('.')}.{suffix.TrimStart('.')}";
