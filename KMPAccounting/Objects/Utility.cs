@@ -105,10 +105,7 @@ namespace KMPAccounting.Objects
             {
                 if (parentFullName != null || !p.Children.TryGetValue(seg, out var child))
                 {
-                    if (parentFullName == null)
-                    {
-                        parentFullName = p.FullName;
-                    }
+                    parentFullName ??= p.FullName;
                     var side = i == splitNames.Length - 1 && sideDifferToParent ? AccountNode.GetOppositeSide(p.Side) : p.Side;
                     var openAccount = new OpenAccount(DateTime.Now, (new AccountNodeReference(parentFullName), side), seg);
                     ledger.AddAndExecute(openAccount);
@@ -152,10 +149,7 @@ namespace KMPAccounting.Objects
 
         public static void AddAndExecute(this Ledger? ledger, Entry entry)
         {
-            if (ledger != null)
-            {
-                ledger.Entries.Add(entry);
-            }
+            ledger?.Entries.Add(entry);
             entry.Redo();
         }
 

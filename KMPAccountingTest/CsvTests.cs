@@ -261,7 +261,6 @@ namespace KMPAccountingTest
             return TransactionMatcher.OrderMatch(items);
         }
 
-        
         private List<(int, ITransactionRow?, ITransactionRow?)> MatchTransactionsAndKeep()
         {
             if (MatchResult == null)
@@ -614,7 +613,17 @@ namespace KMPAccountingTest
             var cbaCashRows = items.Where(x => x.Item1 == 0).Select(x => (x.Item2, x.Item3));
 
             var guesser = new CommbankCashCounterAccountPrefiller();
-            var guessedRows = cbaCashRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false, true); return ((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2); });
+            var guessedRows = cbaCashRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false, true); return ((TransactionRow<CommbankCashRowDescriptor>)x.Item1!, x.Item2); }).ToList();
+
+            var totalRows = guessedRows.Count;
+
+            var ledger = new Ledger();
+
+            AccountConstants.EnsureCreateAllPersonalAccounts(ledger);
+
+            OU.AddAndExecuteTransaction(ledger, DateTime.Now, AccountConstants.Personal.Accounts.Cash, AccountConstants.Personal.Accounts.Equity, 8701.53m);
+
+            Assert.That(OU.GetAccount(AccountConstants.Personal.Accounts.Cash)!.Balance, Is.EqualTo(8701.53m));
 
             {
                 using var f = new StreamWriter(@"C:\temp\cbacash_correlation.txt");
@@ -624,6 +633,12 @@ namespace KMPAccountingTest
 
                     f.WriteLine(transaction.ToString());
                     f.WriteLine("--------------------------------------------------------------------------------");
+
+                    OU.AddAndExecute(ledger, transaction);
+
+                    var actualBalance = OU.GetAccount(AccountConstants.Personal.Accounts.Cash)!.Balance;
+                    var expectedBalance = bankRow.GetDecimalValue(bankRow.OwnerTable.RowDescriptor.BalanceKey);
+                    Assert.That(actualBalance, Is.EqualTo(expectedBalance));
                 }
             }
             Assert.Pass();
@@ -638,7 +653,6 @@ namespace KMPAccountingTest
 
             var nabCashRows = items.Where(x => x.Item1 == 2).Select(x => (x.Item2, x.Item3));
 
-
             var guesser = new NABCashCounterAccountPrefiller();
             var guessedRows = nabCashRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false, true); return ((TransactionRow<NABCashRowDescriptor>)x.Item1!, x.Item2); }).ToList();
 
@@ -646,13 +660,11 @@ namespace KMPAccountingTest
 
             var ledger = new Ledger();
 
-            AccountConstants.EnsureCreateAllAccounts(ledger);
+            AccountConstants.EnsureCreateAllBusinessAccounts(ledger);
 
             OU.AddAndExecuteTransaction(ledger, DateTime.Now, AccountConstants.Business.Accounts.Cash, AccountConstants.Business.Accounts.Equity, 663.91m);
 
             Assert.That(OU.GetAccount(AccountConstants.Business.Accounts.Cash)!.Balance, Is.EqualTo(663.91m));
-
-            var startIndex = ledger.Entries.Count;
 
             {
                 using var f = new StreamWriter(@"C:\temp\nabcash_correlation.txt");
@@ -663,7 +675,6 @@ namespace KMPAccountingTest
                     if (amount == 0) continue;
 
                     var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
-                    
 
                     f.WriteLine(transaction.ToString());
                     f.WriteLine("--------------------------------------------------------------------------------");
@@ -832,7 +843,7 @@ namespace KMPAccountingTest
             ResetCsvReader();
             var dir = new DirectoryInfo(Path.Combine(TestDir, "cbacash"));
             var cbaCashCsv = dir.GetFiles().First(x => x.Name == fileName);
-            return SharedCsvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTable<CommbankCashRowDescriptor>(tableName) { BaseAccountName = AccountConstants.Personal.Accounts.CashAccount } );
+            return SharedCsvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTable<CommbankCashRowDescriptor>(tableName) { BaseAccountName = AccountConstants.Personal.Accounts.Cash } );
         }
 
         private IEnumerable<TransactionRow<CommbankCreditCardRowDescriptor>> GetCbaCc(string fileName, string tableName)
