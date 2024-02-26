@@ -664,6 +664,8 @@ namespace KMPAccountingTest
 
             AccountConstants.EnsureCreateAllPersonalAccounts(ledger);
 
+            OU.AddAndExecuteTransaction(ledger, DateTime.Now, AccountConstants.Personal.Accounts.Expense, AccountConstants.Personal.Accounts.CommbankCreditCard, 6974.37m);
+
             // TODO Add balance initial setup.
 
             {
@@ -680,6 +682,10 @@ namespace KMPAccountingTest
                     // TODO Add balance check
                 }
             }
+
+            //var actualBalance = OU.GetAccount(AccountConstants.Personal.Accounts.CommbankCreditCard)!.Balance;
+            //Assert.That(actualBalance, Is.EqualTo(5757.23m));
+
             Assert.Pass();
         }
 
