@@ -166,10 +166,6 @@ namespace KMPAccounting.Objects.BookKeeping
             foreach (var (debited, amount) in Debited)
             {
                 var node = debited.Get()!;
-                if (node == null)
-                {
-                    node = null;
-                }
                 if (node.Side == AccountNode.SideEnum.Debit)
                 {
                     node.Balance += amount;

@@ -608,6 +608,8 @@ namespace KMPAccountingTest
         [Test]
         public void TestCbaCashCorrelation()
         {
+            AccountsState.Clear();
+
             var items = MatchTransactionsAndKeep();
 
             var cbaCashRows = items.Where(x => x.Item1 == 0).Select(x => (x.Item2, x.Item3));
@@ -639,6 +641,43 @@ namespace KMPAccountingTest
                     var actualBalance = OU.GetAccount(AccountConstants.Personal.Accounts.Cash)!.Balance;
                     var expectedBalance = bankRow.GetDecimalValue(bankRow.OwnerTable.RowDescriptor.BalanceKey);
                     Assert.That(actualBalance, Is.EqualTo(expectedBalance));
+                }
+            }
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestCbaCcCorrelation()
+        {
+            AccountsState.Clear();
+
+            var items = MatchTransactionsAndKeep();
+
+            var cbaCcRows = items.Where(x => x.Item1 == 1).Select(x => (x.Item2, x.Item3));
+
+            var guesser = new CommbankCreditCardCounterAccountPrefiller();
+            var guessedRows = cbaCcRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false, true); return ((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2); }).ToList();
+
+            var totalRows = guessedRows.Count;
+
+            var ledger = new Ledger();
+
+            AccountConstants.EnsureCreateAllPersonalAccounts(ledger);
+
+            // TODO Add balance initial setup.
+
+            {
+                using var f = new StreamWriter(@"C:\temp\cbacc_correlation.txt");
+                foreach (var (bankRow, invoiceRow) in guessedRows)
+                {
+                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
+
+                    f.WriteLine(transaction.ToString());
+                    f.WriteLine("--------------------------------------------------------------------------------");
+
+                    OU.AddAndExecute(ledger, transaction);
+
+                    // TODO Add balance check
                 }
             }
             Assert.Pass();
