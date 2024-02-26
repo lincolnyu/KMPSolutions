@@ -31,7 +31,8 @@ namespace KMPAccountingTest
 
         public static IEnumerable<TTransactionRow> ChangeToAscendingInDate<TTransactionRow>(this IEnumerable<TTransactionRow> input) where TTransactionRow : ITransactionRow
         {
-            return input.OrderBy(x=>x, TransactionComparers.IndexSecond.Instance).ResetIndex();
+            // Assuming it's in descending order
+            return input.Reverse().ResetIndex().OrderBy(x=>x, TransactionComparers.IndexSecond.Instance).ResetIndex();
         }
     }
 }

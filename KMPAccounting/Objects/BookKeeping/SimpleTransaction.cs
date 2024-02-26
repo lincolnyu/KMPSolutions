@@ -116,8 +116,6 @@ namespace KMPAccounting.Objects.BookKeeping
 
         public decimal Amount { get; set; }
 
-        public string? Remarks { get; set; }
-
         public override void Redo()
         {
             var debitedNode = Debited.Get()!;

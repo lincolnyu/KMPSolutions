@@ -1,5 +1,6 @@
 ﻿using KMPAccounting.Objects;
 using KMPAccounting.Objects.Accounts;
+using KMPAccounting.Objects.BookKeeping;
 using KMPAccounting.Objects.Reports;
 using System.Diagnostics;
 
@@ -35,7 +36,9 @@ namespace KMPAccounting.ReportSchemes
 
             var deltaIncome = income - deduction + taxReturn - taxWithheld;
 
-            Objects.Utility.EnsureCreateAccount(state, "Equity.Base" + equityDivisionName, false, null);
+            Ledger? ledger = null;
+            ledger.EnsureCreateAccount(state, "Equity.Base" + equityDivisionName, false);
+
             state.GetAccount("Equity.Base" + equityDivisionName)!.Balance += deltaIncome;
         }
 
@@ -48,8 +51,9 @@ namespace KMPAccounting.ReportSchemes
 
         public static void FinalizeTaxPeriodPostTaxCalculation(AccountsState state, string equityDivisionName, string taxReturnCashAccount, PnlReport pnlReport)
         {
-            state.EnsureCreateAccount("Liability.TaxReturn" + equityDivisionName, false, null);
-            state.EnsureCreateAccount(taxReturnCashAccount, false, null);
+            Ledger? ledger = null;
+            ledger.EnsureCreateAccount(state, "Liability.TaxReturn" + equityDivisionName, false);
+            ledger.EnsureCreateAccount(state, taxReturnCashAccount, false);
 
             state.GetAccount("Liability.TaxReturn" + equityDivisionName)!.Balance = pnlReport.TaxReturn;
             var cash = state.GetAccount(taxReturnCashAccount)!;

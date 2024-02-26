@@ -55,9 +55,9 @@ namespace KMPAccounting.BookKeepingTabular
             var amount = decimal.Parse(amountStr);
 
             var counterAccountsStr = row[rowDescriptor.CounterAccountKey];
-            var counterAccounts = ParseCounterAccounts(counterAccountsStr, amount).ToArray();
+            var counterAccounts = ParseCounterAccounts(counterAccountsStr!, amount).ToArray();
 
-            var dateTime = CsvUtility.ParseDateTime(dateTimeStr);
+            var dateTime = CsvUtility.ParseDateTime(dateTimeStr!);
 
             if (counterAccounts.Length > 1)
             {

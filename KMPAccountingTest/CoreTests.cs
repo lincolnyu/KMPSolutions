@@ -4,6 +4,7 @@ using KMPAccounting.Objects.BookKeeping;
 using KMPAccounting.Accounting;
 using KMPAccounting.ReportSchemes;
 using OU = KMPAccounting.Objects.Utility;
+using System.Linq;
 
 namespace KMPCoreObjectsTest
 {
@@ -41,6 +42,7 @@ namespace KMPCoreObjectsTest
                 Assert.That(OU.GetAccount("Tom.Assets.Cash")!.Balance, Is.EqualTo(BaseEquity));
                 Assert.That(OU.GetAccount("Tom.Equity.Base")!.Balance, Is.EqualTo(BaseEquity));
             });
+
             var tomInitialBalanceSnapshot = new AccountsState("Tom");
             tomState.CopyTo(tomInitialBalanceSnapshot, true);
 
@@ -53,7 +55,7 @@ namespace KMPCoreObjectsTest
             const decimal Expense = 8000m;
             const decimal Deduction = 6000m;
 
-            ledger.AddAndExecuteTransaction(DateTime.Now, new[] { ("Tom.Assets.Cash", Salary-TaxWithheld), ("Tom.Liability.TaxWithheld", TaxWithheld) },
+            ledger.AddAndExecuteTransaction(DateTime.Now, new[] { ("Tom.Assets.Cash", Salary - TaxWithheld), ("Tom.Liability.TaxWithheld", TaxWithheld) },
                 new[] { ("Tom.Equity.Income.Salary", Salary) });
 
             OU.EnsureCreateAccount(ledger, "Tom.Equity.Expense", true);
@@ -77,10 +79,11 @@ namespace KMPCoreObjectsTest
             });
 
             tomInitialBalanceSnapshot.CopyTo(tomState, true); // load snapshot at indexInitial.
+
             Assert.That(OU.GetAccount("Tom.Assets.Cash")!.Balance, Is.EqualTo(BaseEquity));
 
             var pnlReports = ReportsGenerator.Run(new[] { new ReportSchemePersonalGeneric(new ReportSchemePersonalGeneric.PersonalDetails("Tom")) }, ledger, indexInitial, indexAfterRealTransactions).ToArray();
-            
+
             Assert.Multiple(() =>
             {
                 Assert.That(tomState.Balance, Is.EqualTo(0));
@@ -99,6 +102,80 @@ namespace KMPCoreObjectsTest
                 Assert.That(tomPnlReport.TaxWithheld, Is.EqualTo(TaxWithheld));
                 Assert.That(tomPnlReport.TaxReturn, Is.EqualTo(TaxWithheld - ExpectedTax));
                 Assert.That(tomPnlReport.PostTaxIncome, Is.EqualTo(Salary - Deduction - ExpectedTax));
+            });
+
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestUndoAndRedo()
+        {
+            AccountsState.Clear();
+
+            var ledger = new Ledger();
+
+            OU.EnsureCreateAccount(ledger, "Tom.Assets", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity", true);
+            OU.EnsureCreateAccount(ledger, "Tom.Liability", true);
+
+            const decimal BaseEquity = 300m;
+
+            // Initial balance setup
+            OU.EnsureCreateAccount(ledger, "Tom.Assets.Cash", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Base", false);
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets.Cash", "Tom.Equity.Base", BaseEquity, null);
+
+            // Real transactions
+            OU.EnsureCreateAccount(ledger, "Tom.Liability.TaxWithheld", true);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Income.Salary", false);
+
+            const decimal Salary = 25000m;
+            const decimal TaxWithheld = 2000m;
+            const decimal Expense = 8000m;
+            const decimal Deduction = 6000m;
+
+            ledger.AddAndExecuteTransaction(DateTime.Now, new[] { ("Tom.Assets.Cash", Salary - TaxWithheld), ("Tom.Liability.TaxWithheld", TaxWithheld) },
+                new[] { ("Tom.Equity.Income.Salary", Salary) }, null);
+
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Expense", true);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Deduction", true);
+
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Equity.Expense", "Tom.Assets.Cash", Expense, null);
+
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Equity.Deduction", "Tom.Assets.Cash", Deduction, null);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(OU.GetAccount("Tom")!.Balance, Is.EqualTo(0m));
+
+                Assert.That(OU.GetAccount("Tom.Assets.Cash")!.Balance, Is.EqualTo(BaseEquity + Salary - Expense - Deduction - TaxWithheld));
+                Assert.That(OU.GetAccount("Tom.Liability.TaxWithheld")!.Balance, Is.EqualTo(TaxWithheld));
+
+                Assert.That(OU.GetAccount("Tom.Equity.Income.Salary")!.Balance, Is.EqualTo(Salary));
+                Assert.That(OU.GetAccount("Tom.Equity.Base")!.Balance, Is.EqualTo(BaseEquity));
+            });
+
+            foreach (var entry in ledger.Entries.Reverse<Entry>())
+            {
+                entry.Undo();
+            }
+
+            Assert.That(OU.GetAccount("Tom"), Is.EqualTo(null));
+
+            foreach (var entry in ledger.Entries)
+            {
+                entry.Redo();
+            }
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(OU.GetAccount("Tom")!.Balance, Is.EqualTo(0m));
+
+                Assert.That(OU.GetAccount("Tom.Assets.Cash")!.Balance, Is.EqualTo(BaseEquity + Salary - Expense - Deduction - TaxWithheld));
+                Assert.That(OU.GetAccount("Tom.Liability.TaxWithheld")!.Balance, Is.EqualTo(TaxWithheld));
+
+                Assert.That(OU.GetAccount("Tom.Equity.Income.Salary")!.Balance, Is.EqualTo(Salary));
+                Assert.That(OU.GetAccount("Tom.Equity.Base")!.Balance, Is.EqualTo(BaseEquity));
             });
 
             Assert.Pass();

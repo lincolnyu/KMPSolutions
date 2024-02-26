@@ -95,8 +95,7 @@ namespace KMPAccounting.Objects
         /// <param name="ledger">The ledger to use for the account opening entry.</param>
         /// <param name="state">The accounts state the account is in.</param>
         /// <param name="fullName">The full name that identify the account in the state.</param>
-        /// <param name="addingToLedger">If the open account entry is to be added to the ledger.</param>
-        public static void EnsureCreateAccount(this AccountsState state, string fullName, bool sideDifferToParent, Ledger? ledgerToAddTo)
+        public static void EnsureCreateAccount(this Ledger? ledger, AccountsState state, string fullName, bool sideDifferToParent)
         {
             var splitNames = fullName.Split('.');
             AccountNode p = state;
@@ -112,11 +111,7 @@ namespace KMPAccounting.Objects
                     }
                     var side = i == splitNames.Length - 1 && sideDifferToParent ? AccountNode.GetOppositeSide(p.Side) : p.Side;
                     var openAccount = new OpenAccount(DateTime.Now, (new AccountNodeReference(parentFullName), side), seg);
-                    if (ledgerToAddTo != null)
-                    {
-                        ledgerToAddTo.Entries.Add(openAccount);
-                    }
-                    openAccount.Redo();
+                    ledger.AddAndExecute(openAccount);
                     parentFullName += "." + seg;
                 }
                 else
@@ -133,7 +128,7 @@ namespace KMPAccounting.Objects
         /// <param name="ledger">The ledger to use for the account opening entry.</param>
         /// <param name="fullName">The full name that identify the account globally.</param>
         /// <param name="sideDifferToParent">If the account's leaf node is to have the opposite side to its immediate parent. The intermediate nodes created towards the leaf node will all have the same side as their parents.</param>
-        public static void EnsureCreateAccount(this Ledger ledger, string fullName, bool sideDifferToParent)
+        public static void EnsureCreateAccount(this Ledger? ledger, string fullName, bool sideDifferToParent)
         {
             // This makes sure the state is already created.
             // The function is meant to create accounts for a state. And that's why it expects the fullName to have at least 2 segments.
@@ -144,26 +139,33 @@ namespace KMPAccounting.Objects
             if (state == null)
             {
                 var openAccount = new OpenAccount(DateTime.Now, null, stateName);
-                ledger.Entries.Add(openAccount);
-                openAccount.Redo();
-
+                ledger.AddAndExecute(openAccount);
+               
                 state = AccountsState.GetAccountsState(stateName)!;
             }
 
             if (split.Length == 2)
             {
-                state.EnsureCreateAccount(split[1], sideDifferToParent, ledger);
+                ledger.EnsureCreateAccount(state!, split[1], sideDifferToParent);
             }
         }
 
-        public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, string debitedAccountFullName, string creditedAccountFullName, decimal amount, string? remarks = null)
+        public static void AddAndExecute(this Ledger? ledger, Entry entry)
         {
-            var transaction = new SimpleTransaction(dateTime, new AccountNodeReference(debitedAccountFullName), new AccountNodeReference(creditedAccountFullName), amount) { Remarks = remarks };
-            ledger.Entries.Add(transaction);
-            transaction.Redo();
+            if (ledger != null)
+            {
+                ledger.Entries.Add(entry);
+            }
+            entry.Redo();
         }
 
-        public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, IEnumerable<(string, decimal)> debited, IEnumerable<(string, decimal)> credited, string? remarks = null)
+        public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, string debitedAccountFullName, string creditedAccountFullName, decimal amount, string? remarks = null, bool execute = true)
+        {
+            var transaction = new SimpleTransaction(dateTime, new AccountNodeReference(debitedAccountFullName), new AccountNodeReference(creditedAccountFullName), amount) { Remarks = remarks };
+            ledger.AddAndExecute(transaction);
+        }
+
+        public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, IEnumerable<(string, decimal)> debited, IEnumerable<(string, decimal)> credited, string? remarks = null, bool execute = true)
         {
             var transaction = new CompositeTransaction(dateTime)
             {
@@ -178,8 +180,7 @@ namespace KMPAccounting.Objects
                 transaction.Credited.Add((new AccountNodeReference(accountFullName)!, amount));
             }
             // TODO Add balance checking assert.
-            ledger.Entries.Add(transaction);
-            transaction.Redo();
+            ledger.AddAndExecute(transaction);
         }
     }
 }

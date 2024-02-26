@@ -629,7 +629,6 @@ namespace KMPAccountingTest
             Assert.Pass();
         }
 
-
         [Test]
         public void TestNabCashCorrelation()
         {
@@ -637,38 +636,53 @@ namespace KMPAccountingTest
 
             var items = MatchTransactionsAndKeep();
 
-            var cbaCashRows = items.Where(x => x.Item1 == 2).Select(x => (x.Item2, x.Item3));
+            var nabCashRows = items.Where(x => x.Item1 == 2).Select(x => (x.Item2, x.Item3));
+
 
             var guesser = new NABCashCounterAccountPrefiller();
-            var guessedRows = cbaCashRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false, true); return ((TransactionRow<NABCashRowDescriptor>)x.Item1!, x.Item2); });
+            var guessedRows = nabCashRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false, true); return ((TransactionRow<NABCashRowDescriptor>)x.Item1!, x.Item2); }).ToList();
+
+            var totalRows = guessedRows.Count;
 
             var ledger = new Ledger();
 
             AccountConstants.EnsureCreateAllAccounts(ledger);
 
+            OU.AddAndExecuteTransaction(ledger, DateTime.Now, AccountConstants.Business.Accounts.Cash, AccountConstants.Business.Accounts.Equity, 663.91m);
+
+            Assert.That(OU.GetAccount(AccountConstants.Business.Accounts.Cash)!.Balance, Is.EqualTo(663.91m));
+
             var startIndex = ledger.Entries.Count;
 
             {
                 using var f = new StreamWriter(@"C:\temp\nabcash_correlation.txt");
+                var processedRows = 0;
                 foreach (var (bankRow, invoiceRow) in guessedRows)
                 {
                     var amount = bankRow.GetDecimalValue(bankRow.OwnerTable.RowDescriptor.AmountKey);
                     if (amount == 0) continue;
 
                     var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
+                    
 
                     f.WriteLine(transaction.ToString());
                     f.WriteLine("--------------------------------------------------------------------------------");
 
-                    ledger.Entries.Add(transaction);
+                    OU.AddAndExecute(ledger, transaction);
+
+                    // Check the balance if it's the last few rows. (The original transaction list may be wrong on balance for a few rows so we don't check all of them)
+                    if (processedRows + 10 >= totalRows)
+                    {
+                        var actualBalance = OU.GetAccount(AccountConstants.Business.Accounts.Cash)!.Balance;
+                        var expectedBalance = bankRow.GetDecimalValue(bankRow.OwnerTable.RowDescriptor.BalanceKey);
+                        Assert.That(actualBalance, Is.EqualTo(expectedBalance));
+                    }
+
+                    processedRows++;
                 }
             }
 
-            for (var i = startIndex; i < ledger.Entries.Count; i++)
-            {
-                var e = ledger.Entries[i];
-                e.Redo();
-            }    
+            Assert.That(OU.GetAccount(AccountConstants.Business.Accounts.Cash)!.Balance, Is.EqualTo(1165.88));
 
             Assert.Pass();
         }
@@ -834,7 +848,7 @@ namespace KMPAccountingTest
             ResetCsvReader();
             var dir = new DirectoryInfo(Path.Combine(TestDir, folder));
             var nabCsv = dir.GetFiles().First(x => x.Name == fileName);
-            return SharedCsvReader.GetRows(new StreamReader(nabCsv.FullName), new BankTransactionTable<NABCashRowDescriptor>(tableName) {  BaseAccountName = AccountConstants.Business.Accounts.CashAccount}).ToList();
+            return SharedCsvReader.GetRows(new StreamReader(nabCsv.FullName), new BankTransactionTable<NABCashRowDescriptor>(tableName) {  BaseAccountName = AccountConstants.Business.Accounts.Cash}).ToList();
         }
 
         private IEnumerable<TransactionRow<WaveRowDescriptor>> GetWave(string fileName, string tableName, bool includeIncome = false)
