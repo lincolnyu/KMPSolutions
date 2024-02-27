@@ -582,28 +582,6 @@ namespace KMPAccountingTest
             Assert.Pass();
         }
 
-        [Test]
-        public void TestCbaCreditCardCorrelation()
-        {
-            var items = MatchTransactionsAndKeep();
-
-            var cbaccRows = items.Where(x => x.Item1 == 1).Select(x => (x.Item2, x.Item3));
-
-            var guesser = new CommbankCreditCardCounterAccountPrefiller();
-            var guessedRows = cbaccRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false, true); return ((TransactionRow<CommbankCreditCardRowDescriptor>)x.Item1!, x.Item2); });
-
-            {
-                using var f = new StreamWriter(@"C:\temp\cbacc_correlation.txt");
-                foreach (var (bankRow, invoiceRow) in guessedRows)
-                {
-                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
-
-                    f.WriteLine(transaction.ToString());
-                    f.WriteLine("--------------------------------------------------------------------------------");
-                }
-            }
-            Assert.Pass();
-        }
 
         [Test]
         public void TestCbaCashCorrelation()
@@ -643,11 +621,14 @@ namespace KMPAccountingTest
                     Assert.That(actualBalance, Is.EqualTo(expectedBalance));
                 }
             }
+
+            Assert.That(AccountsState.GetAccountsState("Family")!.Balance, Is.EqualTo(0m));
+
             Assert.Pass();
         }
 
         [Test]
-        public void TestCbaCcCorrelation()
+        public void TestCbaCreditCardCorrelation()
         {
             AccountsState.Clear();
 
@@ -663,6 +644,8 @@ namespace KMPAccountingTest
             var ledger = new Ledger();
 
             AccountConstants.EnsureCreateAllPersonalAccounts(ledger);
+
+            OU.AddAndExecuteTransaction(ledger, DateTime.Now, AccountConstants.Personal.Accounts.Expense, AccountConstants.Personal.Accounts.CommbankCreditCard, 6984.37m);
 
             {
                 using var f = new StreamWriter(@"C:\temp\cbacc_correlation.txt");
@@ -683,6 +666,8 @@ namespace KMPAccountingTest
                     }
                 }
             }
+
+            Assert.That(AccountsState.GetAccountsState("Family")!.Balance, Is.EqualTo(0m));
 
             Assert.Pass();
         }
@@ -737,6 +722,7 @@ namespace KMPAccountingTest
             }
 
             Assert.That(OU.GetAccount(AccountConstants.Business.Accounts.Cash)!.Balance, Is.EqualTo(1165.88));
+            Assert.That(AccountsState.GetAccountsState("KMP")!.Balance, Is.EqualTo(0m));
 
             Assert.Pass();
         }
