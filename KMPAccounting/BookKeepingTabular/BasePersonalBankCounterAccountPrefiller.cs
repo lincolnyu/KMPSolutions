@@ -4,10 +4,10 @@ namespace KMPAccounting.BookKeepingTabular
 {
     public abstract class BasePersonalBankCounterAccountPrefiller
     {
-        protected BasePersonalBankCounterAccountPrefiller(AccountGroup businessLiabilityAccountGroup, string personalFallbackCouterAccount)
+        protected BasePersonalBankCounterAccountPrefiller(AccountGroup businessLiabilityAccountGroup, string personalFallbackCounterAccount)
         {
             BusinessOwingPersonalAccountGroup = businessLiabilityAccountGroup;
-            PersonalFallbackCounterAccount = personalFallbackCouterAccount;
+            PersonalFallbackCounterAccount = personalFallbackCounterAccount;
         }
 
         public AccountGroup BusinessOwingPersonalAccountGroup { get; }
@@ -50,7 +50,8 @@ namespace KMPAccounting.BookKeepingTabular
                 }
             }
 
-            var amount = decimal.Parse(row[rowDescriptor.AmountKey]);
+            
+            var amount = row.GetDecimalValue(rowDescriptor.AmountKey)!.Value;
             if (claimedAmount != amount)
             {
                 var remainingAmount = amount - claimedAmount;

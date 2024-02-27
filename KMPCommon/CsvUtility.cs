@@ -191,5 +191,14 @@ namespace KMPCommon
                 return field;
             }
         }
+
+        public static decimal? ParseDecimalValue(string str)
+        {
+            if (str.Contains('$') || str.Contains(','))
+            {
+                str = str.Replace("$", "").Replace(",", "").Replace("\"", "");
+            }
+            return decimal.Parse(str);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using KMPCommon;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace KMPAccounting.BookKeepingTabular
@@ -8,7 +9,7 @@ namespace KMPAccounting.BookKeepingTabular
         public static decimal? GetDecimalValue(this ITransactionRow row, string key)
         {
             if (row[key] == null) return null;
-            return decimal.Parse(row[key]);
+            return CsvUtility.ParseDecimalValue(row[key]!);
         }
 
         public static IEnumerable<TTransactionRow> ResetIndex<TTransactionRow>(this IEnumerable<TTransactionRow> rows) where TTransactionRow: ITransactionRow
