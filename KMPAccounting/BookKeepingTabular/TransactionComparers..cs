@@ -27,8 +27,8 @@ namespace KMPAccounting.BookKeepingTabular
                 var c = x.DateTime.CompareTo(y.DateTime);
                 if (c != 0) return c;
 
-                var amountX = x.GetDecimalValue(x.OwnerTable.RowDescriptor.AmountKey);
-                var amountY = y.GetDecimalValue(y.OwnerTable.RowDescriptor.AmountKey);
+                var amountX = x.GetDecimalValue(x.OwnerTable.RowDescriptor.AmountKey)!.Value;
+                var amountY = y.GetDecimalValue(y.OwnerTable.RowDescriptor.AmountKey)!.Value;
 
                 return -Math.Abs(amountX).CompareTo(Math.Abs(amountY));   // Larger amount first
             }

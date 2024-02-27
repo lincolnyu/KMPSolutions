@@ -5,8 +5,9 @@ namespace KMPAccounting.BookKeepingTabular
 {
     public static class Utility
     {
-        public static decimal GetDecimalValue(this ITransactionRow row, string key)
+        public static decimal? GetDecimalValue(this ITransactionRow row, string key)
         {
+            if (row[key] == null) return null;
             return decimal.Parse(row[key]);
         }
 

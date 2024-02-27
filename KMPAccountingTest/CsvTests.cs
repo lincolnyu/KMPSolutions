@@ -237,7 +237,7 @@ namespace KMPAccountingTest
         {
             var cbaCash = GetCbaCash("CSVData.csv", "CBA Cash").AssertChangeToAscendingInDate();
 
-            var cbaCc = GetCbaCc("CSVData.csv", "CBA Credit Card").AssertChangeToAscendingInDate();
+            var cbaCc = GetCbaCc("CSVData_balance.csv", "CBA Credit Card").AssertChangeToAscendingInDate();
 
             var nabCash = GetNab("nabcash", "Transactions.csv", "NAB Cash").ChangeToAscendingInDate().ToList();
 
@@ -664,10 +664,6 @@ namespace KMPAccountingTest
 
             AccountConstants.EnsureCreateAllPersonalAccounts(ledger);
 
-            OU.AddAndExecuteTransaction(ledger, DateTime.Now, AccountConstants.Personal.Accounts.Expense, AccountConstants.Personal.Accounts.CommbankCreditCard, 6974.37m);
-
-            // TODO Add balance initial setup.
-
             {
                 using var f = new StreamWriter(@"C:\temp\cbacc_correlation.txt");
                 foreach (var (bankRow, invoiceRow) in guessedRows)
@@ -679,12 +675,14 @@ namespace KMPAccountingTest
 
                     OU.AddAndExecute(ledger, transaction);
 
-                    // TODO Add balance check
+                    var expectedBalance = bankRow.GetDecimalValue(bankRow.OwnerTable.RowDescriptor.BalanceKey);
+                    if (expectedBalance.HasValue)
+                    {
+                        var bal = OU.GetAccount(AccountConstants.Personal.Accounts.CommbankCreditCard)!.Balance;
+                        Assert.That(bal, Is.EqualTo(-expectedBalance.Value));
+                    }
                 }
             }
-
-            //var actualBalance = OU.GetAccount(AccountConstants.Personal.Accounts.CommbankCreditCard)!.Balance;
-            //Assert.That(actualBalance, Is.EqualTo(5757.23m));
 
             Assert.Pass();
         }

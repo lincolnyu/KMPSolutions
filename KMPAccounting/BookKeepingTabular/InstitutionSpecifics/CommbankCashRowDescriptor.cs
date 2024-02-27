@@ -4,9 +4,9 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
 {
     public class CommbankCashRowDescriptor : BankTransactionRowDescriptor
     {
-        public CommbankCashRowDescriptor() : base("Date", "Amount", Constants.CounterAccountKey, new List<string> { "Date", "Amount", Constants.TransactionDetailsKey, "Balance", Constants.CounterAccountKey })
+        public CommbankCashRowDescriptor() : base("Date", "Amount", Constants.CounterAccountKey, new List<string> { "Date", "Amount", Constants.TransactionDetailsKey, Constants.BalanceKey, Constants.CounterAccountKey })
         {
-            BalanceKey = "Balance";
+            BalanceKey = Constants.BalanceKey;
         }
 
         public string TransactionDetailsKey { get; } = Constants.TransactionDetailsKey;
