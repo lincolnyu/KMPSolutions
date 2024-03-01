@@ -602,7 +602,7 @@ namespace KMPAccountingTest
 
 
         [Test]
-        public void TestCbaCashCorrelation()
+        public void TestCbaCashGuessAndCorrelation()
         {
             AccountsState.Clear();
 
@@ -644,7 +644,7 @@ namespace KMPAccountingTest
         }
 
         [Test]
-        public void TestCbaCreditCardCorrelation()
+        public void TestCbaCreditCardGuessAndCorrelation()
         {
             AccountsState.Clear();
 
@@ -687,7 +687,7 @@ namespace KMPAccountingTest
         }
 
         [Test]
-        public void TestNabCashCorrelation()
+        public void TestNabCashGuessAndCorrelation()
         {
             AccountsState.Clear();
 
@@ -742,7 +742,7 @@ namespace KMPAccountingTest
         }
 
         [Test]
-        public void TestAdbCashCorrelation()
+        public void TestAdbCashGuessAndCorrelation()
         {
             AccountsState.Clear();
 
@@ -786,11 +786,10 @@ namespace KMPAccountingTest
                     processedRows++;
                 }
             }
-
         }
 
         [Test]
-        public void TestAdbLoanGuessAndCorrelation()
+        public void TestAdbLoansGuessAndCorrelation()
         {
             {
                 var adbLoan1 = GetAdbLoan("adbloan1", "adbloan1_balance.csv", "ADB Loan1").AssertChangeToAscendingInDate();
