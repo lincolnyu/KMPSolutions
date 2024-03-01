@@ -52,7 +52,7 @@ namespace KMPAccounting.BookKeepingTabular
             var baseAccountName = table.BaseAccountName;
 
             var amountStr = row[rowDescriptor.AmountKey];
-            var amount = decimal.Parse(amountStr);
+            var amount = CsvUtility.ParseDecimalValue(amountStr!)!.Value;
 
             var counterAccountsStr = row[rowDescriptor.CounterAccountKey];
             var counterAccounts = ParseCounterAccounts(counterAccountsStr!, amount).ToArray();
