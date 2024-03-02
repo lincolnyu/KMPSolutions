@@ -74,17 +74,17 @@ namespace KMPAccounting.Objects.Accounts
             }
         }
 
-        public AccountNode? BaseNode
+        public AccountNode? MainNode
         {
             get
             {
-                if (Children.TryGetValue("Base", out var baseNode))
+                if (Children.TryGetValue(Constants.MainNodeName, out var mainNode))
                 {
-                    if (baseNode.Children.Count > 0)
+                    if (mainNode.Children.Count > 0)
                     {
                         throw new InvalidOperationException("Base node does not allow to have chldren.");
                     }
-                    return baseNode;
+                    return mainNode;
                 }
                 return null;
             }
@@ -172,9 +172,9 @@ namespace KMPAccounting.Objects.Accounts
 
         public void ReckonInstantly()
         {
-            BaseNode!.balance_ = Balance;
+            MainNode!.balance_ = Balance;
 
-            foreach (var child in Children.Values.Where(x=>x!=BaseNode))
+            foreach (var child in Children.Values.Where(x=>x!=MainNode))
             {
                 child.ZeroOutBalanceOfTreeWithoutInvalidatingParents();
             }

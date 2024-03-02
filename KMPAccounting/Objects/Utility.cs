@@ -63,17 +63,17 @@ namespace KMPAccounting.Objects
             // There's a chance these accounts cancel themselves out
             if (netDebited > 0)
             {
-                toCredit.Add((node.BaseNode!.FullName, netDebited));
+                toCredit.Add((node.MainNode!.FullName, netDebited));
             }
             else if (netDebited < 0)
             {
-                toDebit.Add((node.BaseNode!.FullName, -netDebited));
+                toDebit.Add((node.MainNode!.FullName, -netDebited));
             }
         }
 
         private static IEnumerable<AccountNode> GetNonZeroLeafNodesForReckoning(AccountNode node)
         {
-            foreach (var child in node.Children.Values.Where(x => x != node.BaseNode))
+            foreach (var child in node.Children.Values.Where(x => x != node.MainNode))
             {
                 if (child.Children.Count > 0)
                 {

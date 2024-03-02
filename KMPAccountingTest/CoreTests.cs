@@ -32,15 +32,15 @@ namespace KMPCoreObjectsTest
 
             // Initial balance setup
             OU.EnsureCreateAccount(ledger, "Tom.Assets.Cash", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Base", false);
-            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets.Cash", "Tom.Equity.Base", BaseEquity);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Main", false);
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets.Cash", "Tom.Equity.Main", BaseEquity);
 
             var indexInitial = ledger.Entries.Count;
             Assert.Multiple(() =>
             {
                 Assert.That(tomState.Balance, Is.EqualTo(0));
                 Assert.That(OU.GetAccount("Tom.Assets.Cash")!.Balance, Is.EqualTo(BaseEquity));
-                Assert.That(OU.GetAccount("Tom.Equity.Base")!.Balance, Is.EqualTo(BaseEquity));
+                Assert.That(OU.GetAccount("Tom.Equity.Main")!.Balance, Is.EqualTo(BaseEquity));
             });
 
             var tomInitialBalanceSnapshot = new AccountsState("Tom");
@@ -75,7 +75,7 @@ namespace KMPCoreObjectsTest
                 Assert.That(OU.GetAccount("Tom.Liability.TaxWithheld")!.Balance, Is.EqualTo(TaxWithheld));
 
                 Assert.That(OU.GetAccount("Tom.Equity.Income.Salary")!.Balance, Is.EqualTo(Salary));
-                Assert.That(OU.GetAccount("Tom.Equity.Base")!.Balance, Is.EqualTo(BaseEquity));
+                Assert.That(OU.GetAccount("Tom.Equity.Main")!.Balance, Is.EqualTo(BaseEquity));
             });
 
             tomInitialBalanceSnapshot.CopyTo(tomState, true); // load snapshot at indexInitial.
@@ -122,8 +122,8 @@ namespace KMPCoreObjectsTest
 
             // Initial balance setup
             OU.EnsureCreateAccount(ledger, "Tom.Assets.Cash", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Base", false);
-            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets.Cash", "Tom.Equity.Base", BaseEquity, null);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Main", false);
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets.Cash", "Tom.Equity.Main", BaseEquity, null);
 
             // Real transactions
             OU.EnsureCreateAccount(ledger, "Tom.Liability.TaxWithheld", true);
@@ -152,7 +152,7 @@ namespace KMPCoreObjectsTest
                 Assert.That(OU.GetAccount("Tom.Liability.TaxWithheld")!.Balance, Is.EqualTo(TaxWithheld));
 
                 Assert.That(OU.GetAccount("Tom.Equity.Income.Salary")!.Balance, Is.EqualTo(Salary));
-                Assert.That(OU.GetAccount("Tom.Equity.Base")!.Balance, Is.EqualTo(BaseEquity));
+                Assert.That(OU.GetAccount("Tom.Equity.Main")!.Balance, Is.EqualTo(BaseEquity));
             });
 
             foreach (var entry in ledger.Entries.Reverse<Entry>())
@@ -175,7 +175,7 @@ namespace KMPCoreObjectsTest
                 Assert.That(OU.GetAccount("Tom.Liability.TaxWithheld")!.Balance, Is.EqualTo(TaxWithheld));
 
                 Assert.That(OU.GetAccount("Tom.Equity.Income.Salary")!.Balance, Is.EqualTo(Salary));
-                Assert.That(OU.GetAccount("Tom.Equity.Base")!.Balance, Is.EqualTo(BaseEquity));
+                Assert.That(OU.GetAccount("Tom.Equity.Main")!.Balance, Is.EqualTo(BaseEquity));
             });
 
             Assert.Pass();
@@ -190,7 +190,7 @@ namespace KMPCoreObjectsTest
 
             OU.EnsureCreateAccount(ledger, "Tom.Assets", false);
             OU.EnsureCreateAccount(ledger, "Tom.Equity", true);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Base", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Main", false);
             OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1", false);
             OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity2", false);
             
@@ -212,7 +212,7 @@ namespace KMPCoreObjectsTest
                 Assert.That(tomState.Balance, Is.EqualTo(0));
                 Assert.That(OU.GetAccount("Tom.Assets")!.Balance, Is.EqualTo(400));
                 Assert.That(OU.GetAccount("Tom.Equity")!.Balance, Is.EqualTo(400));
-                Assert.That(OU.GetAccount("Tom.Equity.Base")!.Balance, Is.EqualTo(0));
+                Assert.That(OU.GetAccount("Tom.Equity.Main")!.Balance, Is.EqualTo(0));
 
                 Assert.That(OU.GetAccount("Tom.Equity.Equity1.Equity1_1.Equity1_1_1")!.Balance, Is.EqualTo(300));
                 Assert.That(OU.GetAccount("Tom.Equity.Equity1.Equity1_1.Equity1_1_2")!.Balance, Is.EqualTo(-200));
@@ -225,7 +225,7 @@ namespace KMPCoreObjectsTest
             {
                 Assert.That(OU.GetAccount("Tom.Assets")!.Balance, Is.EqualTo(400));
                 Assert.That(OU.GetAccount("Tom.Equity")!.Balance, Is.EqualTo(400));
-                Assert.That(OU.GetAccount("Tom.Equity.Base")!.Balance, Is.EqualTo(400));
+                Assert.That(OU.GetAccount("Tom.Equity.Main")!.Balance, Is.EqualTo(400));
 
                 Assert.That(OU.GetAccount("Tom.Equity.Equity1.Equity1_1.Equity1_1_1")!.Balance, Is.EqualTo(0));
                 Assert.That(OU.GetAccount("Tom.Equity.Equity1.Equity1_1.Equity1_1_2")!.Balance, Is.EqualTo(0));
@@ -243,7 +243,7 @@ namespace KMPCoreObjectsTest
 
             OU.EnsureCreateAccount(ledger, "Tom.Assets", false);
             OU.EnsureCreateAccount(ledger, "Tom.Equity", true);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Base", false);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Main", false);
             OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1", false);
             OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity2", false);
 
@@ -269,7 +269,7 @@ namespace KMPCoreObjectsTest
 
                 Assert.That(toCredit, Has.Count.EqualTo(2));
                 Assert.That(toCredit[0], Is.EqualTo(("Tom.Equity.Equity2", 100)));
-                Assert.That(toCredit[1], Is.EqualTo(("Tom.Equity.Base", 400)));
+                Assert.That(toCredit[1], Is.EqualTo(("Tom.Equity.Main", 400)));
             });
 
             Assert.Pass();
@@ -290,8 +290,8 @@ namespace KMPCoreObjectsTest
 
             // Initial balance setup
             OU.EnsureCreateAccount(ledger, "Tom.Assets.Cash", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Base", false);
-            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets.Cash", "Tom.Equity.Base", BaseEquity);
+            OU.EnsureCreateAccount(ledger, "Tom.Equity.Main", false);
+            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets.Cash", "Tom.Equity.Main", BaseEquity);
 
             // Real transactions
             OU.EnsureCreateAccount(ledger, "Tom.Liability.TaxWithheld", true);

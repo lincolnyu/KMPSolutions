@@ -37,9 +37,9 @@ namespace KMPAccounting.ReportSchemes
             var deltaIncome = income - deduction + taxReturn - taxWithheld;
 
             Ledger? ledger = null;
-            ledger.EnsureCreateAccount(state, "Equity.Base" + equityDivisionName, false);
+            ledger.EnsureCreateAccount(state, "Equity.Main" + equityDivisionName, false);
 
-            state.GetAccount("Equity.Base" + equityDivisionName)!.Balance += deltaIncome;
+            state.GetAccount("Equity.Main" + equityDivisionName)!.Balance += deltaIncome;
         }
 
         public static void FinalizeTaxPeriodPreTaxCalculation(AccountsState state, string equityDivisionName, PnlReport pnlReport)
