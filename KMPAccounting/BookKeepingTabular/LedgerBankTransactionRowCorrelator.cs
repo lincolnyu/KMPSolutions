@@ -43,7 +43,7 @@ namespace KMPAccounting.BookKeepingTabular
             return transactions;
         }
 
-        public static Entry CorrelateToSingleTransaction(ITransactionRow row) 
+        public static Entry? CorrelateToSingleTransaction(ITransactionRow row) 
         {
             var table = (IBankTransactionTable)row.OwnerTable;
             var rowDescriptor = (BankTransactionRowDescriptor)table.RowDescriptor;
@@ -53,6 +53,13 @@ namespace KMPAccounting.BookKeepingTabular
 
             var amountStr = row[rowDescriptor.AmountKey];
             var amount = CsvUtility.ParseDecimalValue(amountStr!)!.Value;
+
+            if (amount == 0)
+            {
+                // TODO special cases.
+                // No transaction to create for amount 0.
+                return null;
+            }
 
             var counterAccountsStr = row[rowDescriptor.CounterAccountKey];
             var counterAccounts = ParseCounterAccounts(counterAccountsStr!, amount).ToArray();

@@ -6,7 +6,7 @@ using KMPAccounting.Objects.BookKeeping;
 using OU = KMPAccounting.Objects.Utility;
 using KMPCommon;
 using KMPAccounting.Objects.Accounts;
-using System.Reflection;
+using KMPAccounting.KMPSpecifics.Executions;
 
 namespace KMPAccountingTest
 {
@@ -20,8 +20,7 @@ namespace KMPAccountingTest
         const string WaveAccountCashOnHand = "Cash on Hand";
         const string WaveAccountTBC = "TBC";
 
-        static CsvReader SharedCsvReader = new CsvReader();
-        static WaveRawReader SharedWaveRawReader = new WaveRawReader();
+        static CsvReader SharedCsvReader = new CsvReader();WaveRawReader SharedWaveRawReader = new WaveRawReader();
 
         static CommbankCashRowDescriptor CbaCashDesc = new CommbankCashRowDescriptor();
         static CommbankCreditCardRowDescriptor CbaCcDesc = new CommbankCreditCardRowDescriptor();
@@ -627,7 +626,7 @@ namespace KMPAccountingTest
                 {
                     var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
 
-                    f.WriteLine(transaction.ToString());
+                    f.Write(transaction.ToString());
                     f.WriteLine("--------------------------------------------------------------------------------");
 
                     OU.AddAndExecute(ledger, transaction);
@@ -1007,6 +1006,15 @@ namespace KMPAccountingTest
             Assert.Pass();
         }
 
+        [Test]
+        public void TestFY22()
+        {
+            var fy22 = new FinancialYear22();
+            fy22.Initialize();
+            fy22.Step1_MatchTransactionsAndPrint(@"c:\temp\fy22_matchresult.csv");
+            fy22.Step2_GenerateLedger(@"c:\temp\fy22_ledger.txt");
+        }
+
         void ResetCsvReader()
         {
             SharedCsvReader = new CsvReader();
@@ -1054,7 +1062,6 @@ namespace KMPAccountingTest
 
         private IEnumerable<TransactionRow<WaveRowDescriptor>> GetWave(string fileName, string tableName, bool includeIncome = false)
         {
-            ResetCsvReader();
             var dir = new DirectoryInfo(Path.Combine(TestDir, "wavereceipt"));
             var rawTxtFile = dir.GetFiles().First(x => x.Name == fileName);
             var rowDescriptor = new WaveRowDescriptor();
@@ -1094,7 +1101,7 @@ namespace KMPAccountingTest
                 {
                     return new[] { 1, 0, 3, 2 };
                 }
-                return new[] { 1, 2, 0 };
+                return new[] { 1, 2, 0, 3 };
             }, true, new (int?, int?)?[] { null, null, (null, 10), null });
 
             return TransactionMatcher.OrderMatch(items);
