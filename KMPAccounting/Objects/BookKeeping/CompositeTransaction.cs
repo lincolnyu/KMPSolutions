@@ -159,13 +159,13 @@ namespace KMPAccounting.Objects.BookKeeping
         // The accounts being credited
         public List<(AccountNodeReference, decimal)> Credited { get; } = new List<(AccountNodeReference, decimal)>();
 
-        public string? Remarks { get; set; }
-
         public override void Redo()
         {
             foreach (var (debited, amount) in Debited)
             {
                 var node = debited.Get()!;
+                if (node == null)
+                    node = null;
                 if (node.Side == AccountNode.SideEnum.Debit)
                 {
                     node.Balance += amount;

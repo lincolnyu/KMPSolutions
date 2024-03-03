@@ -8,18 +8,34 @@ namespace KMPAccounting.ReportSchemes
 {
     public static class Utility
     {
-        public static void InitializeTaxPeriod(AccountsState state, string equityDivisionName)
+        public class AccountsSetup
         {
-            var incomeAccount = state.GetAccount("Equity.Income" + equityDivisionName);
+            public string IncomeBaseNode { get; set; } = Constants.Income;
+            public string DeductionBaseNode { get; set; } = Constants.Deduction;
+            public string TaxWithheldBaseNode { get; set; } = Constants.TaxWithheld;
+            public string TaxReturnBaseNode { get; set; } = Constants.TaxReturn;
+            public string EquityMainNode { get; set; } = Constants.EquityMain;
+
+            public static readonly AccountsSetup Default = new AccountsSetup();
+        }
+
+        public static void InitializeTaxPeriod(AccountsState state, string equityDivisionName, AccountsSetup? accountsSetup = null)
+        {
+            if (accountsSetup == null) 
+            { 
+                accountsSetup = AccountsSetup.Default;
+            }
+
+            var incomeAccount = state.GetAccount(accountsSetup.IncomeBaseNode + equityDivisionName);
             var income = incomeAccount?.Balance ?? 0m;
 
-            var deductionAccount = state.GetAccount("Equity.Deduction" + equityDivisionName);
+            var deductionAccount = state.GetAccount(accountsSetup.DeductionBaseNode + equityDivisionName);
             var deduction = deductionAccount?.Balance ?? 0m;
 
-            var taxWithheldAccount = state.GetAccount("Liability.TaxWithheld" + equityDivisionName);
+            var taxWithheldAccount = state.GetAccount(accountsSetup.TaxWithheldBaseNode + equityDivisionName);
             var taxWithheld = deductionAccount?.Balance ?? 0m;
 
-            var taxReturnAccount = state.GetAccount("Liability.TaxReturn" + equityDivisionName);
+            var taxReturnAccount = state.GetAccount(accountsSetup.TaxReturnBaseNode  + equityDivisionName);
             var taxReturn = deductionAccount?.Balance ?? 0m;
 
             // Debit
@@ -37,25 +53,35 @@ namespace KMPAccounting.ReportSchemes
             var deltaIncome = income - deduction + taxReturn - taxWithheld;
 
             Ledger? ledger = null;
-            ledger.EnsureCreateAccount(state, "Equity.Main" + equityDivisionName, false);
+            ledger.EnsureCreateAccount(state, accountsSetup.EquityMainNode + equityDivisionName, false);
 
-            state.GetAccount("Equity.Main" + equityDivisionName)!.Balance += deltaIncome;
+            state.GetAccount(accountsSetup.EquityMainNode + equityDivisionName)!.Balance += deltaIncome;
         }
 
-        public static void FinalizeTaxPeriodPreTaxCalculation(AccountsState state, string equityDivisionName, PnlReport pnlReport)
+        public static void FinalizeTaxPeriodPreTaxCalculation(AccountsState state, string equityDivisionName, PnlReport pnlReport, AccountsSetup? accountsSetup = null)
         {
-            pnlReport.Income = state.GetAccount("Equity.Income" + equityDivisionName)?.Balance ?? 0;
-            pnlReport.Deduction = state.GetAccount("Equity.Deduction" + equityDivisionName)?.Balance ?? 0;
-            pnlReport.TaxWithheld = state.GetAccount("Liability.TaxWithheld" + equityDivisionName)?.Balance ?? 0;
+            if (accountsSetup == null)
+            {
+                accountsSetup = AccountsSetup.Default;
+            }
+            
+            pnlReport.Income = state.GetAccount(accountsSetup.IncomeBaseNode + equityDivisionName)?.Balance ?? 0;
+            pnlReport.Deduction = state.GetAccount(accountsSetup.DeductionBaseNode + equityDivisionName)?.Balance ?? 0;
+            pnlReport.TaxWithheld = state.GetAccount(accountsSetup.TaxWithheldBaseNode + equityDivisionName)?.Balance ?? 0;
         }
 
-        public static void FinalizeTaxPeriodPostTaxCalculation(AccountsState state, string equityDivisionName, string taxReturnCashAccount, PnlReport pnlReport)
+        public static void FinalizeTaxPeriodPostTaxCalculation(AccountsState state, string equityDivisionName, string taxReturnCashAccount, PnlReport pnlReport, AccountsSetup? accountsSetup = null)
         {
+            if (accountsSetup == null)
+            {
+                accountsSetup = AccountsSetup.Default;
+            }
+
             Ledger? ledger = null;
-            ledger.EnsureCreateAccount(state, "Liability.TaxReturn" + equityDivisionName, false);
+            ledger.EnsureCreateAccount(state, accountsSetup.TaxReturnBaseNode + equityDivisionName, false);
             ledger.EnsureCreateAccount(state, taxReturnCashAccount, false);
 
-            state.GetAccount("Liability.TaxReturn" + equityDivisionName)!.Balance = pnlReport.TaxReturn;
+            state.GetAccount(accountsSetup.TaxReturnBaseNode + equityDivisionName)!.Balance = pnlReport.TaxReturn;
             var cash = state.GetAccount(taxReturnCashAccount)!;
             cash.Balance += pnlReport.TaxReturn;
 
