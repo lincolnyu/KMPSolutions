@@ -129,10 +129,6 @@ namespace KMPAccounting.Objects.BookKeeping
             }
 
             var creditedNode = Credited.Get()!;
-            if (creditedNode == null)
-            {
-                creditedNode = null;
-            }
             if (creditedNode.Side == AccountNode.SideEnum.Credit)
             {
                 creditedNode.Balance += Amount;
