@@ -1007,12 +1007,12 @@ namespace KMPAccountingTest
         }
 
         [Test]
-        public void TestFY22()
+        public void TestFY23()
         {
             var fy22 = new FinancialYear22();
             fy22.Initialize();
-            fy22.Step1_MatchTransactionsAndPrint(@"c:\temp\fy22_matchresult.csv");
-            fy22.Step2_GenerateLedger(@"c:\temp\fy22_ledger.txt", @"c:\temp\fy22_balance_family.txt", @"c:\temp\fy22_balance_kmp.txt");
+            fy22.Step1_MatchTransactionsAndPrint(@"c:\temp\fy23_matchresult.csv");
+            fy22.Step2_GenerateLedger(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family.txt", @"c:\temp\fy23_balance_kmp.txt");
         }
 
         void ResetCsvReader()
