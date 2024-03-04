@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace KMPAccounting.Objects.Accounts
 {
@@ -36,5 +38,40 @@ namespace KMPAccounting.Objects.Accounts
         }
 
         private static readonly Dictionary<string, AccountsState> accountStates_ = new Dictionary<string, AccountsState>();
+
+        public string ToString(int tabSize)
+        {
+            var sb = new StringBuilder();
+            var debitNodes = new List<AccountNode>();
+            var creditNodes = new List<AccountNode>();
+
+            var debitBalance = 0m;
+            var creditBalance = 0m;
+            foreach (var (_, child) in Children)
+            {
+                if (child.Side == SideEnum.Debit)
+                {
+                    debitNodes.Add(child);
+                    debitBalance += child.Balance;
+                }
+                else
+                {
+                    creditNodes.Add(child);
+                    creditBalance += child.Balance;
+                }
+            }
+
+            sb.AppendLine($"Debit = {debitBalance}");
+            foreach (var node in debitNodes)
+            {
+                sb.Append(node.ToString(node.Side, 1, tabSize));
+            }
+            sb.AppendLine($"Credit = {creditBalance}");
+            foreach (var node in creditNodes)
+            {
+                sb.Append(node.ToString(node.Side, 1, tabSize));
+            }
+            return sb.ToString();
+        }
     }
 }

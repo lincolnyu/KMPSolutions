@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Text;
 using KMPAccounting.Objects.Fundamental;
 
 namespace KMPAccounting.Objects.Accounts
@@ -22,6 +24,23 @@ namespace KMPAccounting.Objects.Accounts
         {
             Side = side;
             Name = name;
+        }
+
+        public string ToString(SideEnum sheetRootSide, int indentDepth, int tabSize)
+        {
+            var sb = new StringBuilder();
+            sb.Append(' ', indentDepth * tabSize);
+            var displayBalance = Side != sheetRootSide ? -Balance : Balance;
+            var sideStr = Side == SideEnum.Debit ? "D" : "C";
+            sb.AppendLine($"{Name}({sideStr}) = {displayBalance}");
+            if (Children.Count > 0)
+            {
+                foreach (var (_, child) in Children.OrderBy(x => x.Key))
+                {
+                    sb.Append(child.ToString(sheetRootSide, indentDepth + 1, tabSize));
+                }
+            }
+            return sb.ToString();
         }
 
         public override void Dispose()
