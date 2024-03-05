@@ -236,6 +236,12 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
             {
                 return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Cleaning;
             }
+            else if (category.ContainsWholeWord("Meals and Entertainment"))
+            {
+                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.FoodAndEntertainment;
+            }
+            // Possibly Unclaimable Personal Use (by definition having 0 amount) will be treated by the base prefiller
+            // So we could just use the fallback expense
             return KMPSpecifics.AccountConstants.Business.Accounts.ExpenseFallback;
         }
 
