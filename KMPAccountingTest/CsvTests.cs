@@ -4,30 +4,43 @@ using KMPAccounting.InstitutionSpecifics;
 using KMPAccounting.KMPSpecifics;
 using KMPAccounting.Objects.BookKeeping;
 using OU = KMPAccounting.Objects.Utility;
-using KMPCommon;
+using TabularConstants = KMPAccounting.BookKeepingTabular.Constants;
 using KMPAccounting.Objects.Accounts;
-using KMPAccounting.KMPSpecifics.Executions;
+using KMPAccounting.KMPSpecifics.Scripts;
+using KMPCommon;
+
 
 namespace KMPAccountingTest
 {
     public class CsvTests
     {
+        private class TestAccountingExecutor : AccountingExecutor
+        {
+            public TestAccountingExecutor(string statementsFolder) : base(statementsFolder)
+            {
+            }
+        }
+
         private string TestConfig = Path.Combine(Utility.GetThisFolderPath(), "localtest.cfg");
-        private string TestDir;
+
+        private TestAccountingExecutor SharedAccountingExecutor;
 
         const string WaveAccountNABBusiness = "NAB Business";
         const string WaveAccountCommbankPersonal = "Commbank Personal";
         const string WaveAccountCashOnHand = "Cash on Hand";
         const string WaveAccountTBC = "TBC";
 
-        static CsvReader SharedCsvReader = new CsvReader();WaveRawReader SharedWaveRawReader = new WaveRawReader();
+        TransactionsReader SharedTransactionReader => SharedAccountingExecutor.TransactionsReader;
+
+        CsvReader? SharedCsvReader => SharedTransactionReader.CsvReader;
+        WaveRawReader? SharedWaveRawReader => SharedTransactionReader.WaveReader;
+        TransactionMatcher Matcher => SharedAccountingExecutor.Matcher;
 
         static CommbankCashRowDescriptor CbaCashDesc = new CommbankCashRowDescriptor();
         static CommbankCreditCardRowDescriptor CbaCcDesc = new CommbankCreditCardRowDescriptor();
-        static NABCashRowDescriptor NabCashDesc = new NABCashRowDescriptor();
+        static NABRowDescriptor NabCashDesc = new NABRowDescriptor();
         static WaveRowDescriptor WaveDesc = new WaveRowDescriptor();
 
-        static TransactionMatcher Matcher = new TransactionMatcher();
         static List<(int, ITransactionRow?, ITransactionRow?)>? MatchResult = null;
 
         [SetUp]
@@ -42,13 +55,13 @@ namespace KMPAccountingTest
             var lines = cfgContent.Split('\n');
             var line = lines.First(x => x.StartsWith("csvtestdir="));
             var elems = line.Split('=');
-            TestDir = elems[1];
+            SharedAccountingExecutor = new TestAccountingExecutor(elems[1]);
         }
 
         [Test]
         public void TestLoadingCBACash()
         {
-            var cbaCash = GetCbaCash("CSVData.csv", "CBA Cash").AssertChangeToAscendingInDate();
+            var cbaCash = SharedTransactionReader.GetCbaCash("CSVData.csv", "CBA Cash").AssertChangeToAscendingInDate();
 
             Assert.Multiple(() =>
             {
@@ -61,7 +74,7 @@ namespace KMPAccountingTest
         [Test]
         public void TestLoadingCBAWithHeader()
         {
-            var cbaCash = GetCbaCash("CSVData_withheader.csv", "CBA Cash").AssertChangeToAscendingInDate();
+            var cbaCash = SharedTransactionReader.GetCbaCash("CSVData_withheader.csv", "CBA Cash").AssertChangeToAscendingInDate();
 
             Assert.Multiple(() =>
             {
@@ -74,7 +87,7 @@ namespace KMPAccountingTest
         [Test]
         public void TestLoadingNABCash()
         {
-            var nabCash = GetNab("nabcash", "Transactions.csv", "NAB Cash").ChangeToAscendingInDate();
+            var nabCash = SharedTransactionReader.GetNab("nabcash", "Transactions.csv", "NAB Cash", AccountConstants.Business.Accounts.Cash).ChangeToAscendingInDate();
 
             Assert.Multiple(() =>
             {
@@ -87,7 +100,7 @@ namespace KMPAccountingTest
         [Test]
         public void TestLoadingNABSaving()
         {
-            var nabSaving = GetNab("nabsaving", "Transactions.csv", "NAB Saving").AssertChangeToAscendingInDate();
+            var nabSaving = SharedTransactionReader.GetNab("nabsaving", "Transactions.csv", "NAB Saving", AccountConstants.Business.Accounts.Saving).AssertChangeToAscendingInDate();
 
             Assert.Multiple(() =>
             {
@@ -100,7 +113,7 @@ namespace KMPAccountingTest
         [Test]
         public void TestCBACashGuess()
         {
-            var rows = GetCbaCash("CSVData_withheader.csv", "CBA Cash").AssertChangeToAscendingInDate();
+            var rows = SharedTransactionReader.GetCbaCash("CSVData_withheader.csv", "CBA Cash").AssertChangeToAscendingInDate();
 
             var guesser = new CommbankCashCounterAccountPrefiller();
             var guessedRows = rows.Select(x => { guesser.Prefill(x, null, false); return x; });
@@ -145,7 +158,7 @@ namespace KMPAccountingTest
         [Test]
         public void TestCBACCGuess()
         {
-            var rows = GetCbaCc("CSVData_withheader.csv", "CBA Credit Card").AssertChangeToAscendingInDate();
+            var rows = SharedTransactionReader.GetCbaCc("CSVData_withheader.csv", "CBA Credit Card").AssertChangeToAscendingInDate();
 
             var guesser = new CommbankCreditCardCounterAccountPrefiller();
             var guessedRows = rows.Select(x => { guesser.Prefill(x, null, false); return x; });
@@ -188,12 +201,12 @@ namespace KMPAccountingTest
         [Test]
         public void TestWaveRawLoadingExcludingIncome()
         {
-            var rows = GetWave("raw.txt", "Wave", false).ToList();
+            var rows = SharedTransactionReader.GetWave("raw.txt", "Wave", false).ToList();
 
             Assert.Multiple(() =>
             {
-                Assert.That(SharedWaveRawReader.ReadRowCount, Is.EqualTo(135));
-                Assert.That(rows, Has.Count.EqualTo(84));
+                Assert.That(SharedWaveRawReader.ReadRowCount, Is.EqualTo(152));
+                Assert.That(rows, Has.Count.EqualTo(87));
             });
 
             {
@@ -212,12 +225,12 @@ namespace KMPAccountingTest
         [Test]
         public void TestWaveRawLoadingIncludingIncome()
         {
-            var rows = GetWave("raw.txt", "Wave", true).ToList();
+            var rows = SharedTransactionReader.GetWave("raw.txt", "Wave", true).ToList();
 
             Assert.Multiple(() =>
             {
-                Assert.That(SharedWaveRawReader.ReadRowCount, Is.EqualTo(135));
-                Assert.That(rows, Has.Count.EqualTo(137));
+                Assert.That(SharedWaveRawReader.ReadRowCount, Is.EqualTo(152));
+                Assert.That(rows, Has.Count.EqualTo(154));
             });
 
             {
@@ -237,11 +250,11 @@ namespace KMPAccountingTest
         [Test]
         public void TestTransactionMatching()
         {
-            var items = MatchTransactionsAndKeep();
+            var items = SharedAccountingExecutor.MatchTransactionsAndKeep();
 
             var printer = MultiTransactionRowSourceCsvCombiner.CreateSimpleCombiningRowDescriptors(CbaCashDesc, CbaCcDesc, NabCashDesc, WaveDesc);
 
-            printer.GetColumn(Constants.DateTimeKey)!.Formatter = DateFormatter;
+            printer.GetColumn(TabularConstants.DateTimeKey)!.Formatter = DateFormatter;
             printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
 
             var cashInvoices = 0;
@@ -316,6 +329,8 @@ namespace KMPAccountingTest
                 Assert.That(inconsistentAccountTypes, Is.Zero);
                 Assert.That(Matcher.MatchedInvoices + cashInvoices, Is.EqualTo(Matcher.TotalInvoices));
             });
+
+            Assert.Pass();
         }
 
         private string DateFormatter(string arg)
@@ -326,7 +341,7 @@ namespace KMPAccountingTest
         [Test]
         public void TestCBACCGuessWithInvoice()
         {
-            var items = MatchTransactionsAndKeep();
+            var items = SharedAccountingExecutor.MatchTransactionsAndKeep();
 
             var cbaccRows = items.Where(x => x.Item1 == 1).Select(x => (x.Item2, x.Item3));
 
@@ -335,7 +350,7 @@ namespace KMPAccountingTest
 
             var printer = MultiTransactionRowSourceCsvCombiner.CreateSimpleCombiningRowDescriptors(CbaCcDesc, WaveDesc);
 
-            printer.GetColumn(Constants.DateTimeKey)!.Formatter = DateFormatter;
+            printer.GetColumn(TabularConstants.DateTimeKey)!.Formatter = DateFormatter;
             printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
 
             var emptyCount = 0;
@@ -381,7 +396,7 @@ namespace KMPAccountingTest
         [Test]
         public void TestCBACCGuessWithInvoiceAndFallback()
         {
-            var items = MatchTransactionsAndKeep();
+            var items = SharedAccountingExecutor.MatchTransactionsAndKeep();
 
             var cbaccRows = items.Where(x => x.Item1 == 1).Select(x => (x.Item2, x.Item3));
 
@@ -390,7 +405,7 @@ namespace KMPAccountingTest
 
             var printer = MultiTransactionRowSourceCsvCombiner.CreateSimpleCombiningRowDescriptors(CbaCcDesc, WaveDesc);
 
-            printer.GetColumn(Constants.DateTimeKey)!.Formatter = DateFormatter;
+            printer.GetColumn(TabularConstants.DateTimeKey)!.Formatter = DateFormatter;
             printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
 
             {
@@ -421,7 +436,7 @@ namespace KMPAccountingTest
         [Test]
         public void TestCBACashGuessWithInvoice()
         {
-            var items = MatchTransactionsAndKeep();
+            var items = SharedAccountingExecutor.MatchTransactionsAndKeep();
 
             var cbaCashRows = items.Where(x => x.Item1 == 0).Select(x => (x.Item2, x.Item3));
 
@@ -430,7 +445,7 @@ namespace KMPAccountingTest
 
             var printer = MultiTransactionRowSourceCsvCombiner.CreateSimpleCombiningRowDescriptors(CbaCcDesc, WaveDesc);
 
-            printer.GetColumn(Constants.DateTimeKey)!.Formatter = DateFormatter;
+            printer.GetColumn(TabularConstants.DateTimeKey)!.Formatter = DateFormatter;
             printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
 
             var emptyCount = 0;
@@ -475,7 +490,7 @@ namespace KMPAccountingTest
         [Test]
         public void TestAdbCashGuessWithInvoice()
         {
-            var items = MatchTransactionsAndKeep();
+            var items = SharedAccountingExecutor.MatchTransactionsAndKeep();
 
             var cbaccRows = items.Where(x => x.Item1 == 3).Select(x => (x.Item2, x.Item3));
 
@@ -484,7 +499,7 @@ namespace KMPAccountingTest
 
             var printer = MultiTransactionRowSourceCsvCombiner.CreateSimpleCombiningRowDescriptors(CbaCcDesc, WaveDesc);
 
-            printer.GetColumn(Constants.DateTimeKey)!.Formatter = DateFormatter;
+            printer.GetColumn(TabularConstants.DateTimeKey)!.Formatter = DateFormatter;
             printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
 
             var emptyCount = 0;
@@ -528,19 +543,19 @@ namespace KMPAccountingTest
         [Test]
         public void TestNabGuessWithInvoiceAndCsvLoading()
         {
-            var items = MatchTransactionsAndKeep();
+            var items = SharedAccountingExecutor.MatchTransactionsAndKeep();
 
             var nabCashRows = items.Where(x => x.Item1 == 2).Select(x => (x.Item2, x.Item3));
 
             var guesser = new NABCashCounterAccountPrefiller();
-            var guessedRows = nabCashRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false); return ((TransactionRow<NABCashRowDescriptor>)x.Item1!, x.Item2); }).ToList();
+            var guessedRows = nabCashRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false); return ((TransactionRow<NABRowDescriptor>)x.Item1!, x.Item2); }).ToList();
 
             var printer = MultiTransactionRowSourceCsvCombiner.CreateSimpleCombiningRowDescriptors(NabCashDesc, WaveDesc);
 
-            printer.GetColumn(Constants.DateTimeKey)!.Formatter = DateFormatter;
+            printer.GetColumn(TabularConstants.DateTimeKey)!.Formatter = DateFormatter;
             printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
 
-            var columnSelector = new NABCashRowDescriptor().Keys.Select(k => printer.GetColumnIndex(typeof(NABCashRowDescriptor), k)).ToList();
+            var columnSelector = new NABRowDescriptor().Keys.Select(k => printer.GetColumnIndex(typeof(NABRowDescriptor), k)).ToList();
 
             var emptyCount = 0;
             var filledCount = 0;
@@ -584,7 +599,7 @@ namespace KMPAccountingTest
                 ResetCsvReader();
 
                 var srNabJointGuessed = new StreamReader(@"C:\temp\nabcash_joint_guessed.csv");
-                var loadedNabRows = SharedCsvReader.GetRows(srNabJointGuessed, new BankTransactionTable<NABCashRowDescriptor>("NAB Cash Reviewed"), columnSelector, true).ToList();
+                var loadedNabRows = SharedCsvReader.GetRows(srNabJointGuessed, new BankTransactionTable<NABRowDescriptor>("NAB Cash Reviewed"), columnSelector, true).ToList();
 
                 Assert.That(loadedNabRows.Count, Is.EqualTo(243));
 
@@ -605,7 +620,7 @@ namespace KMPAccountingTest
         {
             AccountsState.Clear();
 
-            var items = MatchTransactionsAndKeep();
+            var items = SharedAccountingExecutor.MatchTransactionsAndKeep();
 
             var cbaCashRows = items.Where(x => x.Item1 == 0).Select(x => (x.Item2, x.Item3));
 
@@ -647,7 +662,7 @@ namespace KMPAccountingTest
         {
             AccountsState.Clear();
 
-            var items = MatchTransactionsAndKeep();
+            var items = SharedAccountingExecutor.MatchTransactionsAndKeep();
 
             var cbaCcRows = items.Where(x => x.Item1 == 1).Select(x => (x.Item2, x.Item3));
 
@@ -690,12 +705,12 @@ namespace KMPAccountingTest
         {
             AccountsState.Clear();
 
-            var items = MatchTransactionsAndKeep();
+            var items = SharedAccountingExecutor.MatchTransactionsAndKeep();
 
             var nabCashRows = items.Where(x => x.Item1 == 2).Select(x => (x.Item2, x.Item3));
 
             var guesser = new NABCashCounterAccountPrefiller();
-            var guessedRows = nabCashRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false, true); return ((TransactionRow<NABCashRowDescriptor>)x.Item1!, x.Item2); }).ToList();
+            var guessedRows = nabCashRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false, true); return ((TransactionRow<NABRowDescriptor>)x.Item1!, x.Item2); }).ToList();
 
             var totalRows = guessedRows.Count;
 
@@ -745,7 +760,7 @@ namespace KMPAccountingTest
         {
             AccountsState.Clear();
 
-            var items = MatchTransactionsAndKeep();
+            var items = SharedAccountingExecutor.MatchTransactionsAndKeep();
 
             var adbCashRows = items.Where(x => x.Item1 == 3).Select(x => (x.Item2, x.Item3));
 
@@ -791,7 +806,7 @@ namespace KMPAccountingTest
         public void TestAdbLoansGuessAndCorrelation()
         {
             {
-                var adbLoan1 = GetAdbLoan("adbloan1", "adbloan1_balance.csv", "ADB Loan1").AssertChangeToAscendingInDate();
+                var adbLoan1 = SharedTransactionReader.GetAdbLoan("adbloan1", "adbloan1_balance.csv", "ADB Loan1", AccountConstants.Personal.Accounts.LoanLiveIn).AssertChangeToAscendingInDate();
                 var guesser1 = new AdbLoanCounterAccountPrefillier($"{AccountConstants.Personal.Accounts.LoanLiveInInterest}", $"{AccountConstants.Personal.Accounts.LoanLiveInRepayment}", $"{AccountConstants.Personal.Accounts.LoanLiveInFee}");
                 var guessedRows1 = adbLoan1.Select(x => { guesser1.Prefill(x); return x; });
 
@@ -828,9 +843,8 @@ namespace KMPAccountingTest
                 });
             }
 
-
             {
-                var adbLoan2 = GetAdbLoan("adbloan2", "adbloan2_balance.csv", "ADB Loan2").AssertChangeToAscendingInDate();
+                var adbLoan2 = SharedTransactionReader.GetAdbLoan("adbloan2", "adbloan2_balance.csv", "ADB Loan2", AccountConstants.Personal.Accounts.LoanInvestment).AssertChangeToAscendingInDate();
 
                 var guesser2 = new AdbLoanCounterAccountPrefillier($"{AccountConstants.Personal.Accounts.LoanInvestmentInterest}", $"{AccountConstants.Personal.Accounts.LoanInvestmentRepayment}", $"{AccountConstants.Personal.Accounts.LoanInvestmentFee}");
 
@@ -874,7 +888,7 @@ namespace KMPAccountingTest
         [Test]
         public void TestGuessAllWithInvoice()
         {
-            var items = MatchTransactionsAndKeep();
+            var items = SharedAccountingExecutor.MatchTransactionsAndKeep();
 
             var cbaCashRows = items.Where(x => x.Item1 == 0).Select(x => (x.Item2, x.Item3));
             {
@@ -905,13 +919,11 @@ namespace KMPAccountingTest
 
             var printer = MultiTransactionRowSourceCsvCombiner.CreateSimpleCombiningRowDescriptors(CbaCashDesc, CbaCcDesc, NabCashDesc, WaveDesc);
 
-            printer.GetColumn(Constants.DateTimeKey)!.Formatter = DateFormatter;
+            printer.GetColumn(TabularConstants.DateTimeKey)!.Formatter = DateFormatter;
             printer.GetColumn("Invoice Date")!.Formatter = DateFormatter;
 
-
             // +2 for the extra beginning columns.
-            var nabColumnSelector = new NABCashRowDescriptor().Keys.Select(k => printer.GetColumnIndex(typeof(NABCashRowDescriptor), k)+2).ToList();
-
+            var nabColumnSelector = new NABRowDescriptor().Keys.Select(k => printer.GetColumnIndex(typeof(NABRowDescriptor), k)+2).ToList();
 
             var cashInvoices = 0;
             var inconsistentAccountTypes = 0;
@@ -991,7 +1003,7 @@ namespace KMPAccountingTest
                 ResetCsvReader();
 
                 var srNabJointGuessed = new StreamReader(@"C:\temp\wave_combined_guessed.csv");
-                var loadedNabRows = SharedCsvReader.GetRows(srNabJointGuessed, new BankTransactionTable<NABCashRowDescriptor>("NAB Cash Reviewed"), nabColumnSelector, true).Where(x => x.Item2[0].Contains('N')).ToList();
+                var loadedNabRows = SharedCsvReader.GetRows(srNabJointGuessed, new BankTransactionTable<NABRowDescriptor>("NAB Cash Reviewed"), nabColumnSelector, true).Where(x => x.Item2[0].Contains('N')).ToList();
 
                 Assert.That(loadedNabRows.Count, Is.EqualTo(243));
 
@@ -1009,102 +1021,15 @@ namespace KMPAccountingTest
         [Test]
         public void TestFY23()
         {
-            var fy22 = new FinancialYear22();
-            fy22.Initialize();
-            fy22.Step1_MatchTransactionsAndPrint(@"c:\temp\fy23_matchresult.csv");
-            fy22.Step2_GenerateLedger(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family.txt", @"c:\temp\fy23_balance_kmp.txt");
+            var fy23 = new FinancialYear23();
+            fy23.Initialize();
+            fy23.Step1_MatchTransactionsAndPrint(@"c:\temp\fy23_matchresult.csv");
+            fy23.Step2_GenerateLedger(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family.txt", @"c:\temp\fy23_balance_kmp.txt");
         }
 
         void ResetCsvReader()
         {
-            SharedCsvReader = new CsvReader();
-        }
-
-        private IEnumerable<TransactionRow<CommbankCashRowDescriptor>> GetCbaCash(string fileName, string tableName)
-        {
-            ResetCsvReader();
-            var dir = new DirectoryInfo(Path.Combine(TestDir, "cbacash"));
-            var cbaCashCsv = dir.GetFiles().First(x => x.Name == fileName);
-            return SharedCsvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTable<CommbankCashRowDescriptor>(tableName) { BaseAccountName = AccountConstants.Personal.Accounts.CashCba } );
-        }
-
-        private IEnumerable<TransactionRow<CommbankCreditCardRowDescriptor>> GetCbaCc(string fileName, string tableName)
-        {
-            ResetCsvReader();
-            var dir = new DirectoryInfo(Path.Combine(TestDir, "cbacc"));
-            var cbaCashCsv = dir.GetFiles().First(x => x.Name == fileName);
-            return SharedCsvReader.GetRows(new StreamReader(cbaCashCsv.FullName), new BankTransactionTable<CommbankCreditCardRowDescriptor>(tableName) { BaseAccountName = AccountConstants.Personal.Accounts.CommbankCreditCard });
-        }
-
-        private IEnumerable<TransactionRow<NABCashRowDescriptor>> GetNab(string folder, string fileName, string tableName)
-        {
-            ResetCsvReader();
-            var dir = new DirectoryInfo(Path.Combine(TestDir, folder));
-            var nabCsv = dir.GetFiles().First(x => x.Name == fileName);
-            return SharedCsvReader.GetRows(new StreamReader(nabCsv.FullName), new BankTransactionTable<NABCashRowDescriptor>(tableName) {  BaseAccountName = AccountConstants.Business.Accounts.Cash}).ToList();
-        }
-
-        private IEnumerable<TransactionRow<AdbRowDescriptor>> GetAdbCash(string folder, string fileName, string tableName)
-        {
-            ResetCsvReader();
-            var dir = new DirectoryInfo(Path.Combine(TestDir, folder));
-            var adbCsv = dir.GetFiles().First(x => x.Name == fileName);
-            return SharedCsvReader.GetRows(new StreamReader(adbCsv.FullName), new BankTransactionTable<AdbRowDescriptor>(tableName) { BaseAccountName = AccountConstants.Personal.Accounts.CashAdb }).ToList();
-        }
-        
-        private IEnumerable<TransactionRow<AdbRowDescriptor>> GetAdbLoan(string folder, string fileName, string tableName)
-        {
-            ResetCsvReader();
-            var dir = new DirectoryInfo(Path.Combine(TestDir, folder));
-            var adbCsv = dir.GetFiles().First(x => x.Name == fileName);
-            return SharedCsvReader.GetRows(new StreamReader(adbCsv.FullName), new BankTransactionTable<AdbRowDescriptor>(tableName) { BaseAccountName = AccountConstants.Business.Accounts.Cash }).ToList();
-        }
-
-        private IEnumerable<TransactionRow<WaveRowDescriptor>> GetWave(string fileName, string tableName, bool includeIncome = false)
-        {
-            var dir = new DirectoryInfo(Path.Combine(TestDir, "wavereceipt"));
-            var rawTxtFile = dir.GetFiles().First(x => x.Name == fileName);
-            var rowDescriptor = new WaveRowDescriptor();
-            return SharedWaveRawReader.GetRows(new StreamReader(rawTxtFile.FullName), new TransactionTable<WaveRowDescriptor>(tableName, rowDescriptor), includeIncome);
-        }
-
-        private List<(int, ITransactionRow?, ITransactionRow?)> MatchTransactionsAndKeep()
-        {
-            if (MatchResult == null)
-            {
-                MatchResult = MatchTransactions().ToList();
-            }
-            return MatchResult!;
-        }
-
-        private IEnumerable<(int, ITransactionRow?, ITransactionRow?)> MatchTransactions()
-        {
-            var cbaCash = GetCbaCash("CSVData.csv", "CBA Cash").AssertChangeToAscendingInDate();
-
-            var cbaCc = GetCbaCc("CSVData_balance.csv", "CBA Credit Card").AssertChangeToAscendingInDate();
-
-            var nabCash = GetNab("nabcash", "Transactions.csv", "NAB Cash").ChangeToAscendingInDate().ToList();
-
-            var adbCash = GetAdbCash("adbcash", "adbcash_balance.csv", "ADB Cash").AssertChangeToAscendingInDate();
-
-            var wave = GetWave("raw.txt", "Wave", false).AssertChangeToAscendingInDate();
-
-            var items = Matcher.Match(new IEnumerable<ITransactionRow>[] { cbaCash, cbaCc, nabCash, adbCash }, wave, inputRow =>
-            {
-                var invoice = (TransactionRow<WaveRowDescriptor>)inputRow;
-                var account = invoice[invoice.OwnerTable.RowDescriptor.WaveAccountKey];
-                if (account == WaveAccountNABBusiness)
-                {
-                    return new[] { 2, 1, 0, 3 };
-                }
-                else if (account == WaveAccountCommbankPersonal)
-                {
-                    return new[] { 1, 0, 3, 2 };
-                }
-                return new[] { 1, 2, 0, 3 };
-            }, true, new (int?, int?)?[] { null, null, (null, 10), null });
-
-            return TransactionMatcher.OrderMatch(items);
+            SharedTransactionReader.RenewCsvReader();
         }
 
         void AssertRowsAreEqual(ITransactionRow row1, ITransactionRow row2)

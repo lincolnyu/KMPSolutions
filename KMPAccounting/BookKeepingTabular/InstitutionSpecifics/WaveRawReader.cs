@@ -217,7 +217,7 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
             }
             else if (category.ContainsWholeWord("Subscription") || category.ContainsWholeWord("Subscriptions"))
             {
-                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Subscriptions;
+                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.ITSoftwareAndSubscriptions;
             }
             else if (category.ContainsWholeWord("Advertising") || category.ContainsWholeWord("Promotion"))
             {
