@@ -150,6 +150,11 @@ namespace KMPAccounting.Objects.BookKeeping
                 sb.AppendLine($"  {amount} to {acc.FullName}");
             }
 
+            if (Remarks != null)
+            {
+                sb.AppendLine($"Remarks: {Remarks}");
+            }
+
             return sb.ToString();
         }
 

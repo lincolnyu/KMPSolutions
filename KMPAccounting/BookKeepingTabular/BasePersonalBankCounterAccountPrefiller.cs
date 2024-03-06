@@ -4,13 +4,13 @@ namespace KMPAccounting.BookKeepingTabular
 {
     public abstract class BasePersonalBankCounterAccountPrefiller
     {
-        protected BasePersonalBankCounterAccountPrefiller(AccountGroup businessLiabilityAccountGroup, string personalFallbackCounterAccount)
+        protected BasePersonalBankCounterAccountPrefiller(AccountPath businessLiabilityAccountGroup, string personalFallbackCounterAccount)
         {
             BusinessOwingPersonalAccountGroup = businessLiabilityAccountGroup;
             PersonalFallbackCounterAccount = personalFallbackCounterAccount;
         }
 
-        public AccountGroup BusinessOwingPersonalAccountGroup { get; }
+        public AccountPath BusinessOwingPersonalAccountGroup { get; }
         public string PersonalFallbackCounterAccount { get; }
 
         public void Prefill(ITransactionRow row, ITransactionRow? invoiceRow, bool overwrite, bool populateFallbackCounterAccount = false) 
@@ -60,6 +60,7 @@ namespace KMPAccounting.BookKeepingTabular
 
                 if (!Prefill(row, details, claimedAmount, remainingAmount, assignmentList, populateFallbackCounterAccount) && populateFallbackCounterAccount)
                 {
+                    // TODO should probably have an expense account and income account
                     assignmentList.Add($"{PersonalFallbackCounterAccount}={remainingAmount}");
                 }
             }

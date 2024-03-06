@@ -102,7 +102,6 @@ namespace KMPAccounting.Objects.BookKeeping
             if (Remarks != null)
             {
                 sb.AppendLine($"Remarks: {Remarks}");
-                sb.AppendLine();
             }
 
             return sb.ToString();

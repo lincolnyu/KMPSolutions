@@ -205,8 +205,8 @@ namespace KMPAccountingTest
 
             Assert.Multiple(() =>
             {
-                Assert.That(SharedWaveRawReader.ReadRowCount, Is.EqualTo(152));
-                Assert.That(rows, Has.Count.EqualTo(87));
+                Assert.That(SharedWaveRawReader.ReadRowCount, Is.EqualTo(153));
+                Assert.That(rows, Has.Count.EqualTo(88));
             });
 
             {
@@ -229,8 +229,8 @@ namespace KMPAccountingTest
 
             Assert.Multiple(() =>
             {
-                Assert.That(SharedWaveRawReader.ReadRowCount, Is.EqualTo(152));
-                Assert.That(rows, Has.Count.EqualTo(154));
+                Assert.That(SharedWaveRawReader.ReadRowCount, Is.EqualTo(153));
+                Assert.That(rows, Has.Count.EqualTo(155));
             });
 
             {
@@ -1023,7 +1023,7 @@ namespace KMPAccountingTest
         {
             var fy23 = new FinancialYear23();
             fy23.Initialize();
-            fy23.Step1_MatchTransactionsAndPrint(@"c:\temp\fy23_matchresult.csv");
+            fy23.Step1_MatchTransactionsAndPrint(@"c:\temp\fy23_joint.csv");
             fy23.Step2_GenerateLedger(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family.txt", @"c:\temp\fy23_balance_kmp.txt");
         }
 
