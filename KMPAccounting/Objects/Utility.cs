@@ -176,5 +176,23 @@ namespace KMPAccounting.Objects
             // TODO Add balance checking assert.
             ledger.AddAndExecute(transaction);
         }
+
+        public static IEnumerable<AccountNode> GetAllLeafNodes(this AccountNode root)
+        {
+            if (root.Children.Count > 0)
+            {
+                foreach (var (k, v) in root.Children)
+                {
+                    foreach (var ln in GetAllLeafNodes(v))
+                    {
+                        yield return ln;
+                    }
+                }
+            }
+            else
+            {
+                yield return root;
+            }
+        }
     }
 }

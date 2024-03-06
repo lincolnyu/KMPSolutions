@@ -22,6 +22,12 @@
             return $"{group.Path.TrimEnd('.')}.{suffix.TrimStart('.')}";
         }
 
+        public string GetRelative(string prefix)
+        {
+            var res = Path.Substring(prefix.Length);
+            return res.TrimStart('.');
+        }
+
         public override string ToString()
         {
             return Path;

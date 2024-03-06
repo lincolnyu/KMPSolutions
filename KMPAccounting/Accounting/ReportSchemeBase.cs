@@ -1,5 +1,4 @@
-﻿using KMPAccounting.Objects.Accounts;
-using KMPAccounting.Objects.Reports;
+﻿using KMPAccounting.Objects.Reports;
 using System.Collections.Generic;
 
 namespace KMPAccounting.Accounting
