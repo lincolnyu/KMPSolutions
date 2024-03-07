@@ -1,4 +1,4 @@
-﻿namespace KMPAccounting.BookKeepingTabular
+﻿namespace KMPAccounting.Objects.AccountCreation
 {
     public class AccountPath
     {

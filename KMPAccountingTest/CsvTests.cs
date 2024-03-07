@@ -807,7 +807,7 @@ namespace KMPAccountingTest
         {
             {
                 var adbLoan1 = SharedTransactionReader.GetAdbLoan("adbloan1", "adbloan1_balance.csv", "ADB Loan1", AccountConstants.Personal.Accounts.LoanLiveIn).AssertChangeToAscendingInDate();
-                var guesser1 = new AdbLoanCounterAccountPrefillier($"{AccountConstants.Personal.Accounts.LoanLiveInInterest}", $"{AccountConstants.Personal.Accounts.LoanLiveInRepayment}", $"{AccountConstants.Personal.Accounts.LoanLiveInFee}");
+                var guesser1 = new AdbLoanCounterAccountPrefillier($"{AccountConstants.Personal.Accounts.LoanInterestProeprty1}", $"{AccountConstants.Personal.Accounts.LoanLiveInRepayment}", $"{AccountConstants.Personal.Accounts.LoanFeesProperty1}");
                 var guessedRows1 = adbLoan1.Select(x => { guesser1.Prefill(x); return x; });
 
                 using var f = new StreamWriter(@"C:\temp\adbloan1_guessed.csv");
@@ -844,9 +844,9 @@ namespace KMPAccountingTest
             }
 
             {
-                var adbLoan2 = SharedTransactionReader.GetAdbLoan("adbloan2", "adbloan2_balance.csv", "ADB Loan2", AccountConstants.Personal.Accounts.LoanInvestment).AssertChangeToAscendingInDate();
+                var adbLoan2 = SharedTransactionReader.GetAdbLoan("adbloan2", "adbloan2_balance.csv", "ADB Loan2", AccountConstants.Personal.Accounts.LoanProperty2).AssertChangeToAscendingInDate();
 
-                var guesser2 = new AdbLoanCounterAccountPrefillier($"{AccountConstants.Personal.Accounts.LoanInvestmentInterest}", $"{AccountConstants.Personal.Accounts.LoanInvestmentRepayment}", $"{AccountConstants.Personal.Accounts.LoanInvestmentFee}");
+                var guesser2 = new AdbLoanCounterAccountPrefillier($"{AccountConstants.Personal.Accounts.LoanInterestProperty2}", $"{AccountConstants.Personal.Accounts.LoanRepaymentProperty2}", $"{AccountConstants.Personal.Accounts.LoanFeesProperty2}");
 
                 var guessedRows2 = adbLoan2.Select(x => { guesser2.Prefill(x); return x; });
 

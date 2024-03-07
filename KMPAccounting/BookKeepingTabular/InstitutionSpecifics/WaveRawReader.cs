@@ -197,48 +197,48 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
             var expenseGroup = KMPSpecifics.AccountConstants.Business.AccountGroups.Expense;
             if (category.ContainsWholeWord("Office Supplies"))
             {
-                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.OfficeSupplies;
+                return expenseGroup + KMPSpecifics.AccountConstants.Strings.OfficeSupplies;
             }
             else if (category.ContainsWholeWord("Medical Supplies"))
             {
-                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.MedicalSupplies;
+                return expenseGroup + KMPSpecifics.AccountConstants.Strings.MedicalSupplies;
             }
             else if (category.ContainsCaseIgnored("Fuel"))
             {
-                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Fuel;
+                return expenseGroup + KMPSpecifics.AccountConstants.Strings.Fuel;
             }
             else if (category.ContainsWholeWord("Vehicle") || category.ContainsWholeWord("Vehicles"))
             {
-                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Vehicles;
+                return expenseGroup + KMPSpecifics.AccountConstants.Strings.Vehicles;
             }
             else if (category.ContainsWholeWord("Uniform") || category.ContainsWholeWord("Uniforms"))
             {
-                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Uniforms;
+                return expenseGroup + KMPSpecifics.AccountConstants.Strings.Uniforms;
             }
             else if (category.ContainsWholeWord("Subscription") || category.ContainsWholeWord("Subscriptions"))
             {
-                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.ITSoftwareAndSubscriptions;
+                return expenseGroup + KMPSpecifics.AccountConstants.Strings.ITSoftwareAndSubscriptions;
             }
             else if (category.ContainsWholeWord("Advertising") || category.ContainsWholeWord("Promotion"))
             {
-                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Promotion;
+                return expenseGroup + KMPSpecifics.AccountConstants.Strings.Promotion;
             }
             else if (category.ContainsWholeWord("Computer"))
             {
                 // TODO update...
-                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.ITHardware;
+                return expenseGroup + KMPSpecifics.AccountConstants.Strings.ITHardware;
             }
             else if (category.ContainsWholeWord("Repairs"))
             {
-                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Maintenance;
+                return expenseGroup + KMPSpecifics.AccountConstants.Strings.Maintenance;
             }
             else if (category.ContainsWholeWord("Cleaning"))
             {
-                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.Cleaning;
+                return expenseGroup + KMPSpecifics.AccountConstants.Strings.Cleaning;
             }
             else if (category.ContainsWholeWord("Meals and Entertainment"))
             {
-                return expenseGroup + KMPSpecifics.AccountConstants.Business.AccountSuffixes.FoodAndEntertainment;
+                return expenseGroup + KMPSpecifics.AccountConstants.Strings.FoodAndEntertainment;
             }
             // Possibly Unclaimable Personal Use (by definition having 0 amount) will be treated by the base prefiller
             // So we could just use the fallback expense

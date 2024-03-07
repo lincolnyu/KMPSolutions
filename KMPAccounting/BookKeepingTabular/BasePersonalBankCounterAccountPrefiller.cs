@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using KMPAccounting.Objects.AccountCreation;
 
 namespace KMPAccounting.BookKeepingTabular
 {
