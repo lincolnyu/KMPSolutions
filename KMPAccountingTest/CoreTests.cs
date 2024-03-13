@@ -82,7 +82,13 @@ namespace KMPCoreObjectsTest
 
             Assert.That(OU.GetAccount("Tom.Assets.Cash")!.Balance, Is.EqualTo(BaseEquity));
 
-            var pnlReports = ReportsGenerator.Run(new[] { new ReportSchemePersonalGeneric(new ReportSchemePersonalGeneric.PersonalDetails("Tom")) }, ledger, indexInitial, indexAfterRealTransactions).ToArray();
+            var reportScheme = new ReportSchemePersonalGeneric(new ReportSchemePersonalGeneric.PersonalDetails("Tom"));
+
+            reportScheme.Initialize();
+
+            ledger.Execute(indexInitial, indexAfterRealTransactions);
+
+            var pnlReports= reportScheme.Finalize().ToArray();
 
             Assert.Multiple(() =>
             {
