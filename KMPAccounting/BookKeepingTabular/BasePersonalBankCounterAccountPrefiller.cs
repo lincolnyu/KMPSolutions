@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using KMPAccounting.Objects.AccountCreation;
 
 namespace KMPAccounting.BookKeepingTabular
@@ -59,7 +60,7 @@ namespace KMPAccounting.BookKeepingTabular
 
                 var details = row[Constants.TransactionDetailsKey]!.Trim();
 
-                if (!Prefill(row, details, claimedAmount, remainingAmount, assignmentList, populateFallbackCounterAccount) && populateFallbackCounterAccount)
+                if (!Prefill(row, details, claimedAmount, remainingAmount, assignmentList) && populateFallbackCounterAccount)
                 {
                     // TODO should probably have an expense account and income account
                     assignmentList.Add($"{PersonalFallbackCounterAccount}={remainingAmount}");
@@ -79,6 +80,28 @@ namespace KMPAccounting.BookKeepingTabular
         /// <param name="assignmentList">The account assignment list that includes the claimed and is to be updated for the remaining.</param>
         /// <param name="populateFallbackCounterAccount">Whether can fill the remaining using fallback. But the implementer doesn't have to.</param>
         /// <returns>If the remaining is fully filled.</returns>
-        protected abstract bool Prefill(ITransactionRow row, string transactionDetails, decimal claimedAmount, decimal remainingAmount, List<string> assignmentList, bool canPopulateFallbackCounterAccount);
+        protected bool Prefill(ITransactionRow row, string transactionDetails, decimal claimedAmount, decimal remainingAmount, List<string> assignmentList)
+        {
+            if (PrefillGeneric(row, transactionDetails, claimedAmount, remainingAmount, assignmentList))
+            {
+                return true;
+            }
+            Debug.Assert(assignmentList.Count == 0);
+            if (PrefillSpecificPostGeneric(row, transactionDetails, claimedAmount, remainingAmount, assignmentList))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        protected virtual bool PrefillSpecificDuringGeneric(ITransactionRow row, string transactionDetails, decimal claimedAmount, decimal remainingAmount, List<string> assignmentList, string title)
+        {
+            return false;
+        }
+
+        protected abstract bool PrefillGeneric(ITransactionRow row, string transactionDetails, decimal claimedAmount, decimal remainingAmount, List<string> assignmentList);
+
+        protected abstract bool PrefillSpecificPostGeneric(ITransactionRow row, string transactionDetails, decimal claimedAmount, decimal remainingAmount, List<string> assignmentList);
     }
 }

@@ -205,8 +205,8 @@ namespace KMPAccountingTest
 
             Assert.Multiple(() =>
             {
-                Assert.That(SharedWaveRawReader.ReadRowCount, Is.EqualTo(153));
-                Assert.That(rows, Has.Count.EqualTo(88));
+                Assert.That(SharedWaveRawReader.ReadRowCount, Is.EqualTo(154));
+                Assert.That(rows, Has.Count.EqualTo(89));
             });
 
             {
@@ -229,8 +229,8 @@ namespace KMPAccountingTest
 
             Assert.Multiple(() =>
             {
-                Assert.That(SharedWaveRawReader.ReadRowCount, Is.EqualTo(153));
-                Assert.That(rows, Has.Count.EqualTo(155));
+                Assert.That(SharedWaveRawReader.ReadRowCount, Is.EqualTo(154));
+                Assert.That(rows, Has.Count.EqualTo(156));
             });
 
             {
