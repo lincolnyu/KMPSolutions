@@ -3,6 +3,7 @@ using KMPAccounting.Objects.Accounts;
 using KMPAccounting.Objects.Reports;
 using System;
 using System.Collections.Generic;
+using static KMPAccounting.ReportSchemes.Utility;
 
 namespace KMPAccounting.ReportSchemes
 {
@@ -16,34 +17,27 @@ namespace KMPAccounting.ReportSchemes
             /// <param name="stateName">Name of the accounts state of the person.</param>
             /// <param name="taxReturnCashAccount">Suffix following Assets.Cash in the name of the account for tax return, with leading dot.</param>
             /// <param name="equityDivisionName">A nonempty substring in the equity account for the person of a couple share the same accounts state, with leading dot.</param>
-            public PersonalDetails(string stateName, string taxReturnCashAccount = "", string equityDivisionName = "")
+            public PersonalDetails(AccountsSetup accountsSetup)
             {
-                StateName = stateName;
-                TaxReturnCashAccount = taxReturnCashAccount;
-                EquityDivisionName = equityDivisionName;
+                AccountsSetup = accountsSetup;
             }
 
-            public string StateName { get; }
-            public string TaxReturnCashAccount { get; }
-            public string EquityDivisionName { get; }
+            public AccountsSetup AccountsSetup { get; }
         }
 
         public ReportSchemePersonalGeneric(PersonalDetails selfDetails, PersonalDetails? partnerDetails = null)
         {
             selfDetails_ = selfDetails;
             partnerDetails_ = partnerDetails;
-
-            selfState_ = AccountsState.GetAccountsState(selfDetails.StateName)!;
-            partnerState_ = partnerDetails != null ? AccountsState.GetAccountsState(partnerDetails.StateName)! : null;
         }
 
         public override void Initialize()
         {
-            Utility.InitializeTaxPeriod(selfState_, selfDetails_.EquityDivisionName);
+            selfDetails_.AccountsSetup.InitializeTaxPeriod();
 
             if (partnerState_ != null)
             {
-                Utility.InitializeTaxPeriod(partnerState_, partnerDetails_!.EquityDivisionName);
+                partnerDetails_.AccountsSetup.InitializeTaxPeriod();
             }
         }
 
@@ -52,15 +46,13 @@ namespace KMPAccounting.ReportSchemes
             var pnlReport = new PnlReport();
             PnlReport? partnerPnlReport = null;
 
-            Utility.FinalizeTaxPeriodPreTaxCalculation(selfState_, selfDetails_.EquityDivisionName, pnlReport);
-
-            var taxReturnCashAccount = "Assets.Cash" + selfDetails_.TaxReturnCashAccount;
+            selfDetails_.AccountsSetup.FinalizeTaxPeriodPreTaxCalculation(pnlReport);
 
             if (partnerState_ != null)
             {
                 partnerPnlReport = new PnlReport();
 
-                Utility.FinalizeTaxPeriodPreTaxCalculation(partnerState_, partnerDetails_!.EquityDivisionName, partnerPnlReport);
+                partnerDetails_.AccountsSetup.FinalizeTaxPeriodPreTaxCalculation(partnerPnlReport);
 
                 var (tax, partnerTax) = GetFamilyTax(pnlReport.TaxableIncome, partnerPnlReport.TaxableIncome);
 
@@ -72,16 +64,14 @@ namespace KMPAccounting.ReportSchemes
                 pnlReport.Tax = GetPersonalTax(pnlReport.TaxableIncome);
             }
 
-            Utility.FinalizeTaxPeriodPostTaxCalculation(selfState_, selfDetails_.EquityDivisionName, taxReturnCashAccount, pnlReport);
+            selfDetails_.AccountsSetup.FinalizeTaxPeriodPostTaxCalculation(pnlReport);
 
             yield return pnlReport;
 
             if (partnerPnlReport != null)
             {
-                var partnerTaxReturnCashAccount = "Assets.Cash" + partnerDetails_!.TaxReturnCashAccount;
-
-                Utility.FinalizeTaxPeriodPostTaxCalculation(partnerState_!, partnerDetails_.EquityDivisionName, partnerTaxReturnCashAccount, partnerPnlReport);
-
+                partnerDetails_.AccountsSetup.FinalizeTaxPeriodPostTaxCalculation(partnerPnlReport);
+               
                 yield return partnerPnlReport;
             }    
         }

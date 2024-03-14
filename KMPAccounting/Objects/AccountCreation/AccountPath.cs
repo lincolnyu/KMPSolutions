@@ -19,6 +19,8 @@
 
         public static AccountPath operator +(AccountPath group, string suffix)
         {
+            suffix = suffix.Trim();
+            if (suffix == "") return group.Path.TrimEnd('.');
             return $"{group.Path.TrimEnd('.')}.{suffix.TrimStart('.')}";
         }
 

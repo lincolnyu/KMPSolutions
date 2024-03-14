@@ -2,6 +2,7 @@
 using KMPAccounting.Objects.Accounts;
 using KMPAccounting.Objects.Reports;
 using System.Collections.Generic;
+using static KMPAccounting.ReportSchemes.Utility;
 
 namespace KMPAccounting.ReportSchemes
 {
@@ -12,37 +13,35 @@ namespace KMPAccounting.ReportSchemes
             /// <summary>
             ///  Constructing the object
             /// </summary>
-            /// <param name="stateName">Name of the accounts state of the business.</param>
-            /// <param name="taxReturnCashAccount">Suffix following Assets.Cash in the name of the account for tax return, with leading dot.</param>
-            public BusinessDetails(string stateName, string taxReturnCashAccount = "")
+            /// <param name="accountsSetup">Name of the accounts state of the business.</param>
+            public BusinessDetails(AccountsSetup accountsSetup)
             {
-                StateName = stateName;
-                TaxReturnCashAccount = taxReturnCashAccount;
+                AccountsSetup = accountsSetup;
             }
 
-            public string StateName { get; }
-            public string TaxReturnCashAccount { get; }
+            public AccountsSetup AccountsSetup { get; }
         }
 
         public ReportSchemeBusinessGeneric(BusinessDetails details)
         {
             details_ = details;
-            state_ = AccountsState.GetAccountsState(details.StateName)!;
         }
 
         public override void Initialize()
         {
-            Utility.InitializeTaxPeriod(state_, "");
+            details_.AccountsSetup.InitializeTaxPeriod();
         }
 
         public override IEnumerable<PnlReport> Finalize()
         {
             var pnlReport = new PnlReport();
-            Utility.FinalizeTaxPeriodPreTaxCalculation(state_, "", pnlReport);
+
+            details_.AccountsSetup.FinalizeTaxPeriodPreTaxCalculation(pnlReport);
 
             pnlReport.Tax = GetBusinessTax(pnlReport.TaxableIncome);
 
-            Utility.FinalizeTaxPeriodPostTaxCalculation(state_, "", details_.TaxReturnCashAccount, pnlReport);
+            details_.AccountsSetup.FinalizeTaxPeriodPostTaxCalculation(pnlReport);
+
             yield return pnlReport;
         }
 

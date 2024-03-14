@@ -9,6 +9,13 @@ namespace KMPAccounting.Objects
 {
     public static class Utility
     {
+        public static AccountNode? GetStateNode(string accountFullName)
+        {
+            var split = accountFullName.Split('.', 2);
+            Debug.Assert(split.Length <= 2);
+            return AccountsState.GetAccountsState(split[0]);
+        }
+
         public static AccountNode? GetAccount(string fullName)
         {
             var split = fullName.Split('.', 2);
@@ -153,13 +160,13 @@ namespace KMPAccounting.Objects
             entry.Redo();
         }
 
-        public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, string debitedAccountFullName, string creditedAccountFullName, decimal amount, string? remarks = null, bool execute = true)
+        public static void AddAndExecuteTransaction(this Ledger? ledger, DateTime dateTime, string debitedAccountFullName, string creditedAccountFullName, decimal amount, string? remarks = null, bool execute = true)
         {
             var transaction = new SimpleTransaction(dateTime, new AccountNodeReference(debitedAccountFullName), new AccountNodeReference(creditedAccountFullName), amount) { Remarks = remarks };
             ledger.AddAndExecute(transaction);
         }
 
-        public static void AddAndExecuteTransaction(this Ledger ledger, DateTime dateTime, IEnumerable<(string, decimal)> debited, IEnumerable<(string, decimal)> credited, string? remarks = null, bool execute = true)
+        public static void AddAndExecuteTransaction(this Ledger? ledger, DateTime dateTime, IEnumerable<(string, decimal)> debited, IEnumerable<(string, decimal)> credited, string? remarks = null, bool execute = true)
         {
             var transaction = new CompositeTransaction(dateTime)
             {

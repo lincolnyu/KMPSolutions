@@ -4,7 +4,7 @@ using KMPAccounting.Objects.BookKeeping;
 using KMPAccounting.Accounting;
 using KMPAccounting.ReportSchemes;
 using OU = KMPAccounting.Objects.Utility;
-using System.Linq;
+using static KMPAccounting.ReportSchemes.Utility;
 
 namespace KMPCoreObjectsTest
 {
@@ -22,67 +22,79 @@ namespace KMPCoreObjectsTest
 
             var ledger = new Ledger();
 
-            OU.EnsureCreateAccount(ledger, "Tom.Assets", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity", true);
-            OU.EnsureCreateAccount(ledger, "Tom.Liability", true);
+            var assetsAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.Assets);
+            var equityAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.Equity);
+            var liabilityAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.Liability);
+            var cashAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.Cash);
+            var equityMainAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.EquityMain);
+            var taxWithheldAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.TaxWithheld);
+            var salaryAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.Income, "Salary");
+            var deductionAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.Deduction);
+            var expenseAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.Expense);
+
+            OU.EnsureCreateAccount(ledger, assetsAccount, false);
+            OU.EnsureCreateAccount(ledger, equityAccount, true);
+            OU.EnsureCreateAccount(ledger, liabilityAccount, true);
 
             var tomState = AccountsState.GetAccountsState("Tom")!;
 
             const decimal BaseEquity = 300m;
 
             // Initial balance setup
-            OU.EnsureCreateAccount(ledger, "Tom.Assets.Cash", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Main", false);
-            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets.Cash", "Tom.Equity.Main", BaseEquity);
+            OU.EnsureCreateAccount(ledger, cashAccount, false);
+            OU.EnsureCreateAccount(ledger, equityMainAccount, false);
+            ledger.AddAndExecuteTransaction(DateTime.Now, cashAccount, equityMainAccount, BaseEquity);
 
             var indexInitial = ledger.Entries.Count;
             Assert.Multiple(() =>
             {
                 Assert.That(tomState.Balance, Is.EqualTo(0));
-                Assert.That(OU.GetAccount("Tom.Assets.Cash")!.Balance, Is.EqualTo(BaseEquity));
-                Assert.That(OU.GetAccount("Tom.Equity.Main")!.Balance, Is.EqualTo(BaseEquity));
+                Assert.That(OU.GetAccount(cashAccount)!.Balance, Is.EqualTo(BaseEquity));
+                Assert.That(OU.GetAccount(equityMainAccount)!.Balance, Is.EqualTo(BaseEquity));
             });
 
             var tomInitialBalanceSnapshot = new AccountsState("Tom");
             tomState.CopyTo(tomInitialBalanceSnapshot, true);
 
             // Real transactions
-            OU.EnsureCreateAccount(ledger, "Tom.Liability.TaxWithheld", true);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Income.Salary", false);
+            OU.EnsureCreateAccount(ledger, taxWithheldAccount, false);
+            OU.EnsureCreateAccount(ledger, salaryAccount, false);
 
             const decimal Salary = 25000m;
             const decimal TaxWithheld = 2000m;
             const decimal Expense = 8000m;
             const decimal Deduction = 6000m;
 
-            ledger.AddAndExecuteTransaction(DateTime.Now, new[] { ("Tom.Assets.Cash", Salary - TaxWithheld), ("Tom.Liability.TaxWithheld", TaxWithheld) },
-                new[] { ("Tom.Equity.Income.Salary", Salary) });
+            ledger.AddAndExecuteTransaction(DateTime.Now, new[] { (cashAccount, Salary - TaxWithheld), (taxWithheldAccount, TaxWithheld) },
+                new[] { (salaryAccount, Salary) });
 
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Expense", true);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Deduction", true);
+            OU.EnsureCreateAccount(ledger, salaryAccount, true);
+            OU.EnsureCreateAccount(ledger, deductionAccount, true);
+            OU.EnsureCreateAccount(ledger, expenseAccount, false);
 
-            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Equity.Expense", "Tom.Assets.Cash", Expense);
+            ledger.AddAndExecuteTransaction(DateTime.Now, expenseAccount, cashAccount, Expense);
 
-            ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Equity.Deduction", "Tom.Assets.Cash", Deduction);
+            ledger.AddAndExecuteTransaction(DateTime.Now, deductionAccount, cashAccount, Deduction);
 
             var indexAfterRealTransactions = ledger.Entries.Count;
 
             Assert.Multiple(() =>
             {
                 Assert.That(tomState.Balance, Is.EqualTo(0m));
+                
+                Assert.That(OU.GetAccount(cashAccount)!.Balance, Is.EqualTo(BaseEquity + Salary - Expense - Deduction - TaxWithheld));
+                Assert.That(OU.GetAccount(taxWithheldAccount)!.Balance, Is.EqualTo(TaxWithheld));
 
-                Assert.That(OU.GetAccount("Tom.Assets.Cash")!.Balance, Is.EqualTo(BaseEquity + Salary - Expense - Deduction - TaxWithheld));
-                Assert.That(OU.GetAccount("Tom.Liability.TaxWithheld")!.Balance, Is.EqualTo(TaxWithheld));
-
-                Assert.That(OU.GetAccount("Tom.Equity.Income.Salary")!.Balance, Is.EqualTo(Salary));
-                Assert.That(OU.GetAccount("Tom.Equity.Main")!.Balance, Is.EqualTo(BaseEquity));
+                Assert.That(OU.GetAccount(salaryAccount)!.Balance, Is.EqualTo(Salary));
+                Assert.That(OU.GetAccount(equityMainAccount)!.Balance, Is.EqualTo(BaseEquity));
             });
 
             tomInitialBalanceSnapshot.CopyTo(tomState, true); // load snapshot at indexInitial.
 
-            Assert.That(OU.GetAccount("Tom.Assets.Cash")!.Balance, Is.EqualTo(BaseEquity));
+            Assert.That(OU.GetAccount(cashAccount)!.Balance, Is.EqualTo(BaseEquity));
 
-            var reportScheme = new ReportSchemePersonalGeneric(new ReportSchemePersonalGeneric.PersonalDetails("Tom"));
+            var accountsSetup = AccountsSetup.CreateDefault("Tom");
+            var reportScheme = new ReportSchemePersonalGeneric(new ReportSchemePersonalGeneric.PersonalDetails(accountsSetup));
 
             reportScheme.Initialize();
 
