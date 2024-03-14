@@ -1,7 +1,5 @@
 ﻿using KMPAccounting.Accounting;
-using KMPAccounting.Objects.Accounts;
 using KMPAccounting.Objects.Reports;
-using System;
 using System.Collections.Generic;
 using static KMPAccounting.ReportSchemes.Utility;
 
@@ -35,7 +33,7 @@ namespace KMPAccounting.ReportSchemes
         {
             selfDetails_.AccountsSetup.InitializeTaxPeriod();
 
-            if (partnerState_ != null)
+            if (partnerDetails_ != null)
             {
                 partnerDetails_.AccountsSetup.InitializeTaxPeriod();
             }
@@ -48,7 +46,7 @@ namespace KMPAccounting.ReportSchemes
 
             selfDetails_.AccountsSetup.FinalizeTaxPeriodPreTaxCalculation(pnlReport);
 
-            if (partnerState_ != null)
+            if (partnerDetails_ != null)
             {
                 partnerPnlReport = new PnlReport();
 
@@ -80,7 +78,10 @@ namespace KMPAccounting.ReportSchemes
 
         protected virtual (decimal, decimal) GetFamilyTax(decimal taxableIncome1, decimal taxableIncome2)
         {
-            throw new NotImplementedException();
+            // TODO Find out family tax policy
+            var tax1 = GetPersonalTax(taxableIncome1);
+            var tax2 = GetPersonalTax(taxableIncome2);
+            return (tax1, tax2);
         }
 
         public static decimal GetPersonalTaxDefault(decimal taxableIncome)
@@ -118,9 +119,7 @@ namespace KMPAccounting.ReportSchemes
         }
 
         private readonly PersonalDetails selfDetails_;
-        private readonly AccountsState selfState_;
 
         private readonly PersonalDetails? partnerDetails_;
-        private readonly AccountsState? partnerState_;
     }
 }

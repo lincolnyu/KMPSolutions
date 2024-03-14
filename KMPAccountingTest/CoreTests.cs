@@ -28,6 +28,7 @@ namespace KMPCoreObjectsTest
             var cashAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.Cash);
             var equityMainAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.EquityMain);
             var taxWithheldAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.TaxWithheld);
+            var taxWithheldAssetAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.Assets, "TaxWithheld");
             var salaryAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.Income, "Salary");
             var deductionAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.Deduction);
             var expenseAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.Expense);
@@ -57,16 +58,17 @@ namespace KMPCoreObjectsTest
             tomState.CopyTo(tomInitialBalanceSnapshot, true);
 
             // Real transactions
+            OU.EnsureCreateAccount(ledger, taxWithheldAssetAccount, false);
             OU.EnsureCreateAccount(ledger, taxWithheldAccount, false);
             OU.EnsureCreateAccount(ledger, salaryAccount, false);
 
-            const decimal Salary = 25000m;
+            const decimal GrossSalary = 25000m;
             const decimal TaxWithheld = 2000m;
             const decimal Expense = 8000m;
             const decimal Deduction = 6000m;
 
-            ledger.AddAndExecuteTransaction(DateTime.Now, new[] { (cashAccount, Salary - TaxWithheld), (taxWithheldAccount, TaxWithheld) },
-                new[] { (salaryAccount, Salary) });
+            ledger.AddAndExecuteTransaction(DateTime.Now, new[] { (cashAccount, GrossSalary - TaxWithheld), (taxWithheldAssetAccount, TaxWithheld) },
+                new[] { (salaryAccount, GrossSalary - TaxWithheld), (taxWithheldAccount, TaxWithheld) });
 
             OU.EnsureCreateAccount(ledger, salaryAccount, true);
             OU.EnsureCreateAccount(ledger, deductionAccount, true);
@@ -82,10 +84,10 @@ namespace KMPCoreObjectsTest
             {
                 Assert.That(tomState.Balance, Is.EqualTo(0m));
                 
-                Assert.That(OU.GetAccount(cashAccount)!.Balance, Is.EqualTo(BaseEquity + Salary - Expense - Deduction - TaxWithheld));
+                Assert.That(OU.GetAccount(cashAccount)!.Balance, Is.EqualTo(BaseEquity + GrossSalary - Expense - Deduction - TaxWithheld));
                 Assert.That(OU.GetAccount(taxWithheldAccount)!.Balance, Is.EqualTo(TaxWithheld));
 
-                Assert.That(OU.GetAccount(salaryAccount)!.Balance, Is.EqualTo(Salary));
+                Assert.That(OU.GetAccount(salaryAccount)!.Balance, Is.EqualTo(GrossSalary - TaxWithheld));
                 Assert.That(OU.GetAccount(equityMainAccount)!.Balance, Is.EqualTo(BaseEquity));
             });
 
@@ -93,7 +95,7 @@ namespace KMPCoreObjectsTest
 
             Assert.That(OU.GetAccount(cashAccount)!.Balance, Is.EqualTo(BaseEquity));
 
-            var accountsSetup = AccountsSetup.CreateDefault("Tom");
+            var accountsSetup = AccountsSetup.CreateStandard("Tom");
             var reportScheme = new ReportSchemePersonalGeneric(new ReportSchemePersonalGeneric.PersonalDetails(accountsSetup));
 
             reportScheme.Initialize();
@@ -111,15 +113,15 @@ namespace KMPCoreObjectsTest
             var tomPnlReport = pnlReports[0];
             Assert.Multiple(() =>
             {
-                Assert.That(tomPnlReport.Income, Is.EqualTo(Salary));
+                Assert.That(tomPnlReport.Income, Is.EqualTo(GrossSalary - TaxWithheld));
                 Assert.That(tomPnlReport.Deduction, Is.EqualTo(Deduction));
-                Assert.That(tomPnlReport.TaxableIncome, Is.EqualTo(Salary - Deduction));
+                Assert.That(tomPnlReport.TaxableIncome, Is.EqualTo(GrossSalary - Deduction));
 
                 var ExpectedTax = ReportSchemePersonalGeneric.GetPersonalTaxDefault(tomPnlReport.TaxableIncome);
                 Assert.That(tomPnlReport.Tax, Is.EqualTo(ExpectedTax));
                 Assert.That(tomPnlReport.TaxWithheld, Is.EqualTo(TaxWithheld));
                 Assert.That(tomPnlReport.TaxReturn, Is.EqualTo(TaxWithheld - ExpectedTax));
-                Assert.That(tomPnlReport.PostTaxIncome, Is.EqualTo(Salary - Deduction - ExpectedTax));
+                Assert.That(tomPnlReport.PostTaxIncome, Is.EqualTo(GrossSalary - Deduction - ExpectedTax));
             });
 
             Assert.Pass();

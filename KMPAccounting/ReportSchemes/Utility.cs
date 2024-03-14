@@ -24,17 +24,17 @@ namespace KMPAccounting.ReportSchemes
             /// </summary>
             public string? EquityMain { get; set; }
 
-            public static AccountsSetup CreateDefault(string bookName, string divisionName = "")
+            public static AccountsSetup CreateStandard(string bookName, string subdivision = "")
             {
                 var state = (AccountPath)bookName;
                 return new AccountsSetup
                 {
                     TaxReturnCashAccount = StandardAccounts.GetAccountFullName(state, StandardAccounts.Cash),
-                    Income = StandardAccounts.GetAccountFullName(state, StandardAccounts.Income, divisionName),
-                    Expense = StandardAccounts.GetAccountFullName(state, StandardAccounts.Expense, divisionName),
-                    Deduction = StandardAccounts.GetAccountFullName(state, StandardAccounts.Deduction, divisionName),
-                    TaxWithheld = StandardAccounts.GetAccountFullName(state, StandardAccounts.TaxWithheld, divisionName),
-                    TaxReturn = StandardAccounts.GetAccountFullName(state, StandardAccounts.TaxReturn, divisionName),
+                    Income = StandardAccounts.GetAccountFullName(state, StandardAccounts.Income, subdivision),
+                    Expense = StandardAccounts.GetAccountFullName(state, StandardAccounts.Expense, subdivision),
+                    Deduction = StandardAccounts.GetAccountFullName(state, StandardAccounts.Deduction, subdivision),
+                    TaxWithheld = StandardAccounts.GetAccountFullName(state, StandardAccounts.TaxWithheld, subdivision),
+                    TaxReturn = StandardAccounts.GetAccountFullName(state, StandardAccounts.TaxReturn, subdivision),
                     EquityMain = StandardAccounts.GetAccountFullName(state, StandardAccounts.EquityMain),    // Assuming equity is equally shared.
                 };
             }

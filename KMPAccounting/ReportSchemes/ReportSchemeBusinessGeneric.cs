@@ -1,6 +1,7 @@
 ﻿using KMPAccounting.Accounting;
 using KMPAccounting.Objects.Accounts;
 using KMPAccounting.Objects.Reports;
+using System;
 using System.Collections.Generic;
 using static KMPAccounting.ReportSchemes.Utility;
 
@@ -49,6 +50,7 @@ namespace KMPAccounting.ReportSchemes
 
         private decimal GetBusinessTaxDefault(decimal taxableIncome)
         {
+            if (taxableIncome < 0) return 0;
             //const decimal FullRate = 0.3m;
             const decimal LowerRate = 0.275m;
             // TODO Update this to the correct.

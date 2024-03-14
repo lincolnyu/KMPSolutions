@@ -1026,6 +1026,7 @@ namespace KMPAccountingTest
             fy23.Step1_MatchTransactionsAndPrint(@"c:\temp\fy23_joint.csv");
             fy23.Step2_GenerateLedger(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family.txt", @"c:\temp\fy23_balance_kmp.txt");
             fy23.Step3_SettleCrossLiabilities(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family_cleared.txt", @"c:\temp\fy23_balance_kmp_cleared.txt");
+            fy23.Step4_SettleTaxation(@"c:\temp\fy23_personalPLReport.txt", @"c:\temp\fy23_businessPLReport.txt");
         }
 
         void ResetCsvReader()
