@@ -44,12 +44,21 @@ namespace KMPAccounting.Objects
             return p;
         }
 
+        /// <summary>
+        ///  Zero out the leaves of the specified node into its main node. The node's balance remains unchanged.
+        /// </summary>
+        /// <param name="node">The node to clear the leaves of</param>
+        /// <param name="toDebit">Leaf accounts to debit.</param>
+        /// <param name="toCredit">Leaf accounts to credit.</param>
         public static void ReckonAccountByTransactions(this AccountNode node, out List<(string, decimal)> toDebit, out List<(string, decimal)> toCredit)
+            => ReckonAccountsIntoTarget(node.GetAllLeafNodesWithNonZeroBalance(), node.MainNode!, out toDebit, out toCredit);
+
+        public static void ReckonAccountsIntoTarget(IEnumerable<AccountNode> sources, AccountNode target, out List<(string, decimal)> toDebit, out List<(string, decimal)> toCredit)
         {
             toDebit = new List<(string, decimal)>();
             toCredit = new List<(string, decimal)>();
-            decimal netDebited = 0;
-            foreach (var leaf in GetNonZeroLeafNodesForReckoning(node))
+            var netDebited = 0m;
+            foreach (var leaf in sources)
             {
                 var leafPositiveBalance = leaf.Balance > 0;
                 var leafDebitSide = leaf.Side == AccountNode.SideEnum.Debit;
@@ -70,29 +79,32 @@ namespace KMPAccounting.Objects
             // There's a chance these accounts cancel themselves out
             if (netDebited > 0)
             {
-                toCredit.Add((node.MainNode!.FullName, netDebited));
+                toCredit.Add((target.FullName, netDebited));
             }
             else if (netDebited < 0)
             {
-                toDebit.Add((node.MainNode!.FullName, -netDebited));
+                toDebit.Add((target.FullName, -netDebited));
             }
         }
 
-        private static IEnumerable<AccountNode> GetNonZeroLeafNodesForReckoning(AccountNode node)
+        public static IEnumerable<AccountNode> GetAllLeafNodesWithNonZeroBalance(this AccountNode node)
+            => node.GetAllLeafNodes().Where(x => x.Balance != 0);
+
+        public static IEnumerable<AccountNode> GetAllLeafNodes(this AccountNode root)
         {
-            foreach (var child in node.Children.Values.Where(x => x != node.MainNode))
+            if (root.Children.Count > 0)
             {
-                if (child.Children.Count > 0)
+                foreach (var (k, v) in root.Children)
                 {
-                    foreach (var l in GetNonZeroLeafNodesForReckoning(child))
+                    foreach (var ln in GetAllLeafNodes(v))
                     {
-                        yield return l;
+                        yield return ln;
                     }
                 }
-                else if (child.Balance != 0)
-                {
-                    yield return child;
-                }
+            }
+            else
+            {
+                yield return root;
             }
         }
 
@@ -182,24 +194,6 @@ namespace KMPAccounting.Objects
             }
             // TODO Add balance checking assert.
             ledger.AddAndExecute(transaction);
-        }
-
-        public static IEnumerable<AccountNode> GetAllLeafNodes(this AccountNode root)
-        {
-            if (root.Children.Count > 0)
-            {
-                foreach (var (k, v) in root.Children)
-                {
-                    foreach (var ln in GetAllLeafNodes(v))
-                    {
-                        yield return ln;
-                    }
-                }
-            }
-            else
-            {
-                yield return root;
-            }
         }
     }
 }
