@@ -51,9 +51,9 @@ namespace KMPAccounting.Objects
         /// <param name="toDebit">Leaf accounts to debit.</param>
         /// <param name="toCredit">Leaf accounts to credit.</param>
         public static void ReckonAccountByTransactions(this AccountNode node, out List<(string, decimal)> toDebit, out List<(string, decimal)> toCredit)
-            => ReckonAccountsIntoTarget(node.GetAllLeafNodesWithNonZeroBalance(), node.MainNode!, out toDebit, out toCredit);
+            => ReckonAccountsIntoTarget(node.GetAllLeafNodesWithNonZeroBalance().Where(x=>x!=node.MainNode), node.MainNode!.FullName, out toDebit, out toCredit);
 
-        public static void ReckonAccountsIntoTarget(IEnumerable<AccountNode> sources, AccountNode target, out List<(string, decimal)> toDebit, out List<(string, decimal)> toCredit)
+        public static void ReckonAccountsIntoTarget(IEnumerable<AccountNode> sources, string target, out List<(string, decimal)> toDebit, out List<(string, decimal)> toCredit)
         {
             toDebit = new List<(string, decimal)>();
             toCredit = new List<(string, decimal)>();
@@ -79,11 +79,11 @@ namespace KMPAccounting.Objects
             // There's a chance these accounts cancel themselves out
             if (netDebited > 0)
             {
-                toCredit.Add((target.FullName, netDebited));
+                toCredit.Add((target, netDebited));
             }
             else if (netDebited < 0)
             {
-                toDebit.Add((target.FullName, -netDebited));
+                toDebit.Add((target, -netDebited));
             }
         }
 

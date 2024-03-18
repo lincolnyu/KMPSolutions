@@ -1031,6 +1031,7 @@ namespace KMPAccountingTest
             fy23.Step2_GenerateLedger(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family.txt", @"c:\temp\fy23_balance_kmp.txt");
             fy23.Step3_HedgeLiabilities(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family_cleared.txt", @"c:\temp\fy23_balance_kmp_cleared.txt");
             fy23.Step4_SettleTaxation(@"c:\temp\fy23_personalPLReport.txt", @"c:\temp\fy23_businessPLReport.txt");
+            fy23.Step5_ClearDeductions(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family_settled.txt", @"c:\temp\fy23_balance_kmp_settled.txt");
         }
 
         void ResetCsvReader()
