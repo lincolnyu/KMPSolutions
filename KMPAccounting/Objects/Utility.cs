@@ -87,6 +87,36 @@ namespace KMPAccounting.Objects
             }
         }
 
+        public static bool CancelOut(AccountNode a, AccountNode b, out string? toDebit, out string? toCredit, out decimal? amount)
+        {
+            toDebit = null;
+            toCredit = null;
+            amount = null;
+
+            var balanceA = a.Balance;
+            var balanceB = b.Balance;
+
+            if (balanceA == 0 || balanceA == 0) return false;   // No need to do it
+
+            var debitA = (balanceA > 0) ^ (a.Side == AccountNode.SideEnum.Debit);
+            var debitB = (balanceB > 0) ^ (b.Side == AccountNode.SideEnum.Debit);
+
+            if (debitA == debitB) return false;
+
+            if (debitA)
+            {
+                toDebit = a.FullName;
+                toCredit = b.FullName;
+            }
+            else
+            {
+                toDebit = b.FullName;
+                toCredit = a.FullName;
+            }
+            amount = Math.Min(Math.Abs(balanceA), Math.Abs(balanceB));
+            return true;
+        }
+
         public static IEnumerable<AccountNode> GetAllLeafNodesWithNonZeroBalance(this AccountNode node)
             => node.GetAllLeafNodes().Where(x => x.Balance != 0);
 
@@ -172,7 +202,7 @@ namespace KMPAccounting.Objects
             entry.Redo();
         }
 
-        public static void AddAndExecuteTransaction(this Ledger? ledger, DateTime dateTime, string debitedAccountFullName, string creditedAccountFullName, decimal amount, string? remarks = null, bool execute = true)
+        public static void AddAndExecuteTransaction(this Ledger? ledger, DateTime dateTime, string debitedAccountFullName, string creditedAccountFullName, decimal amount, string? remarks = null)
         {
             var transaction = new SimpleTransaction(dateTime, new AccountNodeReference(debitedAccountFullName), new AccountNodeReference(creditedAccountFullName), amount) { Remarks = remarks };
             ledger.AddAndExecute(transaction);

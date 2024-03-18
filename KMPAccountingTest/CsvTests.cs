@@ -639,12 +639,13 @@ namespace KMPAccountingTest
                 using var f = new StreamWriter(@"C:\temp\cbacash_correlation.txt");
                 foreach (var (bankRow, invoiceRow) in guessedRows)
                 {
-                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
+                    foreach (var transaction in LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!))
+                    {
+                        f.Write(transaction.ToString());
+                        f.WriteLine("--------------------------------------------------------------------------------");
 
-                    f.Write(transaction.ToString());
-                    f.WriteLine("--------------------------------------------------------------------------------");
-
-                    OU.AddAndExecute(ledger, transaction);
+                        OU.AddAndExecute(ledger, transaction);
+                    }
 
                     var actualBalance = OU.GetAccount(AccountConstants.Personal.Accounts.CashCba)!.Balance;
                     var expectedBalance = bankRow.GetDecimalValue(bankRow.OwnerTable.RowDescriptor.BalanceKey);
@@ -673,18 +674,19 @@ namespace KMPAccountingTest
 
             AccountConstants.EnsureCreateAllPersonalAccounts(ledger);
 
-            OU.AddAndExecuteTransaction(ledger, DateTime.Now, AccountConstants.Personal.Accounts.Expense, AccountConstants.Personal.Accounts.CommbankCreditCard, 6984.37m);
+            OU.AddAndExecuteTransaction(ledger, DateTime.Now, AccountConstants.Personal.Accounts.ExpenseMain, AccountConstants.Personal.Accounts.CommbankCreditCard, 6984.37m);
 
             {
                 using var f = new StreamWriter(@"C:\temp\cbacc_correlation.txt");
                 foreach (var (bankRow, invoiceRow) in guessedRows)
                 {
-                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
+                    foreach (var transaction in LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!))
+                    {
+                        f.WriteLine(transaction.ToString());
+                        f.WriteLine("--------------------------------------------------------------------------------");
 
-                    f.WriteLine(transaction.ToString());
-                    f.WriteLine("--------------------------------------------------------------------------------");
-
-                    OU.AddAndExecute(ledger, transaction);
+                        OU.AddAndExecute(ledger, transaction);
+                    }
 
                     var expectedBalance = bankRow.GetDecimalValue(bankRow.OwnerTable.RowDescriptor.BalanceKey);
                     if (expectedBalance.HasValue)
@@ -730,12 +732,13 @@ namespace KMPAccountingTest
                     var amount = bankRow.GetDecimalValue(bankRow.OwnerTable.RowDescriptor.AmountKey);
                     if (amount == 0) continue;
 
-                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
+                    foreach (var transaction in LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!))
+                    {
+                        f.WriteLine(transaction.ToString());
+                        f.WriteLine("--------------------------------------------------------------------------------");
 
-                    f.WriteLine(transaction.ToString());
-                    f.WriteLine("--------------------------------------------------------------------------------");
-
-                    OU.AddAndExecute(ledger, transaction);
+                        OU.AddAndExecute(ledger, transaction);
+                    }
 
                     // Check the balance if it's the last few rows. (The original transaction list may be wrong on balance for a few rows so we don't check all of them)
                     if (processedRows + 10 >= totalRows)
@@ -783,12 +786,13 @@ namespace KMPAccountingTest
                     var amount = bankRow.GetDecimalValue(bankRow.OwnerTable.RowDescriptor.AmountKey);
                     if (amount == 0) continue;
 
-                    var transaction = LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!);
+                    foreach (var transaction in LedgerBankTransactionRowCorrelator.CorrelateToSingleTransaction(bankRow!))
+                    {
+                        f.WriteLine(transaction.ToString());
+                        f.WriteLine("--------------------------------------------------------------------------------");
 
-                    f.WriteLine(transaction.ToString());
-                    f.WriteLine("--------------------------------------------------------------------------------");
-
-                    OU.AddAndExecute(ledger, transaction);
+                        OU.AddAndExecute(ledger, transaction);
+                    }
 
                     var expectedBalance = bankRow.GetDecimalValue(bankRow.OwnerTable.RowDescriptor.BalanceKey);
                     if (expectedBalance.HasValue)
@@ -1025,8 +1029,8 @@ namespace KMPAccountingTest
             fy23.Initialize();
             fy23.Step1_MatchTransactionsAndPrint(@"c:\temp\fy23_joint.csv");
             fy23.Step2_GenerateLedger(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family.txt", @"c:\temp\fy23_balance_kmp.txt");
-            fy23.Step3_SettleCrossLiabilities(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family_cleared.txt", @"c:\temp\fy23_balance_kmp_cleared.txt");
-            fy23.Step4_SettleTaxation(@"c:\temp\fy23_personalPLReport.txt", @"c:\temp\fy23_businessPLReport.txt");
+            fy23.Step3_HedgeLiabilities(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family_cleared.txt", @"c:\temp\fy23_balance_kmp_cleared.txt");
+            //fy23.Step4_SettleTaxation(@"c:\temp\fy23_personalPLReport.txt", @"c:\temp\fy23_businessPLReport.txt");
         }
 
         void ResetCsvReader()

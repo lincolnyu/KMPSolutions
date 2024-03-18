@@ -24,6 +24,11 @@
             return $"{group.Path.TrimEnd('.')}.{suffix.TrimStart('.')}";
         }
 
+        public bool StrictStartsWith(AccountPath accountPath)
+        {
+            return Path.StartsWith(accountPath.Path + ".");
+        }
+
         public string GetRelative(string prefix)
         {
             var res = Path.Substring(prefix.Length);

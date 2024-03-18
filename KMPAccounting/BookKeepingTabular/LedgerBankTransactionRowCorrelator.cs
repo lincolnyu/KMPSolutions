@@ -9,7 +9,12 @@ namespace KMPAccounting.BookKeepingTabular
 {
     public static class LedgerBankTransactionRowCorrelator
     {
-        public static List<SimpleTransaction> CorrelateToMultipleTransaction(ITransactionRow row)
+        public abstract class AccompanyingTransactionsDector
+        {
+            public abstract SimpleTransaction? Detect(DateTime dateTime, string counterAccountName, decimal counterAccountAmount);
+        }
+        
+        public static IEnumerable<SimpleTransaction> CorrelateToMultipleTransaction(ITransactionRow row, AccompanyingTransactionsDector? detector = null)
         {
             var table = (IBankTransactionTable)row.OwnerTable;
             var rowDescriptor = (BankTransactionRowDescriptor)table.RowDescriptor;
@@ -26,10 +31,18 @@ namespace KMPAccounting.BookKeepingTabular
             var dateTime = CsvUtility.ParseDateTime(dateTimeStr);
 
             var transactions = new List<SimpleTransaction>();
+            var accompanyingTransactions = new List<SimpleTransaction>();
 
             foreach (var (counterAccountName, counterAccountAmount) in counterAccounts)
             {
                 var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
+
+                var accompanyingTrasaction = detector?.Detect(dateTime, actualCounterAccountName, counterAccountAmount);
+                if (accompanyingTrasaction != null)
+                {
+                    accompanyingTransactions.Add(accompanyingTrasaction);
+                }
+
                 if (counterAccountAmount > 0)
                 {
                     transactions.Add(new SimpleTransaction(dateTime, new AccountNodeReference(baseAccountName), new AccountNodeReference(actualCounterAccountName), counterAccountAmount));
@@ -40,10 +53,17 @@ namespace KMPAccounting.BookKeepingTabular
                 }
             }
 
-            return transactions;
+            foreach (var t in transactions)
+            {
+                yield return t;
+            }
+            foreach (var t in  accompanyingTransactions)
+            {
+                yield return t;
+            }
         }
 
-        public static Entry? CorrelateToSingleTransaction(ITransactionRow row) 
+        public static IEnumerable<Entry> CorrelateToSingleTransaction(ITransactionRow row, AccompanyingTransactionsDector? detector = null) 
         {
             var table = (IBankTransactionTable)row.OwnerTable;
             var rowDescriptor = (BankTransactionRowDescriptor)table.RowDescriptor;
@@ -58,13 +78,14 @@ namespace KMPAccounting.BookKeepingTabular
             {
                 // TODO special cases.
                 // No transaction to create for amount 0.
-                return null;
+                yield break;
             }
 
             var counterAccountsStr = row[rowDescriptor.CounterAccountKey];
             var counterAccounts = ParseCounterAccounts(counterAccountsStr!, amount).ToArray();
 
             var dateTime = CsvUtility.ParseDateTime(dateTimeStr!);
+            var accompanyingTransactions = new List<SimpleTransaction>();
 
             if (counterAccounts.Length > 1)
             {
@@ -73,6 +94,13 @@ namespace KMPAccounting.BookKeepingTabular
                 foreach (var (counterAccountName, counterAccountAmount) in counterAccounts)
                 {
                     var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
+
+                    var accompanying = detector?.Detect(dateTime, actualCounterAccountName, counterAccountAmount);
+                    if (accompanying != null)
+                    {
+                        accompanyingTransactions.Add(accompanying);
+                    }
+
                     if (counterAccountAmount > 0)
                     {
                         compositeTransaction.Credited.Add((new AccountNodeReference(actualCounterAccountName), counterAccountAmount));
@@ -92,12 +120,18 @@ namespace KMPAccounting.BookKeepingTabular
                     compositeTransaction.Credited.Add((new AccountNodeReference(baseAccountName), -amount));
                 }
 
-                return compositeTransaction;
+                yield return compositeTransaction;
             }
             else
             {
                 var (counterAccountName, counterAccountAmount) = counterAccounts[0];
                 var actualCounterAccountName = table.CounterAccountPrefix + counterAccountName;
+
+                var accompanying = detector?.Detect(dateTime, actualCounterAccountName, counterAccountAmount);
+                if (accompanying != null)
+                {
+                    accompanyingTransactions.Add(accompanying);
+                }
 
                 SimpleTransaction singleTransaction;
                 if (counterAccountAmount > 0)
@@ -109,7 +143,12 @@ namespace KMPAccounting.BookKeepingTabular
                     singleTransaction = new SimpleTransaction(dateTime, new AccountNodeReference(actualCounterAccountName), new AccountNodeReference(baseAccountName), -counterAccountAmount);
                 }
 
-                return singleTransaction;
+                yield return singleTransaction;
+            }
+
+            foreach (var accompanyingTransaction in accompanyingTransactions)
+            {
+                yield return accompanyingTransaction;
             }
         }
 

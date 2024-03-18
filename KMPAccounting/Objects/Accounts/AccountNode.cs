@@ -25,8 +25,12 @@ namespace KMPAccounting.Objects.Accounts
             Name = name;
         }
 
-        public string ToString(SideEnum sheetRootSide, int indentDepth, int tabSize)
+        public string ToString(SideEnum sheetRootSide, int indentDepth, int tabSize, bool showZeroBranches = false)
         {
+            if (!showZeroBranches && IsZeroBranch())
+            {
+                return "";
+            }
             var sb = new StringBuilder();
             sb.Append(' ', indentDepth * tabSize);
             var displayBalance = Side != sheetRootSide ? -Balance : Balance;
@@ -40,6 +44,16 @@ namespace KMPAccounting.Objects.Accounts
                 }
             }
             return sb.ToString();
+        }
+
+        private bool IsZeroBranch()
+        {
+            if (Balance != 0) return false;
+            foreach (var c in Children.Values)
+            {
+                if (!c.IsZeroBranch()) return false;
+            }
+            return true;
         }
 
         public override void Dispose()

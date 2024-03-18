@@ -194,6 +194,7 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
             {
                 return KMPSpecifics.AccountConstants.Business.Accounts.Income;
             }
+            // We use full KMP path here for better clarity and future-proofness.
             var expenseGroup = KMPSpecifics.AccountConstants.Business.AccountGroups.Expense;
             if (category.ContainsWholeWord("Office Supplies"))
             {
