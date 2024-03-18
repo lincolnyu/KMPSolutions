@@ -494,7 +494,7 @@ namespace KMPAccountingTest
 
             var cbaccRows = items.Where(x => x.Item1 == 3).Select(x => (x.Item2, x.Item3));
 
-            var guesser = new AdbCashCounterAccountPrefiller();
+            var guesser = new AdbCashCounterAccountPrefiller(false);
             var guessedRows = cbaccRows.Select(x => { guesser.Prefill(x.Item1!, x.Item2, false); return ((TransactionRow<AdbRowDescriptor>)x.Item1!, x.Item2); });
 
             var printer = MultiTransactionRowSourceCsvCombiner.CreateSimpleCombiningRowDescriptors(CbaCcDesc, WaveDesc);
@@ -1030,7 +1030,7 @@ namespace KMPAccountingTest
             fy23.Step1_MatchTransactionsAndPrint(@"c:\temp\fy23_joint.csv");
             fy23.Step2_GenerateLedger(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family.txt", @"c:\temp\fy23_balance_kmp.txt");
             fy23.Step3_HedgeLiabilities(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family_cleared.txt", @"c:\temp\fy23_balance_kmp_cleared.txt");
-            //fy23.Step4_SettleTaxation(@"c:\temp\fy23_personalPLReport.txt", @"c:\temp\fy23_businessPLReport.txt");
+            fy23.Step4_SettleTaxation(@"c:\temp\fy23_personalPLReport.txt", @"c:\temp\fy23_businessPLReport.txt");
         }
 
         void ResetCsvReader()

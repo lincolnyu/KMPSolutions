@@ -10,7 +10,6 @@ namespace KMPAccounting.Objects.Reports
 
         public decimal TaxableIncome => Income + TaxWithheld - Deduction;
 
-
         public decimal Tax { get; set; }
 
         public decimal TaxReturn => TaxWithheld - Tax; // Negative for tax payable

@@ -25,17 +25,17 @@ namespace KMPAccounting.ReportSchemes
 
         public ReportSchemePersonalGeneric(PersonalDetails selfDetails, PersonalDetails? partnerDetails = null)
         {
-            selfDetails_ = selfDetails;
-            partnerDetails_ = partnerDetails;
+            SelfDetails = selfDetails;
+            PartnerDetails = partnerDetails;
         }
 
         public override void Initialize()
         {
-            selfDetails_.AccountsSetup.InitializeTaxPeriod();
+            SelfDetails.AccountsSetup.InitializeTaxPeriod();
 
-            if (partnerDetails_ != null)
+            if (PartnerDetails != null)
             {
-                partnerDetails_.AccountsSetup.InitializeTaxPeriod();
+                PartnerDetails.AccountsSetup.InitializeTaxPeriod();
             }
         }
 
@@ -44,13 +44,13 @@ namespace KMPAccounting.ReportSchemes
             var pnlReport = new PnlReport();
             PnlReport? partnerPnlReport = null;
 
-            selfDetails_.AccountsSetup.FinalizeTaxPeriodPreTaxCalculation(pnlReport);
+            SelfDetails.AccountsSetup.FinalizeTaxPeriodPreTaxCalculation(pnlReport);
 
-            if (partnerDetails_ != null)
+            if (PartnerDetails != null)
             {
                 partnerPnlReport = new PnlReport();
 
-                partnerDetails_.AccountsSetup.FinalizeTaxPeriodPreTaxCalculation(partnerPnlReport);
+                PartnerDetails.AccountsSetup.FinalizeTaxPeriodPreTaxCalculation(partnerPnlReport);
 
                 var (tax, partnerTax) = GetFamilyTax(pnlReport.TaxableIncome, partnerPnlReport.TaxableIncome);
 
@@ -62,13 +62,13 @@ namespace KMPAccounting.ReportSchemes
                 pnlReport.Tax = GetPersonalTax(pnlReport.TaxableIncome);
             }
 
-            selfDetails_.AccountsSetup.FinalizeTaxPeriodPostTaxCalculation(pnlReport);
+            SelfDetails.AccountsSetup.FinalizeTaxPeriodPostTaxCalculation(pnlReport);
 
             yield return pnlReport;
 
             if (partnerPnlReport != null)
             {
-                partnerDetails_.AccountsSetup.FinalizeTaxPeriodPostTaxCalculation(partnerPnlReport);
+                PartnerDetails!.AccountsSetup.FinalizeTaxPeriodPostTaxCalculation(partnerPnlReport);
                
                 yield return partnerPnlReport;
             }    
@@ -78,7 +78,7 @@ namespace KMPAccounting.ReportSchemes
 
         protected virtual (decimal, decimal) GetFamilyTax(decimal taxableIncome1, decimal taxableIncome2)
         {
-            // TODO Find out family tax policy
+            // TODO Find out the real family tax policy
             var tax1 = GetPersonalTax(taxableIncome1);
             var tax2 = GetPersonalTax(taxableIncome2);
             return (tax1, tax2);
@@ -118,8 +118,8 @@ namespace KMPAccounting.ReportSchemes
             }
         }
 
-        private readonly PersonalDetails selfDetails_;
+        public PersonalDetails SelfDetails { get; }
 
-        private readonly PersonalDetails? partnerDetails_;
+        public PersonalDetails? PartnerDetails { get; }
     }
 }

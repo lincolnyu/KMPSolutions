@@ -24,6 +24,8 @@ namespace KMPAccounting.ReportSchemes
             /// </summary>
             public string? EquityMain { get; set; }
 
+            public decimal? BusinessLossDeduction { get; set; }
+
             public static AccountsSetup CreateStandard(string bookName, string subdivision = "")
             {
                 var state = (AccountPath)bookName;
@@ -85,7 +87,7 @@ namespace KMPAccounting.ReportSchemes
         public static void FinalizeTaxPeriodPreTaxCalculation(this AccountsSetup accountsSetup, PnlReport pnlReport)
         {
             pnlReport.Income = KOU.GetAccount(accountsSetup.Income)?.Balance ?? 0;
-            pnlReport.Deduction = KOU.GetAccount(accountsSetup.Deduction)?.Balance ?? 0;
+            pnlReport.Deduction = (KOU.GetAccount(accountsSetup.Deduction)?.Balance ?? 0) + (accountsSetup.BusinessLossDeduction.GetValueOrDefault(0));
             pnlReport.TaxWithheld = KOU.GetAccount(accountsSetup.TaxWithheld)?.Balance ?? 0;
         }
 
