@@ -178,7 +178,7 @@ namespace KMPAccounting.Objects
             ledger.AddAndExecute(transaction);
         }
 
-        public static void AddAndExecuteTransaction(this Ledger? ledger, DateTime dateTime, IEnumerable<(string, decimal)> debited, IEnumerable<(string, decimal)> credited, string? remarks = null, bool execute = true)
+        public static void AddAndExecuteTransaction(this Ledger? ledger, DateTime dateTime, IEnumerable<(string, decimal)> debited, IEnumerable<(string, decimal)> credited, string? remarks = null)
         {
             var transaction = new CompositeTransaction(dateTime)
             {
