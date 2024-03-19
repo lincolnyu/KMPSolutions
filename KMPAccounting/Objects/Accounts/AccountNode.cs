@@ -126,7 +126,14 @@ namespace KMPAccounting.Objects.Accounts
 
         public bool IsSameAccountAs(AccountNode that) => FullName == that.FullName && Side == that.Side;
 
-        // Assuming that node has already the same side and name
+        /// <summary>
+        ///  Duplicate the tree from the current node to 'that'
+        /// </summary>
+        /// <param name="that">The target root to copy to</param>
+        /// <param name="exactCopy">Remove the branches in the target if the source doesn't have them instead of just zeroing them.</param>
+        /// <remarks>
+        ///  Assuming that node has already the same side and name
+        /// </remarks>
         public void CopyTo(AccountNode that, bool exactCopy)
         {
             CopyBasicFieldsTo(that);
