@@ -1,4 +1,5 @@
-﻿using KMPAccounting.Objects.Accounts;
+﻿using KMPAccounting.Objects.AccountCreation;
+using KMPAccounting.Objects.Accounts;
 using KMPCommon;
 using System;
 using System.Text;
@@ -80,7 +81,8 @@ namespace KMPAccounting.Objects.BookKeeping
 
             sb.AppendLine(DateTime.ToShortDateOnlyString());
             var type = ParentAndSide == null? "" : (ParentAndSide.Value.Item2 == AccountNode.SideEnum.Credit ? "Credit " : "Debit ");
-            sb.AppendLine($"Open {type}Account {Name}");
+            var fullName = AccountPath.Join(ParentAndSide?.Item1.FullName??string.Empty, Name);
+            sb.AppendLine($"Open {type}Account {fullName}");
 
             return sb.ToString();
         }

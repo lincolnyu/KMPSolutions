@@ -1028,10 +1028,11 @@ namespace KMPAccountingTest
             var fy23 = new FinancialYear23();
             fy23.Initialize();
             fy23.Step1_MatchTransactionsAndPrint(@"c:\temp\fy23_joint.csv");
-            fy23.Step2_GenerateLedger(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family.txt", @"c:\temp\fy23_balance_kmp.txt");
-            fy23.Step3_OffsetLiabilities(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family_liabilitiesoffset.txt", @"c:\temp\fy23_balance_kmp_liabilitiesoffset.txt");
+            fy23.Step2_GenerateLedger(@"c:\temp\fy23_balance_family.txt", @"c:\temp\fy23_balance_kmp.txt");
+            fy23.Step3_OffsetLiabilities(@"c:\temp\fy23_balance_family_liabilitiesoffset.txt", @"c:\temp\fy23_balance_kmp_liabilitiesoffset.txt");
             fy23.Step4_TrialCalculatePnLAndTax(@"c:\temp\fy23_personalPnLReport.txt", @"c:\temp\fy23_businessPnLReport.txt");
-            fy23.Step5_ClearEquity(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family_cleanedup.txt", @"c:\temp\fy23_balance_kmp_cleanedup.txt");
+            fy23.Step5_ClearEquity( @"c:\temp\fy23_balance_family_cleanedup.txt", @"c:\temp\fy23_balance_kmp_cleanedup.txt");
+            fy23.PrintLedger(@"c:\temp\fy23_ledger.txt");
         }
 
         void ResetCsvReader()

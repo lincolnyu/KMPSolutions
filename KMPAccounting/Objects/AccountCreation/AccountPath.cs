@@ -19,9 +19,16 @@
 
         public static AccountPath operator +(AccountPath group, string suffix)
         {
+            var trimmedGroupPath = group.Path.TrimEnd('.');
+            if (trimmedGroupPath == "") return suffix.TrimStart('.');
             suffix = suffix.Trim();
-            if (suffix == "") return group.Path.TrimEnd('.');
-            return $"{group.Path.TrimEnd('.')}.{suffix.TrimStart('.')}";
+            if (suffix == "") return trimmedGroupPath;
+            return $"{trimmedGroupPath}.{suffix.TrimStart('.')}";
+        }
+
+        public static AccountPath Join(string a, string b)
+        {
+            return (AccountPath)a + b;
         }
 
         public bool StrictStartsWith(AccountPath accountPath)
