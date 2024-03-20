@@ -1029,9 +1029,9 @@ namespace KMPAccountingTest
             fy23.Initialize();
             fy23.Step1_MatchTransactionsAndPrint(@"c:\temp\fy23_joint.csv");
             fy23.Step2_GenerateLedger(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family.txt", @"c:\temp\fy23_balance_kmp.txt");
-            fy23.Step3_HedgeLiabilities(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family_cleared.txt", @"c:\temp\fy23_balance_kmp_cleared.txt");
-            fy23.Step4_SettleTaxation(@"c:\temp\fy23_personalPLReport.txt", @"c:\temp\fy23_businessPLReport.txt");
-            fy23.Step5_ClearDeductions(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family_settled.txt", @"c:\temp\fy23_balance_kmp_settled.txt");
+            fy23.Step3_OffsetLiabilities(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family_liabilitiesoffset.txt", @"c:\temp\fy23_balance_kmp_liabilitiesoffset.txt");
+            fy23.Step4_TrialCalculatePnLAndTax(@"c:\temp\fy23_personalPnLReport.txt", @"c:\temp\fy23_businessPnLReport.txt");
+            fy23.Step5_ClearEquity(@"c:\temp\fy23_ledger.txt", @"c:\temp\fy23_balance_family_cleanedup.txt", @"c:\temp\fy23_balance_kmp_cleanedup.txt");
         }
 
         void ResetCsvReader()
