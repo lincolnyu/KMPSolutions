@@ -1027,11 +1027,11 @@ namespace KMPAccountingTest
         {
             var fy23 = new FinancialYear23();
             fy23.Initialize();
-            fy23.Step1_MatchTransactionsAndPrint(@"c:\temp\fy23_joint.csv");
-            fy23.Step2_GenerateLedger(@"c:\temp\fy23_balance_family.txt", @"c:\temp\fy23_balance_kmp.txt");
-            fy23.Step3_OffsetLiabilities(@"c:\temp\fy23_balance_family_liabilitiesoffset.txt", @"c:\temp\fy23_balance_kmp_liabilitiesoffset.txt");
-            fy23.Step4_TrialCalculatePnLAndTax(@"c:\temp\fy23_personalPnLReport.txt", @"c:\temp\fy23_businessPnLReport.txt");
-            fy23.Step5_ClearEquity( @"c:\temp\fy23_balance_family_cleanedup.txt", @"c:\temp\fy23_balance_kmp_cleanedup.txt");
+            fy23.Step1_MatchTransactionsAndPrint(@"c:\temp\fy23_step1_matched.csv");
+            fy23.Step2_CorrelateToLedger(@"c:\temp\fy23_step2_bal_personal.txt", @"c:\temp\fy23_step2_bal_kmp.txt");
+            fy23.Step3_OffsetLiabilities(@"c:\temp\fy23_step3_bal_personal_liabilitiesOffset.txt", @"c:\temp\fy23_step3_bal_kmp_liabilitiesOffset.txt");
+            fy23.Step4_ClaimAndTrialCalculatePnLAndTax(@"c:\temp\fy23_step4_bal_personal_taxPrep.txt", @"c:\temp\fy23_step4_bal_kmp_taxPrep.txt", @"c:\temp\fy23_step4_pnl_personal.txt", @"c:\temp\fy23_step4_pnl_business.txt");
+            fy23.Step5_ClearEquity( @"c:\temp\fy23_step5_bal_personal_cleanedup.txt", @"c:\temp\fy23_step5_bal_kmp_cleanedup.txt");
             fy23.PrintLedger(@"c:\temp\fy23_ledger.txt");
         }
 

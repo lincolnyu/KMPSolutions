@@ -118,6 +118,48 @@ namespace KMPAccounting.ReportSchemes
             }
         }
 
+        /// <summary>
+        ///  Stage 3 Tax cut
+        /// </summary>
+        /// <param name="taxableIncome">Taxable income</param>
+        /// <returns>Tax paiable</returns>
+        /// <remarks>
+        /// https://www.etax.com.au/stage-3-tax-cuts-explained/?utm_source=taxtipsmar2024&utm_medium=email&utm_campaign=taxtips0324-seg2-5397002&sc_src=email_5397002&sc_lid=372240647&sc_uid=YP8Nz3SJbL&sc_llid=655882&sc_eh=99de70f40385c2701
+        /// </remarks>
+        public static decimal GetPersonalTax_FY2024Stage3Cut(decimal taxableIncome)
+        {
+            const decimal Bracket0UpperLimit = 18200;
+            const decimal Bracket1UpperLimit = 45000;
+            const decimal Bracket2UpperLimit = 135000;  // changed
+            const decimal Bracket3UpperLimit = 180000;
+
+            const decimal Bracket1Rate = 0.16m; // changed
+            const decimal Bracket2Rate = 0.325m;
+            const decimal Bracket3Rate = 0.37m;
+            const decimal Bracket4Rate = 0.45m;
+
+            if (taxableIncome <= Bracket0UpperLimit)
+            {
+                return 0m;
+            }
+            else if (taxableIncome <= Bracket1UpperLimit)
+            {
+                return (taxableIncome - Bracket0UpperLimit) * Bracket1Rate;
+            }
+            else if (taxableIncome <= Bracket2UpperLimit)
+            {
+                return 5092m + (taxableIncome - Bracket1UpperLimit) * Bracket2Rate;
+            }
+            else if (taxableIncome <= Bracket3UpperLimit)
+            {
+                return 29467m + (taxableIncome - Bracket2UpperLimit) * Bracket3Rate;
+            }
+            else
+            {
+                return 51667m + (taxableIncome - Bracket3UpperLimit) * Bracket4Rate;
+            }
+        }
+
         public PersonalDetails SelfDetails { get; }
 
         public PersonalDetails? PartnerDetails { get; }
