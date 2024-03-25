@@ -1,4 +1,5 @@
 ﻿using KMPAccounting.BookKeepingTabular;
+using NUnit.Framework.Constraints;
 using System.Runtime.CompilerServices;
 
 namespace KMPAccountingTest
@@ -33,6 +34,27 @@ namespace KMPAccountingTest
         {
             // Assuming it's in descending order
             return input.Reverse().ResetIndex().OrderBy(x=>x, TransactionComparers.IndexSecond.Instance).ResetIndex();
+        }
+
+        public static string? CompareTextFiles(string dirSourceFiles, DirectoryInfo dirTargetFiles)
+        {
+            foreach (var file in dirTargetFiles.GetFiles())
+            {
+                var fileName = file.Name;
+                var contentTarget = file.OpenText().ReadToEnd();
+                var sourceFile = Path.Combine(dirSourceFiles, fileName);
+                if (!File.Exists(sourceFile))
+                {
+                    return $"File '{sourceFile}' is expected but does not exist.";
+                }
+                using var sf = new StreamReader(sourceFile);
+                var contentSource = sf.ReadToEnd();
+                if (contentSource != contentTarget)
+                {
+                    return $"File '{sourceFile}' and target '{file.FullName}' differ.";
+                }
+            }
+            return null;
         }
     }
 }
