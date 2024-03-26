@@ -7,7 +7,7 @@ namespace KMPAccounting.BookKeepingTabular
 {
     public class BaseTransactionRowDescriptor : ITransactionRowDescriptor
     {
-        protected BaseTransactionRowDescriptor(string dateTimeKey, string amountKey , List<string> keys)
+        protected BaseTransactionRowDescriptor(string dateTimeKey, string amountKey , IList<string> keys)
         {
             DateTimeKey = dateTimeKey;
             AmountKey = amountKey;

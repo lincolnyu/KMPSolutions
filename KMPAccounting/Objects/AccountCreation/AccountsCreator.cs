@@ -9,17 +9,17 @@ namespace KMPAccounting.Objects.AccountCreation
 {
     public static class AccountsCreator
     {
-        public static void CreateAccounts<T>(this Ledger ledger)
+        public static void CreateAccounts<T>(this Ledger ledger, DateTime dateTime)
         {
-            CreateAccounts(ledger, typeof(T), null);
+            CreateAccounts(ledger, dateTime, typeof(T), null);
         }
 
-        public static void CreateAccounts(this Ledger ledger, object o)
+        public static void CreateAccounts(this Ledger ledger, DateTime dateTime, object o)
         {
-            CreateAccounts(ledger, o.GetType(), o);
+            CreateAccounts(ledger, dateTime, o.GetType(), o);
         }
 
-        public static void CreateAccounts(this Ledger ledger, Type t, object? o = null)
+        public static void CreateAccounts(this Ledger ledger, DateTime dateTime, Type t, object? o = null)
         {
             var allItems = t.GetProperties().Where(x =>
             {
@@ -38,7 +38,7 @@ namespace KMPAccounting.Objects.AccountCreation
 
             foreach (var (accountPath, oppositeToParent) in allItems)
             {
-                OU.EnsureCreateAccount(ledger, accountPath, oppositeToParent);
+                OU.EnsureCreateAccount(ledger, dateTime, accountPath, oppositeToParent);
             }
         }
     }

@@ -144,7 +144,7 @@ namespace KMPAccounting.Objects
         /// <param name="ledger">The ledger to use for the account opening entry.</param>
         /// <param name="state">The accounts state the account is in.</param>
         /// <param name="fullName">The full name that identify the account in the state.</param>
-        public static void EnsureCreateAccount(this Ledger? ledger, AccountsState state, string fullName, bool sideDifferToParent)
+        public static void EnsureCreateAccount(this Ledger? ledger, DateTime dateTime, AccountsState state, string fullName, bool sideDifferToParent)
         {
             var splitNames = fullName.Split('.');
             AccountNode p = state;
@@ -156,7 +156,7 @@ namespace KMPAccounting.Objects
                 {
                     parentFullName ??= p.FullName;
                     var side = i == splitNames.Length - 1 && sideDifferToParent ? AccountNode.GetOppositeSide(p.Side) : p.Side;
-                    var openAccount = new OpenAccount(DateTime.Now, (new AccountNodeReference(parentFullName), side), seg);
+                    var openAccount = new OpenAccount(dateTime, (new AccountNodeReference(parentFullName), side), seg);
                     ledger.AddAndExecute(openAccount);
                     parentFullName += "." + seg;
                 }
@@ -174,7 +174,7 @@ namespace KMPAccounting.Objects
         /// <param name="ledger">The ledger to use for the account opening entry.</param>
         /// <param name="fullName">The full name that identify the account globally.</param>
         /// <param name="sideDifferToParent">If the account's leaf node is to have the opposite side to its immediate parent. The intermediate nodes created towards the leaf node will all have the same side as their parents.</param>
-        public static void EnsureCreateAccount(this Ledger? ledger, string fullName, bool sideDifferToParent)
+        public static void EnsureCreateAccount(this Ledger? ledger, DateTime dateTime, string fullName, bool sideDifferToParent)
         {
             // This makes sure the state is already created.
             // The function is meant to create accounts for a state. And that's why it expects the fullName to have at least 2 segments.
@@ -184,7 +184,7 @@ namespace KMPAccounting.Objects
             var state = AccountsState.GetAccountsState(stateName);
             if (state == null)
             {
-                var openAccount = new OpenAccount(DateTime.Now, null, stateName);
+                var openAccount = new OpenAccount(dateTime, null, stateName);
                 ledger.AddAndExecute(openAccount);
                
                 state = AccountsState.GetAccountsState(stateName)!;
@@ -192,7 +192,7 @@ namespace KMPAccounting.Objects
 
             if (split.Length == 2)
             {
-                ledger.EnsureCreateAccount(state!, split[1], sideDifferToParent);
+                ledger.EnsureCreateAccount(dateTime, state!, split[1], sideDifferToParent);
             }
         }
 

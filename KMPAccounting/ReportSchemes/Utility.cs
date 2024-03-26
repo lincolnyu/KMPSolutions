@@ -79,7 +79,7 @@ namespace KMPAccounting.ReportSchemes
             var deltaEquity = income + taxReturn  - expense - deduction  - taxWithheld;
 
             Ledger? ledger = null;
-            ledger.EnsureCreateAccount(accountsSetup.EquityMain, false);
+            ledger.EnsureCreateAccount(DateTime.Now, accountsSetup.EquityMain, false);
 
             KOU.GetAccount(accountsSetup.EquityMain)!.Balance += deltaEquity;
         }
@@ -94,8 +94,8 @@ namespace KMPAccounting.ReportSchemes
         public static void FinalizeTaxPeriodPostTaxCalculation(this AccountsSetup accountsSetup, PnlReport pnlReport)
         {
             Ledger? ledger = null;
-            ledger.EnsureCreateAccount(accountsSetup.TaxReturn, false);
-            ledger.EnsureCreateAccount(accountsSetup.TaxReturnCashAccount, false);
+            ledger.EnsureCreateAccount(DateTime.Now, accountsSetup.TaxReturn, false);
+            ledger.EnsureCreateAccount(DateTime.Now, accountsSetup.TaxReturnCashAccount, false);
 
             KOU.AddAndExecuteTransaction(ledger, DateTime.Now, accountsSetup.TaxReturnCashAccount, accountsSetup.TaxReturn, pnlReport.TaxReturn);
 

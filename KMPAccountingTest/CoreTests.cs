@@ -33,17 +33,17 @@ namespace KMPCoreObjectsTest
             var deductionAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.Deduction);
             var expenseAccount = StandardAccounts.GetAccountFullName("Tom", StandardAccounts.Expense);
 
-            OU.EnsureCreateAccount(ledger, assetsAccount, false);
-            OU.EnsureCreateAccount(ledger, equityAccount, true);
-            OU.EnsureCreateAccount(ledger, liabilityAccount, true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, assetsAccount, false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, equityAccount, true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, liabilityAccount, true);
 
             var tomState = AccountsState.GetAccountsState("Tom")!;
 
             const decimal BaseEquity = 300m;
 
             // Initial balance setup
-            OU.EnsureCreateAccount(ledger, cashAccount, false);
-            OU.EnsureCreateAccount(ledger, equityMainAccount, false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, cashAccount, false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, equityMainAccount, false);
             ledger.AddAndExecuteTransaction(DateTime.Now, cashAccount, equityMainAccount, BaseEquity);
 
             var indexInitial = ledger.Entries.Count;
@@ -58,9 +58,9 @@ namespace KMPCoreObjectsTest
             tomState.CopyTo(tomInitialBalanceSnapshot, true);
 
             // Real transactions
-            OU.EnsureCreateAccount(ledger, taxWithheldAssetAccount, false);
-            OU.EnsureCreateAccount(ledger, taxWithheldAccount, false);
-            OU.EnsureCreateAccount(ledger, salaryAccount, false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, taxWithheldAssetAccount, false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, taxWithheldAccount, false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, salaryAccount, false);
 
             const decimal GrossSalary = 25000m;
             const decimal TaxWithheld = 2000m;
@@ -70,9 +70,9 @@ namespace KMPCoreObjectsTest
             ledger.AddAndExecuteTransaction(DateTime.Now, new[] { (cashAccount, GrossSalary - TaxWithheld), (taxWithheldAssetAccount, TaxWithheld) },
                 new[] { (salaryAccount, GrossSalary - TaxWithheld), (taxWithheldAccount, TaxWithheld) });
 
-            OU.EnsureCreateAccount(ledger, salaryAccount, true);
-            OU.EnsureCreateAccount(ledger, deductionAccount, true);
-            OU.EnsureCreateAccount(ledger, expenseAccount, false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, salaryAccount, true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, deductionAccount, true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, expenseAccount, false);
 
             ledger.AddAndExecuteTransaction(DateTime.Now, expenseAccount, cashAccount, Expense);
 
@@ -134,20 +134,20 @@ namespace KMPCoreObjectsTest
 
             var ledger = new Ledger();
 
-            OU.EnsureCreateAccount(ledger, "Tom.Assets", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity", true);
-            OU.EnsureCreateAccount(ledger, "Tom.Liability", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Assets", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Liability", true);
 
             const decimal BaseEquity = 300m;
 
             // Initial balance setup
-            OU.EnsureCreateAccount(ledger, "Tom.Assets.Cash", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Main", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Assets.Cash", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Main", false);
             ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets.Cash", "Tom.Equity.Main", BaseEquity, null);
 
             // Real transactions
-            OU.EnsureCreateAccount(ledger, "Tom.Liability.TaxWithheld", true);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Income.Salary", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Liability.TaxWithheld", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Income.Salary", false);
 
             const decimal Salary = 25000m;
             const decimal TaxWithheld = 2000m;
@@ -157,8 +157,8 @@ namespace KMPCoreObjectsTest
             ledger.AddAndExecuteTransaction(DateTime.Now, new[] { ("Tom.Assets.Cash", Salary - TaxWithheld), ("Tom.Liability.TaxWithheld", TaxWithheld) },
                 new[] { ("Tom.Equity.Income.Salary", Salary) }, null);
 
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Expense", true);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Deduction", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Expense", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Deduction", true);
 
             ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Equity.Expense", "Tom.Assets.Cash", Expense, null);
 
@@ -208,18 +208,18 @@ namespace KMPCoreObjectsTest
 
             var ledger = new Ledger();
 
-            OU.EnsureCreateAccount(ledger, "Tom.Assets", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity", true);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Main", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity2", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Assets", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Main", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Equity1", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Equity2", false);
             
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1.Equity1_1_1", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1.Equity1_1_2", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Equity1.Equity1_1", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Equity1.Equity1_1.Equity1_1_1", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Equity1.Equity1_1.Equity1_1_2", true);
 
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_2", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_2.Equity1_2_1", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Equity1.Equity1_2", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Equity1.Equity1_2.Equity1_2_1", true);
             
             ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets", "Tom.Equity.Equity1.Equity1_1.Equity1_1_1", 300);
             ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets", "Tom.Equity.Equity1.Equity1_1.Equity1_1_2", 200);
@@ -261,18 +261,18 @@ namespace KMPCoreObjectsTest
 
             var ledger = new Ledger();
 
-            OU.EnsureCreateAccount(ledger, "Tom.Assets", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity", true);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Main", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity2", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Assets", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Main", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Equity1", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Equity2", false);
 
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1.Equity1_1_1", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_1.Equity1_1_2", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Equity1.Equity1_1", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Equity1.Equity1_1.Equity1_1_1", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Equity1.Equity1_1.Equity1_1_2", true);
 
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_2", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Equity1.Equity1_2.Equity1_2_1", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Equity1.Equity1_2", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Equity1.Equity1_2.Equity1_2_1", true);
 
             ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets", "Tom.Equity.Equity1.Equity1_1.Equity1_1_1", 300);
             ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets", "Tom.Equity.Equity1.Equity1_1.Equity1_1_2", 200);
@@ -302,20 +302,20 @@ namespace KMPCoreObjectsTest
 
             var ledger = new Ledger();
 
-            OU.EnsureCreateAccount(ledger, "Tom.Assets", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity", true);
-            OU.EnsureCreateAccount(ledger, "Tom.Liability", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Assets", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Liability", true);
 
             const decimal BaseEquity = 300m;
 
             // Initial balance setup
-            OU.EnsureCreateAccount(ledger, "Tom.Assets.Cash", false);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Main", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Assets.Cash", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Main", false);
             ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Assets.Cash", "Tom.Equity.Main", BaseEquity);
 
             // Real transactions
-            OU.EnsureCreateAccount(ledger, "Tom.Liability.TaxWithheld", true);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Income.Salary", false);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Liability.TaxWithheld", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Income.Salary", false);
 
             const decimal Salary = 25000m;
             const decimal TaxWithheld = 2000m;
@@ -326,8 +326,8 @@ namespace KMPCoreObjectsTest
                 new[] { ("Tom.Equity.Income.Salary", Salary) });
 
 
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Expense", true);
-            OU.EnsureCreateAccount(ledger, "Tom.Equity.Deduction", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Expense", true);
+            OU.EnsureCreateAccount(ledger, DateTime.Now, "Tom.Equity.Deduction", true);
 
             ledger.AddAndExecuteTransaction(DateTime.Now, "Tom.Equity.Expense", "Tom.Assets.Cash", Expense);
 

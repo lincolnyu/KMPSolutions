@@ -14,9 +14,9 @@ namespace KMPAccounting.BookKeepingTabular
 
         #endregion
 
-        #region Main Method
+        #region Main MethodS
 
-        public IEnumerable<TransactionRow<TTransactionRowDescriptor>> GetRows<TTransactionRowDescriptor>(StreamReader sr, TransactionTable<TTransactionRowDescriptor> tableDescriptor, bool ignoreDummyKey=true) where TTransactionRowDescriptor : BaseTransactionRowDescriptor
+        public IEnumerable<TransactionRow<TTransactionRowDescriptor>> GetRows<TTransactionRowDescriptor>(StreamReader sr, TransactionTable<TTransactionRowDescriptor> tableDescriptor, bool ignoreDummyKey=true, bool closeStream = true) where TTransactionRowDescriptor : BaseTransactionRowDescriptor
         {
             HasHeader = null;
             var index = 0;
@@ -50,9 +50,13 @@ namespace KMPAccounting.BookKeepingTabular
                 }
                 yield return row;
             }
+            if (closeStream)
+            {
+                sr.Close();
+            }
         }
 
-        public IEnumerable<(TransactionRow<TTransactionRowDescriptor>, List<string>)> GetRows<TTransactionRowDescriptor>(StreamReader sr, TransactionTable<TTransactionRowDescriptor> tableDescriptor, IList<int> fieldsSelector, bool hasHeader, bool ignoreDummyKey = true) where TTransactionRowDescriptor : BaseTransactionRowDescriptor
+        public IEnumerable<(TransactionRow<TTransactionRowDescriptor>, List<string>)> GetRows<TTransactionRowDescriptor>(StreamReader sr, TransactionTable<TTransactionRowDescriptor> tableDescriptor, IList<int> fieldsSelector, bool hasHeader, bool ignoreDummyKey = true, bool closeStream = true) where TTransactionRowDescriptor : BaseTransactionRowDescriptor
         {
             HasHeader = null;
             var index = 0;
@@ -79,6 +83,7 @@ namespace KMPAccounting.BookKeepingTabular
                     {
                         HasHeader = true;
                         LoadedHeader = fields;
+
                         // Skip the loaded header
                         originalFields = CsvUtility.GetAndBreakRow(sr).ToList();
 
@@ -112,6 +117,10 @@ namespace KMPAccounting.BookKeepingTabular
                     }
                 }
                 yield return (row, originalFields);
+            }
+            if (closeStream)
+            {
+                sr.Close();
             }
         }
 

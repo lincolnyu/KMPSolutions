@@ -632,7 +632,7 @@ namespace KMPAccountingTest
 
             var ledger = new Ledger();
 
-            AccountConstants.EnsureCreateAllPersonalAccounts(ledger);
+            AccountConstants.EnsureCreateAllPersonalAccounts(ledger, DateTime.Now);
 
             OU.AddAndExecuteTransaction(ledger, DateTime.Now, AccountConstants.Personal.Accounts.CashCba, AccountConstants.Personal.Accounts.Equity, 8701.53m);
 
@@ -675,7 +675,7 @@ namespace KMPAccountingTest
 
             var ledger = new Ledger();
 
-            AccountConstants.EnsureCreateAllPersonalAccounts(ledger);
+            AccountConstants.EnsureCreateAllPersonalAccounts(ledger, DateTime.Now);
 
             OU.AddAndExecuteTransaction(ledger, DateTime.Now, AccountConstants.Personal.Accounts.ExpenseMain, AccountConstants.Personal.Accounts.CommbankCreditCard, 6984.37m);
 
@@ -721,7 +721,7 @@ namespace KMPAccountingTest
 
             var ledger = new Ledger();
 
-            AccountConstants.EnsureCreateAllBusinessAccounts(ledger);
+            AccountConstants.EnsureCreateAllBusinessAccounts(ledger, DateTime.Now);
 
             OU.AddAndExecuteTransaction(ledger, DateTime.Now, AccountConstants.Business.Accounts.Cash, AccountConstants.Business.Accounts.Equity, 663.91m);
 
@@ -775,7 +775,7 @@ namespace KMPAccountingTest
 
             var ledger = new Ledger();
 
-            AccountConstants.EnsureCreateAllPersonalAccounts(ledger);
+            AccountConstants.EnsureCreateAllPersonalAccounts(ledger, DateTime.Now);
 
             OU.AddAndExecuteTransaction(ledger, DateTime.Now, AccountConstants.Personal.Accounts.CashAdb, AccountConstants.Personal.Accounts.Equity, 279188.86m);
 
@@ -1044,7 +1044,15 @@ namespace KMPAccountingTest
 
         [Test]
         public void TestSuper()
-        { 
+        {
+            var myNorthCashFileName = Path.Combine(StatementsDir, @"mynorth\Cash.csv");
+            var myNorthCashRows = SuperTracker.GetMyNorth<MyNorthCashDescriptor>(myNorthCashFileName, "MyNorth Cash").AssertChangeToAscendingInDate().ToList();
+
+            var myNorthNonCashFileName = Path.Combine(StatementsDir, @"mynorth\Invest.csv");
+            var myNorthNonCashRows = SuperTracker.GetMyNorth<MyNorthNonCashDescriptor>(myNorthNonCashFileName, "MyNorth Investment").AssertChangeToAscendingInDate().ToList();
+
+            Assert.That(myNorthCashRows.Count(), Is.EqualTo(304));
+            Assert.That(myNorthNonCashRows.Count(), Is.EqualTo(51));
         }
 
         void ResetCsvReader()
