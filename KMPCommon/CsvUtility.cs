@@ -198,7 +198,11 @@ namespace KMPCommon
             {
                 str = str.Replace("$", "").Replace(",", "").Replace("\"", "");
             }
-            return decimal.Parse(str);
+            if (decimal.TryParse(str, out var val))
+            {
+                return val;
+            }
+            return null;
         }
     }
 }

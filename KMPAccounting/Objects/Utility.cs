@@ -202,13 +202,31 @@ namespace KMPAccounting.Objects
             entry.Redo();
         }
 
+
+        public static SimpleTransaction? SmartCreateTransaction(DateTime dateTime, string debitedAccountFullName, string creditedAccountFullName, decimal amount, string? remarks = null)
+        {
+            if (amount > 0)
+            {
+                return CreateTransaction(dateTime, debitedAccountFullName, creditedAccountFullName, amount, remarks);
+            }
+            else if (amount < 0)
+            {
+                return CreateTransaction(dateTime, creditedAccountFullName, debitedAccountFullName, -amount, remarks);
+            }
+            return null;
+        }
+   
+
+        public static SimpleTransaction CreateTransaction(DateTime dateTime, string debitedAccountFullName, string creditedAccountFullName, decimal amount, string? remarks = null)
+            => new SimpleTransaction(dateTime, new AccountNodeReference(debitedAccountFullName), new AccountNodeReference(creditedAccountFullName), amount) { Remarks = remarks };
+
         public static void AddAndExecuteTransaction(this Ledger? ledger, DateTime dateTime, string debitedAccountFullName, string creditedAccountFullName, decimal amount, string? remarks = null)
         {
-            var transaction = new SimpleTransaction(dateTime, new AccountNodeReference(debitedAccountFullName), new AccountNodeReference(creditedAccountFullName), amount) { Remarks = remarks };
+            var transaction = CreateTransaction(dateTime, debitedAccountFullName, creditedAccountFullName, amount, remarks);
             ledger.AddAndExecute(transaction);
         }
 
-        public static void AddAndExecuteTransaction(this Ledger? ledger, DateTime dateTime, IEnumerable<(string, decimal)> debited, IEnumerable<(string, decimal)> credited, string? remarks = null)
+        public static CompositeTransaction CreateTransaction(DateTime dateTime, IEnumerable<(string, decimal)> debited, IEnumerable<(string, decimal)> credited, string? remarks = null)
         {
             var transaction = new CompositeTransaction(dateTime)
             {
@@ -222,6 +240,12 @@ namespace KMPAccounting.Objects
             {
                 transaction.Credited.Add((new AccountNodeReference(accountFullName)!, amount));
             }
+            return transaction;
+        }
+
+        public static void AddAndExecuteTransaction(this Ledger? ledger, DateTime dateTime, IEnumerable<(string, decimal)> debited, IEnumerable<(string, decimal)> credited, string? remarks = null)
+        {
+            var transaction = CreateTransaction(dateTime, debited, credited, remarks);
             // TODO Add balance checking assert.
             ledger.AddAndExecute(transaction);
         }

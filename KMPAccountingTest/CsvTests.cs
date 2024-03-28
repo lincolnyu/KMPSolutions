@@ -7,6 +7,7 @@ using OU = KMPAccounting.Objects.Utility;
 using TabularConstants = KMPAccounting.BookKeepingTabular.Constants;
 using KMPAccounting.Objects.Accounts;
 using KMPAccounting.KMPSpecifics.Scripts;
+using KMPAccounting.Accounting;
 using KMPCommon;
 
 
@@ -1040,19 +1041,59 @@ namespace KMPAccountingTest
             var error = Utility.CompareTextFiles(@"c:\temp\", new DirectoryInfo(Path.Combine(StatementsDir,@"results\v2")));
 
             Assert.IsNull(error, error);
+
+            Assert.Pass();
+        }
+
+        [Test]
+        public void TestSuperCsvLoading()
+        {
+            var myNorthCashFileName = Path.Combine(StatementsDir, @"mynorth\Cash.csv");
+            var myNorthCashRows = SuperTracker.GetMyNorthRows<MyNorthCashDescriptor>(myNorthCashFileName, "MyNorth Cash").AssertChangeToAscendingInDate().ToList();
+
+            var myNorthNonCashFileName = Path.Combine(StatementsDir, @"mynorth\Invest.csv");
+            var myNorthNonCashRows = SuperTracker.GetMyNorthRows<MyNorthNonCashDescriptor>(myNorthNonCashFileName, "MyNorth Investment").AssertChangeToAscendingInDate().ToList();
+
+            Assert.That(myNorthCashRows.Count(), Is.EqualTo(304));
+            Assert.That(myNorthNonCashRows.Count(), Is.EqualTo(51));
+
+            Assert.Pass();
         }
 
         [Test]
         public void TestSuper()
         {
             var myNorthCashFileName = Path.Combine(StatementsDir, @"mynorth\Cash.csv");
-            var myNorthCashRows = SuperTracker.GetMyNorth<MyNorthCashDescriptor>(myNorthCashFileName, "MyNorth Cash").AssertChangeToAscendingInDate().ToList();
+            var myNorthCashRows = SuperTracker.GetMyNorthRows<MyNorthCashDescriptor>(myNorthCashFileName, "MyNorth Cash").AssertChangeToAscendingInDate().ToList();
 
             var myNorthNonCashFileName = Path.Combine(StatementsDir, @"mynorth\Invest.csv");
-            var myNorthNonCashRows = SuperTracker.GetMyNorth<MyNorthNonCashDescriptor>(myNorthNonCashFileName, "MyNorth Investment").AssertChangeToAscendingInDate().ToList();
+            var myNorthNonCashRows = SuperTracker.GetMyNorthRows<MyNorthNonCashDescriptor>(myNorthNonCashFileName, "MyNorth Investment").AssertChangeToAscendingInDate().ToList();
 
-            Assert.That(myNorthCashRows.Count(), Is.EqualTo(304));
-            Assert.That(myNorthNonCashRows.Count(), Is.EqualTo(51));
+            var st = new SuperTracker("MyNorth");
+            var entries = st.TrackMyNorth(myNorthCashRows, myNorthNonCashRows).ToList();
+
+            Assert.That(st.Error, Is.Null);
+            var ledger = new Ledger();
+            st.Setup(ledger, DateTime.Now);
+
+            var start = ledger.Entries.Count;
+            ledger.Entries.AddRange(entries);
+            ledger.Execute(start);
+
+            Assert.That(AccountsState.GetAccountsState("MyNorth")!.Balance, Is.Zero);
+
+            {
+                var north = AccountsState.GetAccountsState("MyNorth");
+                using var sw = new StreamWriter(@"c:\temp\north_bal.txt");
+                sw.Write(north!.ToString(2));
+            }
+
+            {
+                using var sw = new StreamWriter(@"c:\temp\north_ledger.txt");
+                ledger.PrintLedger(sw);
+            }
+
+            Assert.Pass();
         }
 
         void ResetCsvReader()

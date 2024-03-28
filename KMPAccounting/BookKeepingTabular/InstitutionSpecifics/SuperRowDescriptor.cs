@@ -7,5 +7,7 @@ namespace KMPAccounting.BookKeepingTabular.InstitutionSpecifics
         protected SuperRowDescriptor(string dateTimeKey, string amountKey, IList<string> keys) : base(dateTimeKey, amountKey, keys)
         {
         }
+
+        public static decimal? GetAmount(ITransactionRow row) => row.GetDecimalValue(row.OwnerTable.RowDescriptor.AmountKey);
     }
 }
