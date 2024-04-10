@@ -16,7 +16,25 @@ namespace KMPBusinessRelationship
         public readonly Dictionary<string, Client> MedicareNumberToClientMap = new Dictionary<string, Client>();
         public readonly Dictionary<string, GeneralPractitioner> ProviderNumberToGPMap = new Dictionary<string, GeneralPractitioner>();
 
-        public int CurrentEventIndex { get; set; }
+        public int CurrentEventIndex { get; set; } = 0;
+
+        public void AddAndExecuteEvent(Event e)
+        {
+            ExecuteToEnd();
+            e.Index = Events.Count;
+            Events.Add(e);
+            e.Redo();
+            CurrentEventIndex = Events.Count;
+        }
+
+        public void ExecuteToEnd()
+        {
+            for (; CurrentEventIndex < Events.Count; CurrentEventIndex++)
+            {
+                var e = Events[CurrentEventIndex];
+                e.Redo();
+            }
+        }
 
         public void AddPersonNoCheck(Person person)
         {

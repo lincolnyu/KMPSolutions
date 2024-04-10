@@ -5,7 +5,7 @@ namespace KMPBusinessRelationshipTest
 {
     internal static class Utility
     {
-        public static void CreateSampleGPs(this Repository repo)
+        public static IEnumerable<GeneralPractitioner> CreateSampleGPs(this Repository repo)
         {
             var gp1 = new GeneralPractitioner
             {
@@ -48,9 +48,12 @@ namespace KMPBusinessRelationshipTest
                 Assert.That(res, Is.EqualTo(false));
                 Assert.That(gp2InRepo, Is.SameAs(gp2));
             }
+
+            yield return gp1;
+            yield return gp2;
         }
 
-        public static void CreateSampleClients(this Repository repo)
+        public static IEnumerable<Client> CreateSampleClients(this Repository repo)
         {
             var client1 = new Client
             {
@@ -103,6 +106,9 @@ namespace KMPBusinessRelationshipTest
                 Assert.That(res, Is.EqualTo(false));
                 Assert.That(client2InRepo, Is.SameAs(client2));
             }
+
+            yield return client1;
+            yield return client2;
         }
     }
 }

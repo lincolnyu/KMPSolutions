@@ -42,7 +42,7 @@ namespace KMPBusinessRelationship.Objects
             NewValue = newValue.ToString();
         }
 
-        public void Redo()
+        public override void Redo()
         {
             var property = Person.GetType().GetProperty(PropertyName);
             var propertyType = property.PropertyType;
@@ -50,7 +50,7 @@ namespace KMPBusinessRelationship.Objects
             property.SetValue(Person, newValueObj);
         }
 
-        public void Undo()
+        public override void Undo()
         {
             var property = Person.GetType().GetProperty(PropertyName);
             var propertyType = property.PropertyType;
