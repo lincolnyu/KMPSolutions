@@ -7,15 +7,15 @@ namespace KMPBusinessRelationship
 {
     public static class Utility
     {
-        public static IEnumerable<T> QueryEvents<T>(this Repository repo, Func<T, bool> criteria) where T : Event => repo.Events.OfType<T>().Where(criteria);
+        public static IEnumerable<T> QueryEvents<T>(this BaseRepository repo, Func<T, bool> criteria) where T : Event => repo.Events.OfType<T>().Where(criteria);
 
-        public static IEnumerable<T> QueryPersons<T>(this Repository repo, Func<T, bool> criteria) where T : Person => repo.Events.OfType<T>().Where(criteria);
+        public static IEnumerable<T> QueryPersons<T>(this BaseRepository repo, Func<T, bool> criteria) where T : Person => repo.Events.OfType<T>().Where(criteria);
 
-        public static IEnumerable<Referral> GetAllReferrals(this Repository repo, Client client) => repo.QueryEvents<Referral>(referral => referral.Client == client);
+        public static IEnumerable<Referral> GetAllReferrals(this BaseRepository repo, Client client) => repo.QueryEvents<Referral>(referral => referral.Client == client);
 
-        public static IEnumerable<Referral> GetAllReferrals(this Repository repo, GeneralPractitioner gp) => repo.QueryEvents<Referral>(referral => referral.ReferringGP == gp);
+        public static IEnumerable<Referral> GetAllReferrals(this BaseRepository repo, GeneralPractitioner gp) => repo.QueryEvents<Referral>(referral => referral.ReferringGP == gp);
 
-        public static GeneralPractitioner? GetInitialReferringGP(this Repository repo, Client client)
+        public static GeneralPractitioner? GetInitialReferringGP(this BaseRepository repo, Client client)
         {
             var referral = repo.GetAllReferrals(client).FirstOrDefault();
             if (referral == null || referral.Index >= repo.CurrentEventIndex)
@@ -25,11 +25,11 @@ namespace KMPBusinessRelationship
             return referral.ReferringGP;
         }
 
-        public static GeneralPractitioner? GetCurrentReferringGP(this Repository repo, Client client)
+        public static GeneralPractitioner? GetCurrentReferringGP(this BaseRepository repo, Client client)
         {
             for (var i = repo.CurrentEventIndex-1; i >= 0; i--)
             {
-                var e = repo.Events[i];
+                var e = repo.EventList[i];
                 if (e is Referral referral)
                 {
                     return referral.ReferringGP;
@@ -38,13 +38,13 @@ namespace KMPBusinessRelationship
             return null;
         }
 
-        public static void RunEventsTo(this Repository repo, int newIndex)
+        public static void RunEventsTo(this BaseRepository repo, int newIndex)
         {
             if (newIndex > repo.CurrentEventIndex)
             {
                 for (var i = repo.CurrentEventIndex; i < newIndex; i++)
                 {
-                    var e = repo.Events[i];
+                    var e = repo.EventList[i];
                     if (e is ChangeOfDetails cod)
                     {
                         cod.Redo();
@@ -56,7 +56,7 @@ namespace KMPBusinessRelationship
             {
                 for (var i = repo.CurrentEventIndex - 1; i >= newIndex; i--)
                 {
-                    var e = repo.Events[i];
+                    var e = repo.EventList[i];
                     if (e is ChangeOfDetails cod)
                     {
                         cod.Undo();
@@ -66,7 +66,7 @@ namespace KMPBusinessRelationship
             }
         }
 
-        public static Client? SearchClient(this Repository repo, Client clientToSearch)
+        public static Client? SearchClient(this BaseRepository repo, Client clientToSearch)
         {
             bool Matched(Client clientToSearch, Client target)
             {
@@ -110,7 +110,7 @@ namespace KMPBusinessRelationship
             return null;
         }
 
-        public static GeneralPractitioner? SearchGeneralPractioner(this Repository repo, GeneralPractitioner gpToSearch)
+        public static GeneralPractitioner? SearchGeneralPractioner(this BaseRepository repo, GeneralPractitioner gpToSearch)
         {
             bool Matched(GeneralPractitioner gpToSearch, GeneralPractitioner target)
             {
@@ -155,7 +155,7 @@ namespace KMPBusinessRelationship
         /// <param name="clientInRepo">The client in the repo if found or the client  queried which has now been added to the repo.</param>
         /// <param name="fillMoreDetails">Provide details to the client to add pre-adding. Note as client <paramref name="clientToSearchOrAdd"/> may not contain essential info such as medicare number which is required by the AddPersonNoCheck() function, it is this function responsibility to ensure it.</param>
         /// <returns>True if an existing client has been found</returns>
-        public static bool SearchOrAddClient(this Repository repo, Client clientToSearchOrAdd, out Client clientInRepo, Action<Client>? fillMoreDetails = null)
+        public static bool SearchOrAddClient(this BaseRepository repo, Client clientToSearchOrAdd, out Client clientInRepo, Action<Client>? fillMoreDetails = null)
         {
             var clientFound = repo.SearchClient(clientToSearchOrAdd);
             if (clientFound != null)
@@ -178,7 +178,7 @@ namespace KMPBusinessRelationship
         /// <param name="gpInRepo">The GP in the repo if found or the GP queried which has now been added to the repo.</param>
         /// <param name="fillMoreDetails">Provide details to the GP to add pre-adding. Note as client <paramref name="gpToSearchOrAdd"/> may not contain essential info such as provider number which is required by the AddPersonNoCheck() function, it is this function responsibility to ensure it.</param>
         /// <returns>True if an existing GP has been found</returns>
-        public static bool SearchOrAddGeneralPractitioner(this Repository repo, GeneralPractitioner gpToSearchOrAdd, out GeneralPractitioner gpInRepo, Action<GeneralPractitioner>? fillMoreDetails = null)
+        public static bool SearchOrAddGeneralPractitioner(this BaseRepository repo, GeneralPractitioner gpToSearchOrAdd, out GeneralPractitioner gpInRepo, Action<GeneralPractitioner>? fillMoreDetails = null)
         {
             var gpFound = repo.SearchGeneralPractioner(gpToSearchOrAdd);
             if (gpFound != null)
@@ -193,7 +193,7 @@ namespace KMPBusinessRelationship
             return false;
         }
 
-        public static void AcceptReferral(this Repository repository, GeneralPractitioner referringGP, Client client)
+        public static void AcceptReferral(this BaseRepository repository, GeneralPractitioner referringGP, Client client)
         {
             repository.AddAndExecuteEvent(new Referral(referringGP, client));
         }

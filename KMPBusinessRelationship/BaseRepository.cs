@@ -4,41 +4,73 @@ using System.Linq;
 
 namespace KMPBusinessRelationship
 {
-    public class Repository
+    public abstract class BaseRepository
     {
         #region Core (persisted) data
 
-        public List<Person> Persons { get; private set; } = new List<Person>();
-        public List<Event> Events { get; private set; } = new List<Event>();
-       
+        public abstract IEnumerable<Person> Persons { get; }
+        public abstract IEnumerable<Event> Events { get; }
+
         #endregion
+
+        protected void SyncToEventList()
+        {
+            EventList.Clear();
+            var index = 0;
+            foreach (var ev in Events)
+            {
+                EventList.Add(ev);
+                ev.Index = index++;
+            }
+            CurrentEventIndex = 0;
+        }
+
+        protected abstract void AddEvent(Event e);
+        protected abstract void AddPerson(Person person);
 
         public readonly Dictionary<string, Client> MedicareNumberToClientMap = new Dictionary<string, Client>();
         public readonly Dictionary<string, GeneralPractitioner> ProviderNumberToGPMap = new Dictionary<string, GeneralPractitioner>();
 
         public int CurrentEventIndex { get; set; } = 0;
+        public List<Event> EventList { get; } = new List<Event>();
 
         public void AddAndExecuteEvent(Event e)
         {
             ExecuteToEnd();
-            e.Index = Events.Count;
-            Events.Add(e);
+            e.Index = Events.Count();
+            
+            AddEvent(e);
+            EventList.Add(e);
+
             e.Redo();
-            CurrentEventIndex = Events.Count;
+            CurrentEventIndex = EventList.Count;
         }
 
-        public void ExecuteToEnd()
+        public void ExecuteToEnd() => ExecuteTo(EventList.Count);
+
+        public void ExecuteTo(int targetIndex)
         {
-            for (; CurrentEventIndex < Events.Count; CurrentEventIndex++)
+            if (targetIndex > CurrentEventIndex)
             {
-                var e = Events[CurrentEventIndex];
-                e.Redo();
+                for (; CurrentEventIndex < targetIndex; CurrentEventIndex++)
+                {
+                    var e = EventList[CurrentEventIndex];
+                    e.Redo();
+                }
+            }
+            else if (targetIndex < CurrentEventIndex)
+            {
+                for (; CurrentEventIndex > targetIndex; CurrentEventIndex++)
+                {
+                    var e = EventList[CurrentEventIndex-1];
+                    e.Undo();
+                }
             }
         }
 
         public void AddPersonNoCheck(Person person)
         {
-            Persons.Add(person);
+            AddPerson(person);
             if (person is Client client)
             {
                 MedicareNumberToClientMap[client.MedicareNumber] = client;

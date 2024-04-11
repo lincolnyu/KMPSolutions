@@ -5,7 +5,7 @@ namespace KMPBusinessRelationshipTest
 {
     internal static class Utility
     {
-        public static IEnumerable<GeneralPractitioner> CreateSampleGPs(this Repository repo)
+        public static IEnumerable<GeneralPractitioner> CreateSampleGPs(this BaseRepository repo)
         {
             var gp1 = new GeneralPractitioner
             {
@@ -53,7 +53,7 @@ namespace KMPBusinessRelationshipTest
             yield return gp2;
         }
 
-        public static IEnumerable<Client> CreateSampleClients(this Repository repo)
+        public static IEnumerable<Client> CreateSampleClients(this BaseRepository repo)
         {
             var client1 = new Client
             {

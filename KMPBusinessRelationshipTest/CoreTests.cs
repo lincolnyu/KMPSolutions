@@ -1,11 +1,11 @@
-using KMPBusinessRelationship.Objects;
 using KMPBusinessRelationship;
+using KMPBusinessRelationshipPersistence;
 
 namespace KMPBusinessRelationshipTest
 {
     public class CoreTests
     {
-        Repository repository_;
+        BaseRepository repository_;
 
         [SetUp]
         public void Setup()

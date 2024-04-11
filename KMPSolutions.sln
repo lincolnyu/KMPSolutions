@@ -29,6 +29,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KMPBusinessRelationship", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KMPBusinessRelationshipTest", "KMPBusinessRelationshipTest\KMPBusinessRelationshipTest.csproj", "{E5E40DA1-18E3-4F54-977B-107D01B3C248}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThirdParty", "ThirdParty", "{64A03A8C-FBC5-4836-BDC3-98A9A7065D1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPBusinessRelationshipPersistence", "KMPBusinessRelationshipPersistence\KMPBusinessRelationshipPersistence.csproj", "{0DB912CF-F808-4A57-B217-884CF9863146}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -283,6 +287,26 @@ Global
 		{E5E40DA1-18E3-4F54-977B-107D01B3C248}.Release|x64.Build.0 = Release|Any CPU
 		{E5E40DA1-18E3-4F54-977B-107D01B3C248}.Release|x86.ActiveCfg = Release|Any CPU
 		{E5E40DA1-18E3-4F54-977B-107D01B3C248}.Release|x86.Build.0 = Release|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Debug|ARM.Build.0 = Debug|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Debug|x64.Build.0 = Debug|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Debug|x86.Build.0 = Debug|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Release|ARM.ActiveCfg = Release|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Release|ARM.Build.0 = Release|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Release|ARM64.Build.0 = Release|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Release|x64.ActiveCfg = Release|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Release|x64.Build.0 = Release|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Release|x86.ActiveCfg = Release|Any CPU
+		{0DB912CF-F808-4A57-B217-884CF9863146}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

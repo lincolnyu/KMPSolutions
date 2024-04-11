@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\KMPBusinessRelationshipPersistence\KMPBusinessRelationshipPersistence.csproj" />
     <ProjectReference Include="..\KMPBusinessRelationship\KMPBusinessRelationship.csproj" />
   </ItemGroup>
 
