@@ -5,14 +5,36 @@ namespace KMPBusinessRelationshipPersistence
 {
     public class Repository : BaseRepository
     {
-        public override IEnumerable<Person> Persons => DbContext != null? DbContext.Persons : persons_;
+        public override IEnumerable<Person> Persons => persons_;
 
-        public override IEnumerable<Event> Events => DbContext != null? DbContext.Events : events_;
+        public override IEnumerable<Event> Events => events_;
 
         private HashSet<Person> persons_ = new HashSet<Person>();
         private List<Event> events_ = new List<Event>();
 
-        Context? DbContext { get; }
+        public Repository()
+        {
+        }
+
+        public Repository(Context context)
+        {
+            DbContext = context;
+            SyncDbToCache();
+        }
+
+        private void SyncDbToCache()
+        {
+            foreach (var e in DbContext!.Events)
+            {
+                events_.Add(e);
+            }
+            foreach (var p in DbContext!.Persons)
+            {
+                persons_.Add(p);
+            }
+        }
+
+        public Context? DbContext { get; }
 
         protected override void AddEvent(Event e)
         {
@@ -20,10 +42,7 @@ namespace KMPBusinessRelationshipPersistence
             {
                 DbContext.Events.Add(e);
             }
-            else
-            {
-                events_.Add(e);
-            }
+            events_.Add(e);
         }
 
         protected override void AddPerson(Person person)
@@ -32,10 +51,7 @@ namespace KMPBusinessRelationshipPersistence
             {
                 DbContext.Persons.Add(person);
             }
-            else
-            { 
-                persons_.Add(person);
-            }
+            persons_.Add(person);
         }
     }
 }

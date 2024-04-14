@@ -1,6 +1,7 @@
 ﻿namespace KMPBusinessRelationship.Objects
 {
-    public abstract class Person
+    public class Person
     {
+        public int Id { get; set; }
     }
 }

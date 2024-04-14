@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 
 namespace KMPBusinessRelationship
 {
@@ -17,12 +18,19 @@ namespace KMPBusinessRelationship
 
         public static GeneralPractitioner? GetInitialReferringGP(this BaseRepository repo, Client client)
         {
-            var referral = repo.GetAllReferrals(client).FirstOrDefault();
-            if (referral == null || referral.Index >= repo.CurrentEventIndex)
+            for (var i = 0; i < repo.EventList.Count; i++)
             {
-                return null;
+                if (i >= repo.CurrentEventIndex)
+                {
+                    return null;
+                }
+                var e = repo.EventList[i];
+                if (e is Referral referral)
+                {
+                    return referral.ReferringGP;
+                }
             }
-            return referral.ReferringGP;
+            return null;
         }
 
         public static GeneralPractitioner? GetCurrentReferringGP(this BaseRepository repo, Client client)
@@ -195,7 +203,11 @@ namespace KMPBusinessRelationship
 
         public static void AcceptReferral(this BaseRepository repository, GeneralPractitioner referringGP, Client client)
         {
-            repository.AddAndExecuteEvent(new Referral(referringGP, client));
+            repository.AddAndExecuteEvent(new Referral
+            {
+                ReferringGP = referringGP,
+                Client = client
+            });
         }
     }
 }

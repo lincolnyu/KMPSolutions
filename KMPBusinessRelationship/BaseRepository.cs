@@ -16,11 +16,9 @@ namespace KMPBusinessRelationship
         protected void SyncToEventList()
         {
             EventList.Clear();
-            var index = 0;
             foreach (var ev in Events)
             {
                 EventList.Add(ev);
-                ev.Index = index++;
             }
             CurrentEventIndex = 0;
         }
@@ -37,8 +35,7 @@ namespace KMPBusinessRelationship
         public void AddAndExecuteEvent(Event e)
         {
             ExecuteToEnd();
-            e.Index = Events.Count();
-            
+
             AddEvent(e);
             EventList.Add(e);
 
