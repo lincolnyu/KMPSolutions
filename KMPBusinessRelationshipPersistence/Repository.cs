@@ -5,11 +5,12 @@ namespace KMPBusinessRelationshipPersistence
 {
     public class Repository : BaseRepository
     {
-        public override IEnumerable<Person> Persons => persons_;
-
+        public override IEnumerable<Client> Clients => clients_;
+        public override IEnumerable<Referrer> Referrers => referrers_;
         public override IEnumerable<Event> Events => events_;
 
-        private HashSet<Person> persons_ = new HashSet<Person>();
+        private HashSet<Client> clients_ = new HashSet<Client>();
+        private HashSet<Referrer> referrers_ = new HashSet<Referrer>();
         private List<Event> events_ = new List<Event>();
 
         public Repository()
@@ -19,18 +20,22 @@ namespace KMPBusinessRelationshipPersistence
         public Repository(Context context)
         {
             DbContext = context;
-            SyncDbToCache();
+            SyncCacheFromDatabase();
         }
 
-        private void SyncDbToCache()
+        private void SyncCacheFromDatabase()
         {
             foreach (var e in DbContext!.Events)
             {
                 events_.Add(e);
             }
-            foreach (var p in DbContext!.Persons)
+            foreach (var client in DbContext!.Clients)
             {
-                persons_.Add(p);
+                clients_.Add(client);
+            }
+            foreach (var referrer in DbContext!.Referrers)
+            {
+                referrers_.Add(referrer);
             }
         }
 
@@ -38,20 +43,20 @@ namespace KMPBusinessRelationshipPersistence
 
         protected override void AddEvent(Event e)
         {
-            if (DbContext != null)
-            {
-                DbContext.Events.Add(e);
-            }
+            DbContext?.Events.Add(e);
             events_.Add(e);
         }
 
-        protected override void AddPerson(Person person)
+        protected override void AddReferrer(Referrer referrer)
         {
-            if (DbContext != null)
-            {
-                DbContext.Persons.Add(person);
-            }
-            persons_.Add(person);
+            DbContext?.Referrers.Add(referrer);
+            referrers_.Add(referrer);
+        }
+
+        protected override void AddClient(Client client)
+        {
+            DbContext?.Clients.Add(client);
+            clients_.Add(client);
         }
     }
 }

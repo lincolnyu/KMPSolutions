@@ -1,6 +1,6 @@
 ﻿using KMPBusinessRelationship.Objects;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 
 namespace KMPBusinessRelationship
 {
@@ -8,7 +8,8 @@ namespace KMPBusinessRelationship
     {
         #region Core (persisted) data
 
-        public abstract IEnumerable<Person> Persons { get; }
+        public abstract IEnumerable<Referrer> Referrers { get; }
+        public abstract IEnumerable<Client> Clients { get; }
         public abstract IEnumerable<Event> Events { get; }
 
         #endregion
@@ -24,10 +25,11 @@ namespace KMPBusinessRelationship
         }
 
         protected abstract void AddEvent(Event e);
-        protected abstract void AddPerson(Person person);
+        protected abstract void AddReferrer(Referrer referrer);
+        protected abstract void AddClient(Client client);
 
-        public readonly Dictionary<string, Client> MedicareNumberToClientMap = new Dictionary<string, Client>();
-        public readonly Dictionary<string, GeneralPractitioner> ProviderNumberToGPMap = new Dictionary<string, GeneralPractitioner>();
+        public readonly Dictionary<string, Client> IdToClientMap = new Dictionary<string, Client>();
+        public readonly Dictionary<string, Referrer> IdToReferrerMap = new Dictionary<string, Referrer>();
 
         public int CurrentEventIndex { get; set; } = 0;
         public List<Event> EventList { get; } = new List<Event>();
@@ -65,53 +67,62 @@ namespace KMPBusinessRelationship
             }
         }
 
-        public void AddPersonNoCheck(Person person)
+        /// <summary>
+        ///  Add client assuming the entry is not existent
+        /// </summary>
+        /// <param name="referrer">The referrer to add</param>
+        public void AddClientNoCheck(Client client)
         {
-            AddPerson(person);
-            if (person is Client client)
-            {
-                MedicareNumberToClientMap[client.MedicareNumber] = client;
-            }
-            else if (person is GeneralPractitioner gp)
-            {
-                ProviderNumberToGPMap[gp.ProviderNumber] = gp;
-            }
+            Debug.Assert(!IdToClientMap.ContainsKey(client.Id));
+            AddClient(client);
+            IdToClientMap[client.Id] = client;
         }
 
-        public List<Client> ReCreateMedicareNumberToClientMap()
+        /// <summary>
+        ///  Add referrer assuming the entry is not existent
+        /// </summary>
+        /// <param name="referrer">The referrer to add</param>
+        public void AddReferrerNoCheck(Referrer referrer)
+        {
+            Debug.Assert(!IdToReferrerMap.ContainsKey(referrer.Id));
+            AddReferrer(referrer);
+            IdToReferrerMap[referrer.Id] = referrer;
+        }
+
+        public List<Client> ReCreateIdToClientMap()
         {
             var clientsWithDuplicateKey = new List<Client>();
-            foreach (var client in Persons.OfType<Client>())
+            foreach (var client in Clients)
             {
-                if (MedicareNumberToClientMap.ContainsKey(client.MedicareNumber))
+                if (IdToClientMap.ContainsKey(client.Id))
                 {
-                    // Error: medicare number not unique.
+                    // Error: ID not unique.
                     clientsWithDuplicateKey.Add(client);
                 }
                 else
                 {
-                    MedicareNumberToClientMap[client.MedicareNumber] = client;
+                    IdToClientMap[client.Id] = client;
                 }
             }
             return clientsWithDuplicateKey;
         }
 
-        public List<GeneralPractitioner> ReCreateProviderNumberToGPMap()
+        public List<Referrer> ReCreateIdToReferrerMap()
         {
-            var gpsWithDuplicateKey = new List<GeneralPractitioner>();
-            foreach (var gp in Persons.OfType<GeneralPractitioner>())
+            var referrersWithDuplicateKey = new List<Referrer>();
+            foreach (var referrer in Referrers)
             {
-                if (ProviderNumberToGPMap.ContainsKey(gp.ProviderNumber))
+                if (IdToReferrerMap.ContainsKey(referrer.Id))
                 {
-                    // Error: provider number not unique.
-                    gpsWithDuplicateKey.Add(gp);
+                    // Error: ID not unique.
+                    referrersWithDuplicateKey.Add(referrer);
                 }
                 else
                 {
-                    ProviderNumberToGPMap[gp.ProviderNumber] = gp;
+                    IdToReferrerMap[referrer.Id] = referrer;
                 }
             }
-            return gpsWithDuplicateKey;
+            return referrersWithDuplicateKey;
         }
     }
 }

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Principal;
 
 namespace KMPBusinessRelationship
 {
@@ -14,9 +13,9 @@ namespace KMPBusinessRelationship
 
         public static IEnumerable<Referral> GetAllReferrals(this BaseRepository repo, Client client) => repo.QueryEvents<Referral>(referral => referral.Client == client);
 
-        public static IEnumerable<Referral> GetAllReferrals(this BaseRepository repo, GeneralPractitioner gp) => repo.QueryEvents<Referral>(referral => referral.ReferringGP == gp);
+        public static IEnumerable<Referral> GetAllReferrals(this BaseRepository repo, Referrer referrer) => repo.QueryEvents<Referral>(referral => referral.Referrer == referrer);
 
-        public static GeneralPractitioner? GetInitialReferringGP(this BaseRepository repo, Client client)
+        public static Referrer? GetInitialReferrer(this BaseRepository repo, Client client)
         {
             for (var i = 0; i < repo.EventList.Count; i++)
             {
@@ -27,20 +26,20 @@ namespace KMPBusinessRelationship
                 var e = repo.EventList[i];
                 if (e is Referral referral)
                 {
-                    return referral.ReferringGP;
+                    return referral.Referrer;
                 }
             }
             return null;
         }
 
-        public static GeneralPractitioner? GetCurrentReferringGP(this BaseRepository repo, Client client)
+        public static Referrer? GetCurrentReferrer(this BaseRepository repo, Client client)
         {
             for (var i = repo.CurrentEventIndex-1; i >= 0; i--)
             {
                 var e = repo.EventList[i];
                 if (e is Referral referral)
                 {
-                    return referral.ReferringGP;
+                    return referral.Referrer;
                 }
             }
             return null;
@@ -53,10 +52,7 @@ namespace KMPBusinessRelationship
                 for (var i = repo.CurrentEventIndex; i < newIndex; i++)
                 {
                     var e = repo.EventList[i];
-                    if (e is ChangeOfDetails cod)
-                    {
-                        cod.Redo();
-                    }
+                    e.Redo();
                 }
                 repo.CurrentEventIndex = newIndex;
             }
@@ -65,10 +61,7 @@ namespace KMPBusinessRelationship
                 for (var i = repo.CurrentEventIndex - 1; i >= newIndex; i--)
                 {
                     var e = repo.EventList[i];
-                    if (e is ChangeOfDetails cod)
-                    {
-                        cod.Undo();
-                    }
+                    e.Undo();
                 }
                 repo.CurrentEventIndex = newIndex;
             }
@@ -78,9 +71,9 @@ namespace KMPBusinessRelationship
         {
             bool Matched(Client clientToSearch, Client target)
             {
-                if (!string.IsNullOrEmpty(clientToSearch.MedicareNumber))
+                if (!string.IsNullOrEmpty(clientToSearch.Id))
                 {
-                    if (clientToSearch.MedicareNumber == target.MedicareNumber)
+                    if (clientToSearch.Id == target.Id)
                     {
                         return true;
                     }
@@ -97,16 +90,16 @@ namespace KMPBusinessRelationship
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(clientToSearch.MedicareNumber))
+            if (!string.IsNullOrEmpty(clientToSearch.Id))
             {
-                if (repo.MedicareNumberToClientMap.TryGetValue(clientToSearch.MedicareNumber, out var client))
+                if (repo.IdToClientMap.TryGetValue(clientToSearch.Id, out var client))
                 {
                     return client;
                 }
             }
             else
             {
-                foreach (var client in repo.Persons.OfType<Client>())
+                foreach (var client in repo.Clients)
                 {
                     if (Matched(clientToSearch, client))
                     {
@@ -118,13 +111,13 @@ namespace KMPBusinessRelationship
             return null;
         }
 
-        public static GeneralPractitioner? SearchGeneralPractioner(this BaseRepository repo, GeneralPractitioner gpToSearch)
+        public static Referrer? SearchGeneralPractioner(this BaseRepository repo, Referrer referrerToSearch)
         {
-            bool Matched(GeneralPractitioner gpToSearch, GeneralPractitioner target)
+            bool Matched(Referrer referrerToSearch, Referrer target)
             {
-                if (!string.IsNullOrEmpty(gpToSearch.ProviderNumber))
+                if (!string.IsNullOrEmpty(referrerToSearch.Id))
                 {
-                    if (gpToSearch.ProviderNumber == target.ProviderNumber)
+                    if (referrerToSearch.Id == target.Id)
                     {
                         return true;
                     }
@@ -135,20 +128,20 @@ namespace KMPBusinessRelationship
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(gpToSearch.ProviderNumber))
+            if (!string.IsNullOrEmpty(referrerToSearch.Id))
             {
-                if (repo.ProviderNumberToGPMap.TryGetValue(gpToSearch.ProviderNumber, out var gp))
+                if (repo.IdToReferrerMap.TryGetValue(referrerToSearch.Id, out var referrer))
                 {
-                    return gp;
+                    return referrer;
                 }
             }
             else
             {
-                foreach (var gp in repo.Persons.OfType<GeneralPractitioner>())
+                foreach (var referrer in repo.Referrers)
                 {
-                    if (Matched(gpToSearch, gp))
+                    if (Matched(referrerToSearch, referrer))
                     {
-                        return gp;
+                        return referrer;
                     }
                 }
             }
@@ -161,7 +154,7 @@ namespace KMPBusinessRelationship
         /// <param name="repo">The repository</param>
         /// <param name="clientToSearchOrAdd">The client to search which may have ONLY partial information.</param>
         /// <param name="clientInRepo">The client in the repo if found or the client  queried which has now been added to the repo.</param>
-        /// <param name="fillMoreDetails">Provide details to the client to add pre-adding. Note as client <paramref name="clientToSearchOrAdd"/> may not contain essential info such as medicare number which is required by the AddPersonNoCheck() function, it is this function responsibility to ensure it.</param>
+        /// <param name="fillMoreDetails">Provide details to the client to add pre-adding. Note as client <paramref name="clientToSearchOrAdd"/> may not contain essential info such as medicare number which is required by the AddClientNoCheck() function, it is this function responsibility to ensure it.</param>
         /// <returns>True if an existing client has been found</returns>
         public static bool SearchOrAddClient(this BaseRepository repo, Client clientToSearchOrAdd, out Client clientInRepo, Action<Client>? fillMoreDetails = null)
         {
@@ -173,39 +166,39 @@ namespace KMPBusinessRelationship
             }
 
             fillMoreDetails?.Invoke(clientToSearchOrAdd);
-            repo.AddPersonNoCheck(clientToSearchOrAdd);
+            repo.AddClientNoCheck(clientToSearchOrAdd);
             clientInRepo = clientToSearchOrAdd;
             return false;
         }
 
         /// <summary>
-        ///  Search the GP in the repo and return it or add it to the repo and return.
+        ///  Search the referrer in the repo and return it or add it to the repo and return.
         /// </summary>
         /// <param name="repo">The repository</param>
-        /// <param name="gpToSearchOrAdd">The GP to search which may have only partial information.</param>
-        /// <param name="gpInRepo">The GP in the repo if found or the GP queried which has now been added to the repo.</param>
-        /// <param name="fillMoreDetails">Provide details to the GP to add pre-adding. Note as client <paramref name="gpToSearchOrAdd"/> may not contain essential info such as provider number which is required by the AddPersonNoCheck() function, it is this function responsibility to ensure it.</param>
-        /// <returns>True if an existing GP has been found</returns>
-        public static bool SearchOrAddGeneralPractitioner(this BaseRepository repo, GeneralPractitioner gpToSearchOrAdd, out GeneralPractitioner gpInRepo, Action<GeneralPractitioner>? fillMoreDetails = null)
+        /// <param name="referrerToSearchOrAdd">The referrer to search which may have only partial information.</param>
+        /// <param name="referrerInRepo">The referrer in the repo if found or the referrer queried which has now been added to the repo.</param>
+        /// <param name="fillMoreDetails">Provide details to the referrer to add pre-adding. Note as client <paramref name="referrerToSearchOrAdd"/> may not contain essential info such as provider number which is required by the AddGeneralPractionerNoCheck() function, it is this function responsibility to ensure it.</param>
+        /// <returns>True if an existing referrer has been found</returns>
+        public static bool SearchOrAddReferrer(this BaseRepository repo, Referrer referrerToSearchOrAdd, out Referrer referrerInRepo, Action<Referrer>? fillMoreDetails = null)
         {
-            var gpFound = repo.SearchGeneralPractioner(gpToSearchOrAdd);
-            if (gpFound != null)
+            var referrerFound = repo.SearchGeneralPractioner(referrerToSearchOrAdd);
+            if (referrerFound != null)
             {
-                gpInRepo = gpFound;
+                referrerInRepo = referrerFound;
                 return true;
             }
 
-            fillMoreDetails?.Invoke(gpToSearchOrAdd);
-            repo.AddPersonNoCheck(gpToSearchOrAdd);
-            gpInRepo = gpToSearchOrAdd;
+            fillMoreDetails?.Invoke(referrerToSearchOrAdd);
+            repo.AddReferrerNoCheck(referrerToSearchOrAdd);
+            referrerInRepo = referrerToSearchOrAdd;
             return false;
         }
 
-        public static void AcceptReferral(this BaseRepository repository, GeneralPractitioner referringGP, Client client)
+        public static void AcceptReferral(this BaseRepository repository, Referrer referrer, Client client)
         {
             repository.AddAndExecuteEvent(new Referral
             {
-                ReferringGP = referringGP,
+                Referrer = referrer,
                 Client = client
             });
         }

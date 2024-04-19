@@ -2,19 +2,9 @@
 
 namespace KMPBusinessRelationship.Objects
 {
-    public class ChangeOfDetails : Event
+    public class ChangeOfDetails<TPerson> : Event where TPerson : Person
     {
-        //public ChangeOfDetails()
-        //{
-        //}
-
-        //public ChangeOfDetails(Person person, string PropertyName)
-        //{
-        //    Person = person;
-        //    PropertyName = PropertyName;
-        //}
-
-        public Person Person { get; set; }
+        public TPerson Person { get; set; }
         public string PropertyName { get; set; }
         public string? OldValue { get; set; }
         public string? NewValue { get; set; }

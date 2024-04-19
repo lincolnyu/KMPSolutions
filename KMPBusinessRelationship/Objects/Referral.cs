@@ -2,7 +2,7 @@
 {
     public class Referral : Event
     {
-        public GeneralPractitioner ReferringGP { get; set; }
+        public Referrer Referrer { get; set; }
         public Client Client { get; set; }
     }
 }
