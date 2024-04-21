@@ -2,7 +2,7 @@
 using NUnit.Framework.Constraints;
 using System.Runtime.CompilerServices;
 
-namespace KMPAccountingTest
+namespace KMPAccounting.Test
 {
     public static class Utility
     {

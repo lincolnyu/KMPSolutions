@@ -6,7 +6,7 @@ using KMPAccounting.ReportSchemes;
 using OU = KMPAccounting.Objects.Utility;
 using static KMPAccounting.ReportSchemes.Utility;
 
-namespace KMPCoreObjectsTest
+namespace KMPCoreObjects.Test
 {
     public class CoreTests
     {

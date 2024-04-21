@@ -20,7 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\KMPBusinessRelationship.ImportExport\KMPBusinessRelationship.ImportExport.csproj" />
     <ProjectReference Include="..\KMPBusinessRelationship.Persistence\KMPBusinessRelationship.Persistence.csproj" />
-    <ProjectReference Include="..\KMPBusinessRelationshipPersistence\KMPBusinessRelationship.Persistence.csproj" />
     <ProjectReference Include="..\KMPBusinessRelationship\KMPBusinessRelationship.csproj" />
   </ItemGroup>
 

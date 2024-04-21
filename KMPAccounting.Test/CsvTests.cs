@@ -11,7 +11,7 @@ using KMPAccounting.Accounting;
 using KMPCommon;
 
 
-namespace KMPAccountingTest
+namespace KMPAccounting.Test
 {
     public class CsvTests
     {

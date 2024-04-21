@@ -19,8 +19,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPBooking", "KMPBooking\KM
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KMPAccounting", "KMPAccounting\KMPAccounting.csproj", "{33E8A52D-E63E-4ACD-A53A-158EB138A65C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KMPAccountingTest", "KMPAccountingTest\KMPAccountingTest.csproj", "{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Legacy", "Legacy", "{2B292BC3-5D59-4EAC-A2AF-0AF313474892}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KMPCommon", "KMPCommon\KMPCommon.csproj", "{9CC59B65-8A82-4796-9FD9-9D3DBD0BE493}"
@@ -29,11 +27,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KMPBusinessRelationship", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThirdParty", "ThirdParty", "{64A03A8C-FBC5-4836-BDC3-98A9A7065D1F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPBusinessRelationship.ImportExport", "KMPBusinessRelationship.ImportExport\KMPBusinessRelationship.ImportExport.csproj", "{3BB5945B-EDD9-4387-AB19-EEFD4370F74E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KMPBusinessRelationship.ImportExport", "KMPBusinessRelationship.ImportExport\KMPBusinessRelationship.ImportExport.csproj", "{3BB5945B-EDD9-4387-AB19-EEFD4370F74E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KMPBusinessRelationship.Persistence", "KMPBusinessRelationship.Persistence\KMPBusinessRelationship.Persistence.csproj", "{1DB8D335-8C37-40B8-B3A3-ACB765CA29BF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KMPBusinessRelationship.Test", "KMPBusinessRelationship.Test\KMPBusinessRelationship.Test.csproj", "{B4957633-EFD0-454A-9F05-39B48DAB4F03}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KMPAccounting.Test", "KMPAccounting.Test\KMPAccounting.Test.csproj", "{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -209,26 +209,6 @@ Global
 		{33E8A52D-E63E-4ACD-A53A-158EB138A65C}.Release|x64.Build.0 = Release|Any CPU
 		{33E8A52D-E63E-4ACD-A53A-158EB138A65C}.Release|x86.ActiveCfg = Release|Any CPU
 		{33E8A52D-E63E-4ACD-A53A-158EB138A65C}.Release|x86.Build.0 = Release|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Debug|ARM.Build.0 = Debug|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Debug|ARM64.ActiveCfg = Debug|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Debug|ARM64.Build.0 = Debug|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Debug|x64.Build.0 = Debug|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Debug|x86.Build.0 = Debug|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Release|ARM.ActiveCfg = Release|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Release|ARM.Build.0 = Release|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Release|ARM64.ActiveCfg = Release|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Release|ARM64.Build.0 = Release|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Release|x64.ActiveCfg = Release|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Release|x64.Build.0 = Release|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Release|x86.ActiveCfg = Release|Any CPU
-		{6CA6A2B0-EE67-48AB-B24C-8345FD4FCB25}.Release|x86.Build.0 = Release|Any CPU
 		{9CC59B65-8A82-4796-9FD9-9D3DBD0BE493}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9CC59B65-8A82-4796-9FD9-9D3DBD0BE493}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CC59B65-8A82-4796-9FD9-9D3DBD0BE493}.Debug|ARM.ActiveCfg = Debug|Any CPU
@@ -329,6 +309,26 @@ Global
 		{B4957633-EFD0-454A-9F05-39B48DAB4F03}.Release|x64.Build.0 = Release|Any CPU
 		{B4957633-EFD0-454A-9F05-39B48DAB4F03}.Release|x86.ActiveCfg = Release|Any CPU
 		{B4957633-EFD0-454A-9F05-39B48DAB4F03}.Release|x86.Build.0 = Release|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Debug|ARM.Build.0 = Debug|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Debug|x64.Build.0 = Debug|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Debug|x86.Build.0 = Debug|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Release|ARM.ActiveCfg = Release|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Release|ARM.Build.0 = Release|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Release|ARM64.Build.0 = Release|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Release|x64.ActiveCfg = Release|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Release|x64.Build.0 = Release|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Release|x86.ActiveCfg = Release|Any CPU
+		{A1770320-F8B1-4345-96FD-BF9D6ED1EA5C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
