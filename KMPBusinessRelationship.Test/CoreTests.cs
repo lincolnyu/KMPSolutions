@@ -1,8 +1,8 @@
 using KMPBusinessRelationship;
-using KMPBusinessRelationshipPersistence;
+using KMPBusinessRelationship.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace KMPBusinessRelationshipTest
+namespace KMPBusinessRelationship.Test
 {
     public class CoreTests
     {

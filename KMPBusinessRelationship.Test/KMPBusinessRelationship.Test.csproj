@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -18,7 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KMPBusinessRelationshipPersistence\KMPBusinessRelationshipPersistence.csproj" />
+    <ProjectReference Include="..\KMPBusinessRelationship.ImportExport\KMPBusinessRelationship.ImportExport.csproj" />
+    <ProjectReference Include="..\KMPBusinessRelationship.Persistence\KMPBusinessRelationship.Persistence.csproj" />
+    <ProjectReference Include="..\KMPBusinessRelationshipPersistence\KMPBusinessRelationship.Persistence.csproj" />
     <ProjectReference Include="..\KMPBusinessRelationship\KMPBusinessRelationship.csproj" />
   </ItemGroup>
 

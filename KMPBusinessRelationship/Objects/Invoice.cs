@@ -2,6 +2,8 @@
 {
     public class Invoice : Event
     {
+        public Client Client { get; set; }
+
         public string Diagnosis { get; set; } = "";
         public string ClaimNumber { get; set; } = "";
         public string HealthFund { get; set; } = "";

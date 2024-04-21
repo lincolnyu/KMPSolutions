@@ -7,5 +7,7 @@ namespace KMPBusinessRelationship.Objects
         private DateTime? AppointmentTime { get; set; }
         private TimeSpan Duration { get; set; }
         private DateTime? ReminderTime { get; set; }
+
+        public Client Client { get; set; }
     }
 }

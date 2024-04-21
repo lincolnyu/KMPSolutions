@@ -4,7 +4,8 @@ namespace KMPBusinessRelationship.Objects
 {
     public class Client : Person
     {
-        public string Id { get => CareNumber; set => CareNumber=value; }
+        public string Id { get => CareNumber; set => CareNumber = value; }
+
 
         /// <summary>
         ///  An ID that identifies the client. Usually a medicare number or a DVA number.

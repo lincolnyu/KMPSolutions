@@ -1,7 +1,7 @@
 ﻿using KMPBusinessRelationship.Objects;
 using Microsoft.EntityFrameworkCore;
 
-namespace KMPBusinessRelationshipPersistence
+namespace KMPBusinessRelationship.Persistence
 {
     public class Context : DbContext
     {
@@ -26,7 +26,9 @@ namespace KMPBusinessRelationshipPersistence
                 .HasValue<Referral>("event_referral")
                 .HasValue<ChangeOfDetails<Client>>("event_change_of_client_details")
                 .HasValue<ChangeOfDetails<Referrer>>("event_change_of_referrer_details")
-                .HasValue<Service>("event_service")
+                .HasValue<Invoice>("event_invoice")
+                .HasValue<ClaimableService>("event_claimable_service")
+                .HasValue<ChargedService>("event_charged_service")
                 .HasValue<Booking>("event_booking");
 
             modelBuilder.Entity<Client>().Ignore("Id").HasKey(e => e.CareNumber);

@@ -1,7 +1,7 @@
 ﻿using KMPBusinessRelationship;
 using KMPBusinessRelationship.Objects;
 
-namespace KMPBusinessRelationshipPersistence
+namespace KMPBusinessRelationship.Persistence
 {
     public class Repository : BaseRepository
     {

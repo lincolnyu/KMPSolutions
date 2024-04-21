@@ -1,7 +1,7 @@
 ﻿using KMPBusinessRelationship;
 using KMPBusinessRelationship.Objects;
 
-namespace KMPBusinessRelationshipTest
+namespace KMPBusinessRelationship.Test
 {
     internal static class Utility
     {

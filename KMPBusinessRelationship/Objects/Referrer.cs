@@ -16,9 +16,12 @@ namespace KMPBusinessRelationship.Objects
         #region Mutable current values
 
         public string Name { get; set; }
-        public string Address { get; set; }
         public string Phone { get; set; }       // Current primary phone number
-        public string Fax { get; set; }
+        public string Fax { get; set; } = "";
+        public string PracticeName { get; set; } = "";
+        public string Address { get; set; } = "";
+        public string PostalAddress { get; set; } = "";
+        public string Remarks { get; set; } = "";
 
         #endregion
     }

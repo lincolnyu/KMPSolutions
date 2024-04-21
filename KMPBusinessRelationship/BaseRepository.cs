@@ -28,8 +28,8 @@ namespace KMPBusinessRelationship
         protected abstract void AddReferrer(Referrer referrer);
         protected abstract void AddClient(Client client);
 
-        public readonly Dictionary<string, Client> IdToClientMap = new Dictionary<string, Client>();
-        public readonly Dictionary<string, Referrer> IdToReferrerMap = new Dictionary<string, Referrer>();
+        public readonly Dictionary<string, Client> CareNumberToClientMap = new Dictionary<string, Client>();
+        public readonly Dictionary<string, Referrer> ProviderNumberToReferrerMap = new Dictionary<string, Referrer>();
 
         public int CurrentEventIndex { get; set; } = 0;
         public List<Event> EventList { get; } = new List<Event>();
@@ -73,9 +73,9 @@ namespace KMPBusinessRelationship
         /// <param name="referrer">The referrer to add</param>
         public void AddClientNoCheck(Client client)
         {
-            Debug.Assert(!IdToClientMap.ContainsKey(client.Id));
+            Debug.Assert(!CareNumberToClientMap.ContainsKey(client.CareNumber));
             AddClient(client);
-            IdToClientMap[client.Id] = client;
+            CareNumberToClientMap[client.CareNumber] = client;
         }
 
         /// <summary>
@@ -84,9 +84,9 @@ namespace KMPBusinessRelationship
         /// <param name="referrer">The referrer to add</param>
         public void AddReferrerNoCheck(Referrer referrer)
         {
-            Debug.Assert(!IdToReferrerMap.ContainsKey(referrer.Id));
+            Debug.Assert(!ProviderNumberToReferrerMap.ContainsKey(referrer.ProviderNumber));
             AddReferrer(referrer);
-            IdToReferrerMap[referrer.Id] = referrer;
+            ProviderNumberToReferrerMap[referrer.ProviderNumber] = referrer;
         }
 
         public List<Client> ReCreateIdToClientMap()
@@ -94,14 +94,14 @@ namespace KMPBusinessRelationship
             var clientsWithDuplicateKey = new List<Client>();
             foreach (var client in Clients)
             {
-                if (IdToClientMap.ContainsKey(client.Id))
+                if (CareNumberToClientMap.ContainsKey(client.CareNumber))
                 {
                     // Error: ID not unique.
                     clientsWithDuplicateKey.Add(client);
                 }
                 else
                 {
-                    IdToClientMap[client.Id] = client;
+                    CareNumberToClientMap[client.CareNumber] = client;
                 }
             }
             return clientsWithDuplicateKey;
@@ -112,14 +112,14 @@ namespace KMPBusinessRelationship
             var referrersWithDuplicateKey = new List<Referrer>();
             foreach (var referrer in Referrers)
             {
-                if (IdToReferrerMap.ContainsKey(referrer.Id))
+                if (ProviderNumberToReferrerMap.ContainsKey(referrer.ProviderNumber))
                 {
                     // Error: ID not unique.
                     referrersWithDuplicateKey.Add(referrer);
                 }
                 else
                 {
-                    IdToReferrerMap[referrer.Id] = referrer;
+                    ProviderNumberToReferrerMap[referrer.ProviderNumber] = referrer;
                 }
             }
             return referrersWithDuplicateKey;

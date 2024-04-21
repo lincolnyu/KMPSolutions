@@ -71,9 +71,9 @@ namespace KMPBusinessRelationship
         {
             bool Matched(Client clientToSearch, Client target)
             {
-                if (!string.IsNullOrEmpty(clientToSearch.Id))
+                if (!string.IsNullOrEmpty(clientToSearch.CareNumber))
                 {
-                    if (clientToSearch.Id == target.Id)
+                    if (clientToSearch.CareNumber == target.CareNumber)
                     {
                         return true;
                     }
@@ -90,9 +90,9 @@ namespace KMPBusinessRelationship
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(clientToSearch.Id))
+            if (!string.IsNullOrEmpty(clientToSearch.CareNumber))
             {
-                if (repo.IdToClientMap.TryGetValue(clientToSearch.Id, out var client))
+                if (repo.CareNumberToClientMap.TryGetValue(clientToSearch.CareNumber, out var client))
                 {
                     return client;
                 }
@@ -115,7 +115,7 @@ namespace KMPBusinessRelationship
         {
             bool Matched(Referrer referrerToSearch, Referrer target)
             {
-                if (!string.IsNullOrEmpty(referrerToSearch.Id))
+                if (!string.IsNullOrEmpty(referrerToSearch.ProviderNumber))
                 {
                     if (referrerToSearch.Id == target.Id)
                     {
@@ -128,9 +128,9 @@ namespace KMPBusinessRelationship
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(referrerToSearch.Id))
+            if (!string.IsNullOrEmpty(referrerToSearch.ProviderNumber))
             {
-                if (repo.IdToReferrerMap.TryGetValue(referrerToSearch.Id, out var referrer))
+                if (repo.ProviderNumberToReferrerMap.TryGetValue(referrerToSearch.ProviderNumber, out var referrer))
                 {
                     return referrer;
                 }
