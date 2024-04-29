@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace KMPBusinessRelationship.Objects
 {
@@ -23,6 +24,19 @@ namespace KMPBusinessRelationship.Objects
         /// </summary>
         public string ProviderNumber { get; set; }
 
+        public string OtherProviderNumberList
+        {
+            get => string.Join(',', OtherProviderNumbers);
+            set
+            {
+                OtherProviderNumbers.Clear();
+                var valueSplit = value.Split(',');
+                foreach (var v in valueSplit)
+                {
+                    OtherProviderNumbers.Add(v);
+                }
+            }
+        }
         public HashSet<string> OtherProviderNumbers { get; } = new HashSet<string>();
 
         #region Mutable current values

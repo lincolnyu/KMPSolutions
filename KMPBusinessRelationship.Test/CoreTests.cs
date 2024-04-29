@@ -13,8 +13,8 @@ namespace KMPBusinessRelationship.Test
             var gps = repo.CreateSampleReferrers().ToList();
             var clients = repo.CreateSampleClients().ToList();
 
-            repo.AcceptReferral(gps[0], clients[0]);
-            repo.AcceptReferral(gps[0], clients[1]);
+            repo.AcceptReferral(DateTime.Now, gps[0], clients[0]);
+            repo.AcceptReferral(DateTime.Now, gps[0], clients[1]);
 
             {
                 var clientRefs = repo.GetAllReferrals(clients[0]).ToArray();
@@ -61,8 +61,8 @@ namespace KMPBusinessRelationship.Test
             var referrers = repo.CreateSampleReferrers().ToList();
             var clients = repo.CreateSampleClients().ToList();
 
-            repo.AcceptReferral(referrers[0], clients[0]);
-            repo.AcceptReferral(referrers[0], clients[1]);
+            repo.AcceptReferral(DateTime.Now, referrers[0], clients[0]);
+            repo.AcceptReferral(DateTime.Now, referrers[0], clients[1]);
 
             context.SaveChanges();
         }

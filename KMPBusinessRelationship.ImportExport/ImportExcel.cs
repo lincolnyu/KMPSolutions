@@ -111,6 +111,7 @@ namespace KMPBusinessRelationship.ImportExport
                 if (lastClient != null)
                 {
                     var referrerId = visits.Cells[i, VisitsColumns.ReferrerID].Text.Trim();
+                    
                     if (!string.IsNullOrEmpty(referrerId))
                     {
                         var referrerToSearch = new Referrer
@@ -120,7 +121,13 @@ namespace KMPBusinessRelationship.ImportExport
                         var referrer = repo.SearchReferrer(referrerToSearch);
                         if (referrer != null)
                         {
-                            repo.AcceptReferral(referrer!, lastClient);
+                            var referral = visits.Cells[i, VisitsColumns.ReferralDate].Text.Trim();
+                            DateTime? referralDate = null;
+                            if (!string.IsNullOrEmpty(referral))
+                            {
+                                referralDate = CsvUtility.ParseDateTime(referral);
+                            }
+                            repo.AcceptReferral(referralDate, referrer!, lastClient);
                         }
                         else
                         {
@@ -129,7 +136,7 @@ namespace KMPBusinessRelationship.ImportExport
                     }
 
                     var visit = visits.Cells[i, VisitsColumns.ReferralDate].Text.Trim();
-                    var claimed = visits.Cells[i, VisitsColumns.ReferralDate].Text.Trim().StartsWith('Y');
+                    var claimed = visits.Cells[i, VisitsColumns.IfClaimed].Text.Trim().StartsWith('Y');
                     if (!string.IsNullOrEmpty(visit))
                     {
                         var visitDate = CsvUtility.ParseDateTime(visit);

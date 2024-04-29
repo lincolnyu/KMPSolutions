@@ -202,10 +202,11 @@ namespace KMPBusinessRelationship
             repo.IdToReferrerMap[otherId] = referrer;
         }
 
-        public static void AcceptReferral(this BaseRepository repository, Referrer referrer, Client client)
+        public static void AcceptReferral(this BaseRepository repository, DateTime? time, Referrer referrer, Client client)
         {
             repository.AddAndExecuteEvent(new Referral
             {
+                Time = time,
                 Referrer = referrer,
                 Client = client
             });
