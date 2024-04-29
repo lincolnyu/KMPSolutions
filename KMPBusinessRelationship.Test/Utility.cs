@@ -9,7 +9,7 @@ namespace KMPBusinessRelationship.Test
         {
             var gp1 = new Referrer
             {
-                Id = "ABCD1234",
+                ProviderNumber = "ABCD1234",
                 Name = "Tan, Lily",
                 Address = "31 Smith Road, Weetangera ACT, 2614",
                 Phone = "34561234",
@@ -26,7 +26,7 @@ namespace KMPBusinessRelationship.Test
             {
                 var gp1Dup = new Referrer
                 {
-                    Id = "ABCD1234",
+                    ProviderNumber = "ABCD1234",
                 };
                 var res = repo.SearchOrAddReferrer(gp1Dup, out var gp1InRepo);
                 Assert.That(res, Is.EqualTo(true));
@@ -35,7 +35,7 @@ namespace KMPBusinessRelationship.Test
 
             var gp2 = new Referrer
             {
-                Id = "BCDE2345",
+                ProviderNumber = "BCDE2345",
                 Name = "James, Roger",
                 Address = "12 Kent Road, Philip ACT, 2605",
                 Phone = "12567834",

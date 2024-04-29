@@ -4,7 +4,19 @@ namespace KMPBusinessRelationship.Objects
 {
     public class Referrer : Person
     {
-        public string Id { get => ProviderNumber; set => ProviderNumber = value; }
+        public IEnumerable<string> Ids 
+        { 
+            get
+            {
+                yield return ProviderNumber;
+                foreach (var pn in OtherProviderNumbers)
+                {
+                    yield return pn;
+                }
+            }
+        }
+
+        public string PrimaryId => ProviderNumber;
 
         /// <summary>
         ///  An ID that identifies referrer.

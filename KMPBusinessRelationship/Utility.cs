@@ -1,6 +1,7 @@
 ﻿using KMPBusinessRelationship.Objects;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace KMPBusinessRelationship
@@ -92,7 +93,7 @@ namespace KMPBusinessRelationship
 
             if (!string.IsNullOrEmpty(clientToSearch.CareNumber))
             {
-                if (repo.CareNumberToClientMap.TryGetValue(clientToSearch.CareNumber, out var client))
+                if (repo.IdToClientMap.TryGetValue(clientToSearch.CareNumber, out var client))
                 {
                     return client;
                 }
@@ -111,13 +112,13 @@ namespace KMPBusinessRelationship
             return null;
         }
 
-        public static Referrer? SearchGeneralPractioner(this BaseRepository repo, Referrer referrerToSearch)
+        public static Referrer? SearchReferrer(this BaseRepository repo, Referrer referrerToSearch)
         {
             bool Matched(Referrer referrerToSearch, Referrer target)
             {
                 if (!string.IsNullOrEmpty(referrerToSearch.ProviderNumber))
                 {
-                    if (referrerToSearch.Id == target.Id)
+                    if (referrerToSearch.PrimaryId == target.PrimaryId)
                     {
                         return true;
                     }
@@ -128,9 +129,9 @@ namespace KMPBusinessRelationship
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(referrerToSearch.ProviderNumber))
+            if (!string.IsNullOrEmpty(referrerToSearch.PrimaryId))
             {
-                if (repo.ProviderNumberToReferrerMap.TryGetValue(referrerToSearch.ProviderNumber, out var referrer))
+                if (repo.IdToReferrerMap.TryGetValue(referrerToSearch.PrimaryId, out var referrer))
                 {
                     return referrer;
                 }
@@ -177,11 +178,11 @@ namespace KMPBusinessRelationship
         /// <param name="repo">The repository</param>
         /// <param name="referrerToSearchOrAdd">The referrer to search which may have only partial information.</param>
         /// <param name="referrerInRepo">The referrer in the repo if found or the referrer queried which has now been added to the repo.</param>
-        /// <param name="fillMoreDetails">Provide details to the referrer to add pre-adding. Note as client <paramref name="referrerToSearchOrAdd"/> may not contain essential info such as provider number which is required by the AddGeneralPractionerNoCheck() function, it is this function responsibility to ensure it.</param>
+        /// <param name="fillMoreDetails">Provide details to the referrer to add pre-adding. Note as client <paramref name="referrerToSearchOrAdd"/> may not contain essential info such as provider number which is required by the AddSearchReferrerNoCheck() function, it is this function responsibility to ensure it.</param>
         /// <returns>True if an existing referrer has been found</returns>
         public static bool SearchOrAddReferrer(this BaseRepository repo, Referrer referrerToSearchOrAdd, out Referrer referrerInRepo, Action<Referrer>? fillMoreDetails = null)
         {
-            var referrerFound = repo.SearchGeneralPractioner(referrerToSearchOrAdd);
+            var referrerFound = repo.SearchReferrer(referrerToSearchOrAdd);
             if (referrerFound != null)
             {
                 referrerInRepo = referrerFound;
@@ -194,12 +195,29 @@ namespace KMPBusinessRelationship
             return false;
         }
 
+        public static void ReferrerAddOtherId(this BaseRepository repo, Referrer referrer, string otherId)
+        {
+            referrer.OtherProviderNumbers.Add(otherId);
+            Debug.Assert(!repo.IdToReferrerMap.ContainsKey(otherId));
+            repo.IdToReferrerMap[otherId] = referrer;
+        }
+
         public static void AcceptReferral(this BaseRepository repository, Referrer referrer, Client client)
         {
             repository.AddAndExecuteEvent(new Referral
             {
                 Referrer = referrer,
                 Client = client
+            });
+        }
+
+        public static void AddClaimableService(this BaseRepository repository, DateTime time, Client client, bool claimed)
+        {
+            repository.AddAndExecuteEvent(new ClaimableService
+            {
+                Time = time,
+                Client = client,
+                Claimed = claimed
             });
         }
     }

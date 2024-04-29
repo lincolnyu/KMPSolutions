@@ -1,4 +1,3 @@
-using KMPBusinessRelationship;
 using KMPBusinessRelationship.Persistence;
 using Microsoft.EntityFrameworkCore;
 

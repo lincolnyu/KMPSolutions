@@ -6,7 +6,6 @@ namespace KMPBusinessRelationship.Objects
     {
         public string Id { get => CareNumber; set => CareNumber = value; }
 
-
         /// <summary>
         ///  An ID that identifies the client. Usually a medicare number or a DVA number.
         ///  DVA number starts with prefix 'DVA'.
