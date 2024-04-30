@@ -1,5 +1,4 @@
-﻿using KMPBusinessRelationship;
-using KMPBusinessRelationship.Objects;
+﻿using KMPBusinessRelationship.Objects;
 
 namespace KMPBusinessRelationship.Persistence
 {
@@ -21,6 +20,10 @@ namespace KMPBusinessRelationship.Persistence
         {
             DbContext = context;
             SyncCacheFromDatabase();
+
+            ReCreateEventList();
+            ReCreateIdToClientMap();
+            ReCreateIdToReferrerMap();
         }
 
         private void SyncCacheFromDatabase()

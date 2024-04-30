@@ -2,9 +2,9 @@
 
 namespace KMPBusinessRelationship.Objects
 {
-    public class Client : Person
+    public class Client : Person, IEquatable<Client>
     {
-        public string Id { get => CareNumber; set => CareNumber = value; }
+        public override string Id { get => CareNumber; }
 
         /// <summary>
         ///  An ID that identifies the client. Usually a medicare number or a DVA number.
@@ -29,5 +29,16 @@ namespace KMPBusinessRelationship.Objects
         /// </summary>
         public string PhoneNumber { get; set; } = "";
         public string Address { get; set; } = "";
+
+        public bool Equals(Client other)
+        {
+            if (CareNumber != other.CareNumber) return false;
+            if (Name != other.Name) return false;
+            if (DateOfBirth != other.DateOfBirth) return false;
+            if (Gender != other.Gender) return false;
+            if (PhoneNumber != other.PhoneNumber) return false;
+            if (Address != other.Address) return false;
+            return true;
+        }
     }
 }

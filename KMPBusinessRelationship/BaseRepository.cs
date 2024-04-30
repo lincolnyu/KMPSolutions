@@ -14,16 +14,6 @@ namespace KMPBusinessRelationship
 
         #endregion
 
-        protected void SyncToEventList()
-        {
-            EventList.Clear();
-            foreach (var ev in Events)
-            {
-                EventList.Add(ev);
-            }
-            CurrentEventIndex = 0;
-        }
-
         protected abstract void AddEvent(Event e);
         protected abstract void AddReferrer(Referrer referrer);
         protected abstract void AddClient(Client client);
@@ -38,6 +28,7 @@ namespace KMPBusinessRelationship
         {
             ExecuteToEnd();
 
+            e.Id = EventList.Count + 1;
             AddEvent(e);
             EventList.Add(e);
 
@@ -92,8 +83,19 @@ namespace KMPBusinessRelationship
             }
         }
 
-        public List<Client> ReCreateIdToClientMap()
+        protected void ReCreateEventList()
         {
+            EventList.Clear();
+            foreach (var ev in Events)
+            {
+                EventList.Add(ev);
+            }
+            CurrentEventIndex = 0;
+        }
+
+        protected List<Client> ReCreateIdToClientMap()
+        {
+            IdToClientMap.Clear();
             var clientsWithDuplicateKey = new List<Client>();
             foreach (var client in Clients)
             {
@@ -110,8 +112,9 @@ namespace KMPBusinessRelationship
             return clientsWithDuplicateKey;
         }
 
-        public List<Referrer> ReCreateIdToReferrerMap()
+        protected List<Referrer> ReCreateIdToReferrerMap()
         {
+            IdToReferrerMap.Clear();
             var referrersWithDuplicateKey = new List<Referrer>();
             foreach (var referrer in Referrers)
             {

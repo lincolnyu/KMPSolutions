@@ -9,25 +9,40 @@ namespace KMPBusinessRelationship.Test
         [Test]
         public void TestImportAndPersist()
         {
-            var builder = new DbContextOptionsBuilder();
-            builder.UseSqlite(@"data source=C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\KMPBusiness.sqlite");
-
-            using var context = new Context(builder.Options);
-            context.Database.EnsureDeleted();
-            context.Database.EnsureCreated();
-            var repo = new Repository(context);
-
+            Repository? savedRepo = null;
             {
-                var importExcel = new ImportExcel();
-                var file = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2401280034\KMPBusinessLatest.xlsx");
-                var errors = importExcel.Import(file, repo).ToList();
-                Assert.That(errors.Count, Is.Zero);
+                var builder = new DbContextOptionsBuilder();
+                builder.UseSqlite(@"data source=C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\KMPBusiness.sqlite");
+
+                using var context = new Context(builder.Options);
+                context.Database.EnsureDeleted();
+                context.Database.EnsureCreated();
+                var repo = new Repository(context);
+
+                {
+                    var importExcel = new ImportExcel();
+                    var file = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2401280034\KMPBusinessLatest.xlsx");
+                    var errors = importExcel.Import(file, repo).ToList();
+                    Assert.That(errors.Count, Is.Zero);
+                }
+
+                context.SaveChanges();
+
+                savedRepo = repo;
+            }
+            
+            Assert.That(savedRepo, Is.Not.Null);
+            
+            {
+                var builder = new DbContextOptionsBuilder();
+                builder.UseSqlite(@"data source=C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\KMPBusiness.sqlite");
+
+                using var context = new Context(builder.Options);
+                var repo = new Repository(context);
+                Utility.AssertsEqual(repo, savedRepo);
             }
 
-            context.SaveChanges();
-
             Assert.Pass();
-
         }
     }
 }

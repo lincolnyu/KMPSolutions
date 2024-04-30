@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace KMPBusinessRelationship.Objects
 {
-    public class Referrer : Person
+    public class Referrer : Person, IEquatable<Referrer>
     {
         public IEnumerable<string> Ids 
         { 
@@ -16,7 +17,7 @@ namespace KMPBusinessRelationship.Objects
             }
         }
 
-        public string PrimaryId => ProviderNumber;
+        public override string Id => ProviderNumber;
 
         /// <summary>
         ///  An ID that identifies referrer.
@@ -29,10 +30,13 @@ namespace KMPBusinessRelationship.Objects
             set
             {
                 OtherProviderNumbers.Clear();
-                var valueSplit = value.Split(',');
-                foreach (var v in valueSplit)
+                if (!string.IsNullOrEmpty(value))
                 {
-                    OtherProviderNumbers.Add(v);
+                    var valueSplit = value.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var v in valueSplit)
+                    {
+                        OtherProviderNumbers.Add(v.Trim());
+                    }
                 }
             }
         }
@@ -49,5 +53,23 @@ namespace KMPBusinessRelationship.Objects
         public string Remarks { get; set; } = "";
 
         #endregion
+
+        public bool Equals(Referrer other)
+        {
+            if (ProviderNumber !=  other.ProviderNumber) return false;
+            if (OtherProviderNumbers.Count != other.OtherProviderNumbers.Count) return false;
+            foreach (var opn in other.OtherProviderNumbers)
+            {
+                if (!OtherProviderNumbers.Contains(opn)) return false;
+            }
+            if (Name != other.Name) return false;
+            if (Phone != other.Phone) return false;
+            if (Fax != other.Fax) return false;
+            if (PracticeName != other.PracticeName) return false;
+            if (Address != other.Address) return false;
+            if (PostalAddress != other.PostalAddress) return false;
+            if (Remarks != other.Remarks) return false;
+            return true;
+        }
     }
 }

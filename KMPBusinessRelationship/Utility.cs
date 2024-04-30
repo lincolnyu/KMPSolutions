@@ -118,7 +118,7 @@ namespace KMPBusinessRelationship
             {
                 if (!string.IsNullOrEmpty(referrerToSearch.ProviderNumber))
                 {
-                    if (referrerToSearch.PrimaryId == target.PrimaryId)
+                    if (referrerToSearch.Id == target.Id)
                     {
                         return true;
                     }
@@ -129,9 +129,9 @@ namespace KMPBusinessRelationship
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(referrerToSearch.PrimaryId))
+            if (!string.IsNullOrEmpty(referrerToSearch.Id))
             {
-                if (repo.IdToReferrerMap.TryGetValue(referrerToSearch.PrimaryId, out var referrer))
+                if (repo.IdToReferrerMap.TryGetValue(referrerToSearch.Id, out var referrer))
                 {
                     return referrer;
                 }

@@ -1,6 +1,6 @@
 ﻿namespace KMPBusinessRelationship.Objects
 {
-    public class ChargedService : Service
+    public class ChargedService : Service<ChargedService>
     {
         public Invoice? Invoice { get; set; }
 
@@ -17,6 +17,20 @@
         {
             Gap = Owing - Benefit;
             Balance = Gap * (1 - Discount / 100);
+        }
+
+        public override bool Equals(ChargedService other)
+        {
+            if (!base.Equals(other)) return false;
+            if (Invoice?.Id != other.Invoice?.Id) return false;
+            if (Details != other.Details) return false;
+            if (TotalFee != other.TotalFee) return false;
+            if (Owing != other.Owing) return false;
+            if (Benefit != other.Benefit) return false;
+            if (Gap != other.Gap) return false;
+            if (Discount != other.Discount) return false;
+            if (Balance != other.Balance) return false;
+            return true;
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using KMPBusinessRelationship;
-using KMPBusinessRelationship.Objects;
+﻿using KMPBusinessRelationship.Objects;
 
 namespace KMPBusinessRelationship.Test
 {
@@ -57,7 +56,7 @@ namespace KMPBusinessRelationship.Test
         {
             var client1 = new Client
             {
-                Id = "ABCD1234",
+                CareNumber = "ABCD1234",
                 Name = "Wood, Thomas",
                 DateOfBirth = new DateTime(1950, 1, 3),
                 PhoneNumber = "45673421",
@@ -73,7 +72,7 @@ namespace KMPBusinessRelationship.Test
             {
                 var client1Dup1 = new Client
                 {
-                    Id = "ABCD1234",
+                    CareNumber = "ABCD1234",
                 };
                 var res = repo.SearchOrAddClient(client1Dup1, out var client1InRepo);
                 Assert.That(res, Is.EqualTo(true));
@@ -94,7 +93,7 @@ namespace KMPBusinessRelationship.Test
 
             var client2 = new Client
             {
-                Id = "DEFG1234",
+                CareNumber = "DEFG1234",
                 Name = "Wuu, Emily",
                 DateOfBirth = new DateTime(1973, 1, 3),
                 PhoneNumber = "45673421",
@@ -109,6 +108,39 @@ namespace KMPBusinessRelationship.Test
 
             yield return client1;
             yield return client2;
+        }
+
+        public static void AssertsEqual(BaseRepository repo1, BaseRepository repo2)
+        {
+            {
+                var referrers1 = repo1.IdToReferrerMap;
+                var referrers2 = repo2.IdToReferrerMap;
+                Assert.That(referrers1.Count, Is.EqualTo(referrers2.Count));
+                foreach (var (key, val1) in referrers1)
+                {
+                    Assert.That(referrers2.TryGetValue(key, out var val2));
+                    Assert.That(val1.Equals(val2));
+                }
+            }
+            {
+                var clients1 = repo1.IdToClientMap;
+                var clients2 = repo2.IdToClientMap;
+                Assert.That(clients1.Count, Is.EqualTo(clients2.Count));
+                foreach (var (key, val1) in clients1)
+                {
+                    Assert.That(clients2.TryGetValue(key, out var val2));
+                    Assert.That(val1.Equals(val2));
+                }
+            }
+            {
+                var events1 = repo1.EventList;
+                var events2 = repo2.EventList;
+                Assert.That(events1.Count, Is.EqualTo(events2.Count));
+                for (var i = 0; i < events1.Count; i++)
+                {
+                    Assert.That(events1[i].Equals(events2[i]));
+                }
+            }
         }
     }
 }
