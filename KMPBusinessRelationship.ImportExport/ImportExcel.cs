@@ -36,7 +36,7 @@ namespace KMPBusinessRelationship.ImportExport
             public const int Remarks = 13;
         }
 
-        public IEnumerable<string> Import(FileInfo excelFile, BaseRepository repo)
+        public IEnumerable<string> Import(FileInfo excelFile, BaseRepository repo, bool merge = false)
         {
             using var excelPackage = new ExcelPackage(excelFile);
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -59,7 +59,7 @@ namespace KMPBusinessRelationship.ImportExport
                         yield return $"Row {i} introduces a referrer with no provider number.";
                     }
 
-                    repo.SearchOrAddReferrer(referrerToAdd, out var referrer, r =>
+                    var found = repo.SearchOrAddReferrer(referrerToAdd, out var referrer, r =>
                     {
                         r.Name = referrers.Cells[i, ReferrerColumns.Name].Text.Trim();
                         r.Phone = referrers.Cells[i, ReferrerColumns.Phone].Text.Trim();
@@ -68,12 +68,18 @@ namespace KMPBusinessRelationship.ImportExport
                         r.PostalAddress = referrers.Cells[i, ReferrerColumns.PostalAddress].Text.Trim();
                         r.Remarks = referrers.Cells[i, ReferrerColumns.Remarks].Text.Trim();
                     });
+
+                    if (found && !merge)
+                    {
+                        yield return $"Row {i} introduces a referrer with duplicate provider number.";
+                    }
+
                     lastReferrer = referrer;
                 }
                 else if (lastReferrer != null && !string.IsNullOrEmpty(providerNumber))
                 {
                     // Alternative provider number
-                    repo.ReferrerAddOtherId(lastReferrer, providerNumber);
+                    repo.ReferrerAddOtherIdIfNonExistent(lastReferrer, providerNumber);
                 }
 
                 if (lastReferrer == null)
@@ -112,9 +118,9 @@ namespace KMPBusinessRelationship.ImportExport
                         c.PhoneNumber = visits.Cells[i, VisitsColumns.Phone].Text.Trim();
                         c.Address = visits.Cells[i, VisitsColumns.Address].Text.Trim();
                     });
-                    if (found)
+                    if (found && !merge)
                     {
-                        yield return $"Row {i} contains a duplicate care number.";
+                        yield return $"Row {i} introduces a client with a duplicate care number.";
                     }
                     lastClient = client;
                 }
@@ -153,6 +159,8 @@ namespace KMPBusinessRelationship.ImportExport
                         var visitDate = CsvUtility.ParseDateTime(visit);
                         repo.AddClaimableService(visitDate, lastClient, claimed);
                     }
+
+                    // TODO other changes.
                 }
                 else
                 {

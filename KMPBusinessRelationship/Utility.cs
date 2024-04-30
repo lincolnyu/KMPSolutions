@@ -195,11 +195,15 @@ namespace KMPBusinessRelationship
             return false;
         }
 
-        public static void ReferrerAddOtherId(this BaseRepository repo, Referrer referrer, string otherId)
+        public static bool ReferrerAddOtherIdIfNonExistent(this BaseRepository repo, Referrer referrer, string otherId)
         {
-            referrer.OtherProviderNumbers.Add(otherId);
-            Debug.Assert(!repo.IdToReferrerMap.ContainsKey(otherId));
-            repo.IdToReferrerMap[otherId] = referrer;
+            if (!repo.IdToReferrerMap.ContainsKey(otherId))
+            {
+                referrer.OtherProviderNumbers.Add(otherId);
+                repo.IdToReferrerMap[otherId] = referrer;
+                return true;
+            }
+            return false;
         }
 
         public static void AcceptReferral(this BaseRepository repository, DateTime? time, Referrer referrer, Client client)
