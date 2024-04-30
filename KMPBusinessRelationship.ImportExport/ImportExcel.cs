@@ -49,10 +49,16 @@ namespace KMPBusinessRelationship.ImportExport
                 var entryId = referrers.Cells[i, ReferrerColumns.InternalID].Text.Trim(); ;
 
                 var providerNumber = referrers.Cells[i, ReferrerColumns.ProviderNumber].Text.Trim();
+
                 var referrerToAdd = new Referrer { ProviderNumber = providerNumber };
 
                 if (!string.IsNullOrEmpty(entryId))
                 {
+                    if (string.IsNullOrEmpty(providerNumber))
+                    {
+                        yield return $"Row {i} introduces a referrer with no provider number.";
+                    }
+
                     repo.SearchOrAddReferrer(referrerToAdd, out var referrer, r =>
                     {
                         r.Name = referrers.Cells[i, ReferrerColumns.Name].Text.Trim();
@@ -86,6 +92,11 @@ namespace KMPBusinessRelationship.ImportExport
 
                 if (!string.IsNullOrEmpty(entryId))
                 {
+                    if (string.IsNullOrEmpty(careNumber))
+                    {
+                        yield return $"Row {i} introduces a client with no care number.";
+                    }
+
                     var found = repo.SearchOrAddClient(clientToAdd, out var client, c =>
                     {
                         var givenName = visits.Cells[i, VisitsColumns.GivenName].Text.Trim();
