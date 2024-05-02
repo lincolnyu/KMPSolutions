@@ -13,18 +13,18 @@ namespace KMPBusinessRelationship.Test
             var gps = repo.CreateSampleReferrers().ToList();
             var clients = repo.CreateSampleClients().ToList();
 
-            repo.AcceptReferral(DateTime.Now, gps[0], clients[0]);
-            repo.AcceptReferral(DateTime.Now, gps[0], clients[1]);
+            repo.AcceptReferral(DateTime.Now, gps[0].Id, clients[0]);
+            repo.AcceptReferral(DateTime.Now, gps[0].Id, clients[1]);
 
             {
                 var clientRefs = repo.GetAllReferrals(clients[0]).ToArray();
                 Assert.That(clientRefs.Length, Is.EqualTo(1));
-                Assert.That(clientRefs[0].Referrer, Is.EqualTo(gps[0]));
+                Assert.That(clientRefs[0].ReferrerId, Is.EqualTo(gps[0].Id));
             }
             {
                 var clientRefs = repo.GetAllReferrals(clients[1]).ToArray();
                 Assert.That(clientRefs.Length, Is.EqualTo(1));
-                Assert.That(clientRefs[0].Referrer, Is.EqualTo(gps[0]));
+                Assert.That(clientRefs[0].ReferrerId, Is.EqualTo(gps[0].Id));
             }
             {
                 var gpRefs = repo.GetAllReferrals(gps[0]).ToArray();
@@ -61,8 +61,8 @@ namespace KMPBusinessRelationship.Test
             var referrers = repo.CreateSampleReferrers().ToList();
             var clients = repo.CreateSampleClients().ToList();
 
-            repo.AcceptReferral(DateTime.Now, referrers[0], clients[0]);
-            repo.AcceptReferral(DateTime.Now, referrers[0], clients[1]);
+            repo.AcceptReferral(DateTime.Now, referrers[0].Id, clients[0]);
+            repo.AcceptReferral(DateTime.Now, referrers[0].Id, clients[1]);
 
             context.SaveChanges();
         }

@@ -14,7 +14,7 @@ namespace KMPBusinessRelationship
 
         public static IEnumerable<Referral> GetAllReferrals(this BaseRepository repo, Client client) => repo.QueryEvents<Referral>(referral => referral.Client == client);
 
-        public static IEnumerable<Referral> GetAllReferrals(this BaseRepository repo, Referrer referrer) => repo.QueryEvents<Referral>(referral => referral.Referrer == referrer);
+        public static IEnumerable<Referral> GetAllReferrals(this BaseRepository repo, Referrer referrer) => repo.QueryEvents<Referral>(referral => referral.GetReferrer(repo) == referrer);
 
         public static Referrer? GetInitialReferrer(this BaseRepository repo, Client client)
         {
@@ -27,7 +27,7 @@ namespace KMPBusinessRelationship
                 var e = repo.EventList[i];
                 if (e is Referral referral)
                 {
-                    return referral.Referrer;
+                    return referral.GetReferrer(repo);
                 }
             }
             return null;
@@ -40,7 +40,7 @@ namespace KMPBusinessRelationship
                 var e = repo.EventList[i];
                 if (e is Referral referral)
                 {
-                    return referral.Referrer;
+                    return referral.GetReferrer(repo);
                 }
             }
             return null;
@@ -206,12 +206,12 @@ namespace KMPBusinessRelationship
             return false;
         }
 
-        public static void AcceptReferral(this BaseRepository repository, DateTime? time, Referrer referrer, Client client)
+        public static void AcceptReferral(this BaseRepository repository, DateTime? time, string referrerId, Client client)
         {
             repository.AddAndExecuteEvent(new Referral
             {
                 Time = time,
-                Referrer = referrer,
+                ReferrerId = referrerId,
                 Client = client
             });
         }
@@ -224,6 +224,18 @@ namespace KMPBusinessRelationship
                 Client = client,
                 Claimed = claimed
             });
+        }
+
+        public static (string, string) SplitNameToSurnameAndGivenName(string name)
+        {
+            var split = name.Split(',');
+            var surname = split[0];
+            if (split.Length < 2)
+            {
+                return (surname, "");
+            }
+            var givenName = split[1];
+            return (surname, givenName);
         }
     }
 }

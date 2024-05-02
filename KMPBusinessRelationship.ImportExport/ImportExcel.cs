@@ -1,41 +1,12 @@
 ﻿using KMPBusinessRelationship.Objects;
 using KMPCommon;
 using OfficeOpenXml;
+using static KMPBusinessRelationship.ImportExport.ExcelCommon;
 
 namespace KMPBusinessRelationship.ImportExport
 {
     public class ImportExcel
     {
-        public static class ReferrerColumns
-        {
-            public const int InternalID = 1;
-            public const int ProviderNumber = 2;
-            public const int Name = 3;
-            public const int Phone = 4;
-            public const int Fax = 5;
-            public const int PracticeName = 6;
-            public const int Address = 7;
-            public const int PostalAddress = 8;
-            public const int Remarks = 9;
-        }
-
-        public static class VisitsColumns
-        {
-            public const int InternalID = 1;
-            public const int CareNumber = 2;
-            public const int GivenName = 3;
-            public const int Surname = 4;
-            public const int DateOfBirth = 5;
-            public const int Gender = 6;
-            public const int Phone = 7;
-            public const int Address = 8;
-            public const int ReferrerID = 9;
-            public const int ReferralDate = 10;
-            public const int Visit = 11;
-            public const int IfClaimed = 12;
-            public const int Remarks = 13;
-        }
-
         public IEnumerable<string> Import(FileInfo excelFile, BaseRepository repo, bool merge = false)
         {
             using var excelPackage = new ExcelPackage(excelFile);
@@ -46,9 +17,9 @@ namespace KMPBusinessRelationship.ImportExport
             Referrer? lastReferrer = null;
             for (var i = 2; i <= referrers.Cells.Rows; i++ )
             {
-                var entryId = referrers.Cells[i, ReferrerColumns.InternalID].Text.Trim(); ;
+                var entryId = referrers.Cells[i, ReferrersColumns.Index].Text.Trim(); ;
 
-                var providerNumber = referrers.Cells[i, ReferrerColumns.ProviderNumber].Text.Trim();
+                var providerNumber = referrers.Cells[i, ReferrersColumns.ProviderNumber].Text.Trim();
 
                 var referrerToAdd = new Referrer { ProviderNumber = providerNumber };
 
@@ -61,12 +32,12 @@ namespace KMPBusinessRelationship.ImportExport
 
                     var found = repo.SearchOrAddReferrer(referrerToAdd, out var referrer, r =>
                     {
-                        r.Name = referrers.Cells[i, ReferrerColumns.Name].Text.Trim();
-                        r.Phone = referrers.Cells[i, ReferrerColumns.Phone].Text.Trim();
-                        r.Fax = referrers.Cells[i, ReferrerColumns.Fax].Text.Trim();
-                        r.Address = referrers.Cells[i, ReferrerColumns.Address].Text.Trim();
-                        r.PostalAddress = referrers.Cells[i, ReferrerColumns.PostalAddress].Text.Trim();
-                        r.Remarks = referrers.Cells[i, ReferrerColumns.Remarks].Text.Trim();
+                        r.Name = referrers.Cells[i, ReferrersColumns.Name].Text.Trim();
+                        r.Phone = referrers.Cells[i, ReferrersColumns.Phone].Text.Trim();
+                        r.Fax = referrers.Cells[i, ReferrersColumns.Fax].Text.Trim();
+                        r.Address = referrers.Cells[i, ReferrersColumns.Address].Text.Trim();
+                        r.PostalAddress = referrers.Cells[i, ReferrersColumns.PostalAddress].Text.Trim();
+                        r.Remarks = referrers.Cells[i, ReferrersColumns.Remarks].Text.Trim();
                     });
 
                     if (found && !merge)
@@ -91,7 +62,7 @@ namespace KMPBusinessRelationship.ImportExport
             Client? lastClient = null;
             for (var i = 2; i <= visits.Cells.Rows; i++)
             {
-                var entryId = visits.Cells[i, VisitsColumns.InternalID].Text.Trim();   // per client
+                var entryId = visits.Cells[i, VisitsColumns.Index].Text.Trim();   // per client
                 var careNumber = visits.Cells[i, VisitsColumns.CareNumber].Text.Trim();
 
                 var clientToAdd = new Client { CareNumber = careNumber };
@@ -138,13 +109,13 @@ namespace KMPBusinessRelationship.ImportExport
                         var referrer = repo.SearchReferrer(referrerToSearch);
                         if (referrer != null)
                         {
-                            var referral = visits.Cells[i, VisitsColumns.ReferralDate].Text.Trim();
+                            var referralDateStr = visits.Cells[i, VisitsColumns.ReferralDate].Text.Trim();
                             DateTime? referralDate = null;
-                            if (!string.IsNullOrEmpty(referral))
+                            if (!string.IsNullOrEmpty(referralDateStr))
                             {
-                                referralDate = CsvUtility.ParseDateTime(referral);
+                                referralDate = CsvUtility.ParseDateTime(referralDateStr);
                             }
-                            repo.AcceptReferral(referralDate, referrer!, lastClient);
+                            repo.AcceptReferral(referralDate, referrerId, lastClient);
                         }
                         else
                         {

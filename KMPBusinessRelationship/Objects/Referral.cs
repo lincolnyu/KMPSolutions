@@ -2,12 +2,17 @@
 {
     public class Referral : Event<Referral>
     {
-        public Referrer Referrer { get; set; }
+        public string ReferrerId { get; set; }
         public Client Client { get; set; }
+
+        public Referrer GetReferrer(BaseRepository repo)
+        {
+            return repo.IdToReferrerMap[ReferrerId];
+        }
 
         public override bool Equals(Referral other)
         {
-            if (Referrer.Id != other.Referrer.Id) return false;
+            if (ReferrerId != other.ReferrerId) return false;
             if (Client.Id != other.Client.Id) return false;
             return true;
         }

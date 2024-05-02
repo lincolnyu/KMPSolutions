@@ -7,7 +7,7 @@ namespace KMPBusinessRelationship.Test
     internal class ImportExportTests
     {
         [Test]
-        public void TestImportAndPersist()
+        public void TestImportPersistAndExport()
         {
             Repository? savedRepo = null;
             {
@@ -32,7 +32,8 @@ namespace KMPBusinessRelationship.Test
             }
             
             Assert.That(savedRepo, Is.Not.Null);
-            
+
+            Repository? loadedRepo = null;
             {
                 var builder = new DbContextOptionsBuilder();
                 builder.UseSqlite(@"data source=C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\KMPBusiness.sqlite");
@@ -40,6 +41,14 @@ namespace KMPBusinessRelationship.Test
                 using var context = new Context(builder.Options);
                 var repo = new Repository(context);
                 Utility.AssertsEqual(repo, savedRepo);
+                loadedRepo = repo;
+            }
+
+            {
+                var exportExcel = new ExportExcel();
+                var file = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\KMPBusinessExported.xlsx");
+                file.Delete();
+                exportExcel.Export(loadedRepo, file);
             }
 
             Assert.Pass();

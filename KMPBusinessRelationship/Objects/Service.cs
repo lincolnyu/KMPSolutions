@@ -1,6 +1,6 @@
 ﻿namespace KMPBusinessRelationship.Objects
 {
-    public abstract class Service<T> : Event<T> where T : Service<T>
+    public abstract class Service<T> : Event<T>, IService where T : Service<T>
     {
         public Booking? Booking { get; set; }
 
