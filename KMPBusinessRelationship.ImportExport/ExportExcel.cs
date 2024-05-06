@@ -69,11 +69,11 @@ namespace KMPBusinessRelationship.ImportExport
 
                 var allEvents = repo.Events.Where(x => 
                     (x is Referral r) && r.Client == client
-                    || (x is IService s) && s.Client == client).OrderBy(x=>x.Time);
+                    || (x is IService s) && s.Client == client);
 
                 if (referralStartDate != null)
                 {
-                    allEvents.Where(x =>
+                    allEvents = allEvents.Where(x =>
                     {
                         if (x is Referral r)
                         {
@@ -86,6 +86,8 @@ namespace KMPBusinessRelationship.ImportExport
                         }
                     });
                 }
+
+                allEvents = allEvents.OrderBy(x => x.Time);
 
                 row++;
 
