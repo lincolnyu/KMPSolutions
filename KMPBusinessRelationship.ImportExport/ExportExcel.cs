@@ -57,15 +57,7 @@ namespace KMPBusinessRelationship.ImportExport
             foreach (var client in repo.Clients)
             {
                 var cells = visits.Cells;
-                cells[row, VisitsColumns.Index].Value = internalId++;
-                cells[row, VisitsColumns.CareNumber].Value  = client.CareNumber;
-                var (surname, givenName) = Utility.SplitNameToSurnameAndGivenName(client.Name);
-                cells[row, VisitsColumns.Surname].Value = surname;
-                cells[row, VisitsColumns.GivenName].Value = givenName;
-                cells[row, VisitsColumns.DateOfBirth].Value = client.DateOfBirth?.ToShortDateOnlyString();
-                cells[row, VisitsColumns.Gender].Value = client.Gender;
-                cells[row, VisitsColumns.Phone].Value = client.PhoneNumber;
-                cells[row, VisitsColumns.Address].Value = client.Address;
+                
 
                 var allEvents = repo.Events.Where(x => 
                     (x is Referral r) && r.Client == client
@@ -87,46 +79,60 @@ namespace KMPBusinessRelationship.ImportExport
                     });
                 }
 
-                allEvents = allEvents.OrderBy(x => x.Time);
+                var allEventList = allEvents.OrderBy(x => x.Time).ToList();
 
-                row++;
-
-                // 0 - just added the client
-                // 1 - just added new referral
-                // 2 - filled a visit
-                int state = 0; 
-
-                foreach (var e in allEvents)
+                if (referralStartDate == null || allEventList.Count > 0)
                 {
-                    if (e is Referral r)
-                    {
-                        if (state == 0)
-                        {
-                            row--;
-                            state = 1;
-                        }
-                        cells[row, VisitsColumns.ReferrerID].Value = r.ReferrerId;
-                        cells[row, VisitsColumns.ReferralDate].Value = r.Time?.ToShortDateOnlyString();
-                    }
-                    else
-                    {
-                        if (state == 0 || state == 1)
-                        {
-                            row--;
-                        }
-                        if (e is ClaimableService s)
-                        {
-                            cells[row, VisitsColumns.Visit].Value = s.Time?.ToShortDateOnlyString();
-                            cells[row, VisitsColumns.IfClaimed].Value = s.Claimed ? "Y" : "";
-                        }
-                        else if (e is ChargedService h)
-                        {
-                            cells[row, VisitsColumns.Visit].Value = h.Time?.ToShortDateOnlyString();
-                            cells[row, VisitsColumns.IfClaimed].Value = "NOT Claimable";
-                        }
-                        state = 2;
-                    }
+                    // When events are all filtered out the client is made invisible.
+                    cells[row, VisitsColumns.Index].Value = internalId++;
+                    cells[row, VisitsColumns.CareNumber].Value = client.CareNumber;
+                    var (surname, givenName) = Utility.SplitNameToSurnameAndGivenName(client.Name);
+                    cells[row, VisitsColumns.Surname].Value = surname;
+                    cells[row, VisitsColumns.GivenName].Value = givenName;
+                    cells[row, VisitsColumns.DateOfBirth].Value = client.DateOfBirth?.ToShortDateOnlyString();
+                    cells[row, VisitsColumns.Gender].Value = client.Gender;
+                    cells[row, VisitsColumns.Phone].Value = client.PhoneNumber;
+                    cells[row, VisitsColumns.Address].Value = client.Address;
+
                     row++;
+
+                    // 0 - just added the client
+                    // 1 - just added new referral
+                    // 2 - filled a visit
+                    int state = 0;
+
+                    foreach (var e in allEventList)
+                    {
+                        if (e is Referral r)
+                        {
+                            if (state == 0)
+                            {
+                                row--;
+                                state = 1;
+                            }
+                            cells[row, VisitsColumns.ReferrerID].Value = r.ReferrerId;
+                            cells[row, VisitsColumns.ReferralDate].Value = r.Time?.ToShortDateOnlyString();
+                        }
+                        else
+                        {
+                            if (state == 0 || state == 1)
+                            {
+                                row--;
+                            }
+                            if (e is ClaimableService s)
+                            {
+                                cells[row, VisitsColumns.Visit].Value = s.Time?.ToShortDateOnlyString();
+                                cells[row, VisitsColumns.IfClaimed].Value = s.Claimed ? "Y" : "";
+                            }
+                            else if (e is ChargedService h)
+                            {
+                                cells[row, VisitsColumns.Visit].Value = h.Time?.ToShortDateOnlyString();
+                                cells[row, VisitsColumns.IfClaimed].Value = "NOT Claimable";
+                            }
+                            state = 2;
+                        }
+                        row++;
+                    }
                 }
             }
 

@@ -55,7 +55,7 @@ namespace KMPBusinessRelationship.Test
                 var exportExcel = new ExportExcel();
                 var file = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\KMPBusinessExportedThisYear.xlsx");
                 file.Delete();
-                exportExcel.Export(loadedRepo, file, new DateTime(2023,1,1));
+                exportExcel.Export(loadedRepo, file, new DateTime(2022,1,1));
             }
 
             {
