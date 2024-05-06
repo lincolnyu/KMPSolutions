@@ -7,7 +7,7 @@ namespace KMPBusinessRelationship.ImportExport
 {
     public class ExportExcel
     {
-        public void Export(BaseRepository repo, FileInfo excelFile)
+        public void Export(BaseRepository repo, FileInfo excelFile, DateTime? referralStartDate = null)
         {
             using var excelPackage = new ExcelPackage(excelFile);
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -67,29 +67,64 @@ namespace KMPBusinessRelationship.ImportExport
                 cells[row, VisitsColumns.Phone].Value = client.PhoneNumber;
                 cells[row, VisitsColumns.Address].Value = client.Address;
 
-                row++;
-
                 var allEvents = repo.Events.Where(x => 
                     (x is Referral r) && r.Client == client
-                    || (x is IService s) && s.Client == client ).OrderBy(x=>x.Time);
+                    || (x is IService s) && s.Client == client).OrderBy(x=>x.Time);
+
+                if (referralStartDate != null)
+                {
+                    allEvents.Where(x =>
+                    {
+                        if (x is Referral r)
+                        {
+                            return r.Time >= referralStartDate;
+                        }
+                        else
+                        {
+                            var s = (IService)x;
+                            return s.Time >= referralStartDate;
+                        }
+                    });
+                }
+
+                row++;
+
+                // 0 - just added the client
+                // 1 - just added new referral
+                // 2 - filled a visit
+                int state = 0; 
 
                 foreach (var e in allEvents)
                 {
                     if (e is Referral r)
                     {
+                        if (state == 0)
+                        {
+                            row--;
+                            state = 1;
+                        }
                         cells[row, VisitsColumns.ReferrerID].Value = r.ReferrerId;
                         cells[row, VisitsColumns.ReferralDate].Value = r.Time?.ToShortDateOnlyString();
                     }
-                    else if (e is ClaimableService s)
+                    else
                     {
-                        cells[row, VisitsColumns.Visit].Value = s.Time?.ToShortDateOnlyString();
-                        cells[row, VisitsColumns.IfClaimed].Value = s.Claimed ? "Y" : "";
+                        if (state == 0 || state == 1)
+                        {
+                            row--;
+                        }
+                        if (e is ClaimableService s)
+                        {
+                            cells[row, VisitsColumns.Visit].Value = s.Time?.ToShortDateOnlyString();
+                            cells[row, VisitsColumns.IfClaimed].Value = s.Claimed ? "Y" : "";
+                        }
+                        else if (e is ChargedService h)
+                        {
+                            cells[row, VisitsColumns.Visit].Value = h.Time?.ToShortDateOnlyString();
+                            cells[row, VisitsColumns.IfClaimed].Value = "NOT Claimable";
+                        }
+                        state = 2;
                     }
-                    else if (e is ChargedService h)
-                    {
-                        cells[row, VisitsColumns.Visit].Value = h.Time?.ToShortDateOnlyString();
-                        cells[row, VisitsColumns.IfClaimed].Value = "NOT Claimable";
-                    }
+                    row++;
                 }
             }
 

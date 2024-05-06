@@ -229,12 +229,12 @@ namespace KMPBusinessRelationship
         public static (string, string) SplitNameToSurnameAndGivenName(string name)
         {
             var split = name.Split(',');
-            var surname = split[0];
+            var surname = split[0].Trim();
             if (split.Length < 2)
             {
                 return (surname, "");
             }
-            var givenName = split[1];
+            var givenName = split[1].Trim();
             return (surname, givenName);
         }
     }

@@ -135,11 +135,11 @@ namespace KMPBusinessRelationship.Test
             {
                 var events1 = repo1.EventList;
                 var events2 = repo2.EventList;
-                Assert.That(events1.Count, Is.EqualTo(events2.Count));
-                for (var i = 0; i < events1.Count; i++)
+                for (var i = 0; i < events1.Count && i < events2.Count; i++)
                 {
                     Assert.That(events1[i].Equals(events2[i]));
                 }
+                Assert.That(events1.Count, Is.EqualTo(events2.Count));
             }
         }
     }

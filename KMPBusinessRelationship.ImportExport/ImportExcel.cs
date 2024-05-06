@@ -59,6 +59,7 @@ namespace KMPBusinessRelationship.ImportExport
                 }
             }
 
+            var eventList = new List<Event>();
             Client? lastClient = null;
             for (var i = 2; i <= visits.Cells.Rows; i++)
             {
@@ -115,7 +116,12 @@ namespace KMPBusinessRelationship.ImportExport
                             {
                                 referralDate = CsvUtility.ParseDateTime(referralDateStr);
                             }
-                            repo.AcceptReferral(referralDate, referrerId, lastClient);
+                            eventList.Add(new Referral
+                            {
+                                Time = referralDate,
+                                ReferrerId = referrerId,
+                                Client = lastClient
+                            });
                         }
                         else
                         {
@@ -123,12 +129,17 @@ namespace KMPBusinessRelationship.ImportExport
                         }
                     }
 
-                    var visit = visits.Cells[i, VisitsColumns.ReferralDate].Text.Trim();
+                    var visitDateStr = visits.Cells[i, VisitsColumns.Visit].Text.Trim();
                     var claimed = visits.Cells[i, VisitsColumns.IfClaimed].Text.Trim().StartsWith('Y');
-                    if (!string.IsNullOrEmpty(visit))
+                    if (!string.IsNullOrEmpty(visitDateStr))
                     {
-                        var visitDate = CsvUtility.ParseDateTime(visit);
-                        repo.AddClaimableService(visitDate, lastClient, claimed);
+                        var visitDate = CsvUtility.ParseDateTime(visitDateStr);
+                        eventList.Add(new ClaimableService
+                        {
+                            Time = visitDate,
+                            Client = lastClient,
+                            Claimed = claimed
+                        });
                     }
 
                     // TODO other changes.
@@ -137,6 +148,51 @@ namespace KMPBusinessRelationship.ImportExport
                 {
                     yield return $"Row {i} has no preceding client to add additional information for.";
                 }
+            }
+
+            eventList.Sort((a, b) =>
+            {
+                if (a.Time.HasValue && b.Time.HasValue)
+                {
+                    var c = a.Time.Value.CompareTo(b.Time.Value);
+                    if (c != 0) return c;
+                }
+                else if (a.Time.HasValue)
+                {
+                    return 1;
+                }
+                else if (b.Time.HasValue)
+                {
+                    return -1;
+                }
+
+                Client? clientA = null;
+                if (a is Referral ra) clientA = ra.Client;
+                else if (a is IService sa) clientA = sa.Client;
+
+                Client? clientB = null;
+                if (b is Referral rb) clientB = rb.Client;
+                else if (b is IService sb) clientB = sb.Client;
+
+                if (clientA != null && clientB != null)
+                {
+                    return clientA.CareNumber.CompareTo(clientB.CareNumber);
+                }
+                else if (clientA != null)
+                {
+                    return 1;
+                }
+                else if (clientB != null)
+                {
+                    return -1;
+                }
+
+                return 0; // Not to order the unknown types.
+            });
+
+            foreach (var e in eventList)
+            {
+                repo.AddAndExecuteEvent(e);
             }
         }
     }

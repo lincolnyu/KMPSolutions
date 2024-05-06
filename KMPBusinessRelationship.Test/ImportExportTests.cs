@@ -51,6 +51,23 @@ namespace KMPBusinessRelationship.Test
                 exportExcel.Export(loadedRepo, file);
             }
 
+            {
+                var exportExcel = new ExportExcel();
+                var file = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\KMPBusinessExportedThisYear.xlsx");
+                file.Delete();
+                exportExcel.Export(loadedRepo, file, new DateTime(2023,1,1));
+            }
+
+            {
+                var exportedRepo = new Repository();
+                var importExcel = new ImportExcel();
+                var file = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\KMPBusinessExported.xlsx");
+                var errors = importExcel.Import(file, exportedRepo).ToList();
+                Assert.That(errors.Count, Is.Zero);
+
+                Utility.AssertsEqual(exportedRepo, loadedRepo);
+            }
+
             Assert.Pass();
         }
     }
