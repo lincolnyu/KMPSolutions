@@ -7,6 +7,12 @@ namespace KMPBusinessRelationship.ImportExport
 {
     public class ExportExcel
     {
+        /// <summary>
+        ///  Export the repo to the specified file
+        /// </summary>
+        /// <param name="repo">The repo to export</param>
+        /// <param name="excelFile">XLSX file to export the repo to</param>
+        /// <param name="referralStartDate">When specified export only clients that contain referral date greater than the specified date and only events later than the date.</param>
         public void Export(BaseRepository repo, FileInfo excelFile, DateTime? referralStartDate = null)
         {
             using var excelPackage = new ExcelPackage(excelFile);
@@ -57,7 +63,6 @@ namespace KMPBusinessRelationship.ImportExport
             foreach (var client in repo.Clients)
             {
                 var cells = visits.Cells;
-                
 
                 var allEvents = repo.Events.Where(x => 
                     (x is Referral r) && r.Client == client
@@ -81,7 +86,7 @@ namespace KMPBusinessRelationship.ImportExport
 
                 var allEventList = allEvents.OrderBy(x => x.Time).ToList();
 
-                if (referralStartDate == null || allEventList.Count > 0)
+                if (referralStartDate == null || allEventList.Count(x=>x is Referral) > 0)
                 {
                     // When events are all filtered out the client is made invisible.
                     cells[row, VisitsColumns.Index].Value = internalId++;
