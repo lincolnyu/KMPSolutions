@@ -7,6 +7,30 @@ namespace KMPBusinessRelationship.ImportExport
 {
     public class ImportExcel
     {
+        class EventComparerByDate : IComparer<Event>
+        {
+            public static EventComparerByDate Instance { get; } = new EventComparerByDate();
+            public int Compare(Event x, Event y)
+            {
+                if (x.Time != null && y.Time != null)
+                {
+                    return x.Time!.Value.CompareTo(y.Time!.Value);
+                }
+                else if (x.Time != null)
+                {
+                    return 1;
+                }
+                else if (y.Time != null)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+
         public IEnumerable<string> Import(FileInfo excelFile, BaseRepository repo, bool merge = false)
         {
             using var excelPackage = new ExcelPackage(excelFile);
@@ -57,6 +81,24 @@ namespace KMPBusinessRelationship.ImportExport
                 {
                     yield return $"Row {i} has no preceding referrer to add additional information for.";
                 }
+            }
+
+            var existingEvents = repo.EventList.OrderBy(x => x.Time).ToList();
+            bool containsEvent(Event e)
+            {
+                var index = existingEvents.BinarySearch(e, EventComparerByDate.Instance);
+                if (index < 0) return false;
+                for (var j = index; j >= 0; j--)
+                {
+                    var ee = existingEvents[j];
+                    if (ee.Equals(e)) return true;
+                }
+                for (var j = index + 1; j < existingEvents.Count; j++)
+                {
+                    var ee = existingEvents[j];
+                    if (ee.Equals(e)) return true;
+                }
+                return false;
             }
 
             var eventList = new List<Event>();
@@ -116,12 +158,22 @@ namespace KMPBusinessRelationship.ImportExport
                             {
                                 referralDate = CsvUtility.ParseDateTime(referralDateStr);
                             }
-                            eventList.Add(new Referral
+
+                            var newReferral = new Referral
                             {
                                 Time = referralDate,
                                 ReferrerId = referrerId,
                                 Client = lastClient
-                            });
+                            };
+
+                            if (!containsEvent(newReferral))
+                            {
+                                eventList.Add(newReferral);
+                            }
+                            else if (!merge)    // In merge duplicates are allowed and ignored
+                            {
+                                yield return $"Row {i} contains a duplicate referral";
+                            }
                         }
                         else
                         {
@@ -134,12 +186,22 @@ namespace KMPBusinessRelationship.ImportExport
                     if (!string.IsNullOrEmpty(visitDateStr))
                     {
                         var visitDate = CsvUtility.ParseDateTime(visitDateStr);
-                        eventList.Add(new ClaimableService
+
+                        var newService = new ClaimableService
                         {
                             Time = visitDate,
                             Client = lastClient,
                             Claimed = claimed
-                        });
+                        };
+
+                        if (!containsEvent(newService))
+                        {
+                            eventList.Add(newService);
+                        }
+                        else if (!merge)    // In merge duplicates are allowed and ignored
+                        {
+                            yield return $"Row {i} contains a duplicate service";
+                        }
                     }
 
                     // TODO other changes.
@@ -190,6 +252,7 @@ namespace KMPBusinessRelationship.ImportExport
                 return 0; // Not to order the unknown types.
             });
 
+            // Always append to the end even if the time is earlier.
             foreach (var e in eventList)
             {
                 repo.AddAndExecuteEvent(e);

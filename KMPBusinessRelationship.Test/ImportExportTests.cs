@@ -70,5 +70,29 @@ namespace KMPBusinessRelationship.Test
 
             Assert.Pass();
         }
+
+        [Test]
+        public void DoubleImportTest()
+        {
+            var repo = new Repository();
+
+            {
+                var importExcel = new ImportExcel();
+                var file = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\input\base.xlsx");
+                var errors = importExcel.Import(file, repo).ToList();
+                Assert.That(errors.Count, Is.Zero);
+            }
+
+            var repoToDoubleImpoort = new Repository();
+            {
+                var importExcel = new ImportExcel();
+                var file = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\input\base.xlsx");
+                var errors = importExcel.Import(file, repoToDoubleImpoort, false).ToList();
+                Assert.That(errors.Count, Is.Zero);
+                errors = importExcel.Import(file, repoToDoubleImpoort, true).ToList();
+                Assert.That(errors.Count, Is.Zero);
+            }
+            Utility.AssertsEqual(repo, repoToDoubleImpoort);
+        }
     }
 }
