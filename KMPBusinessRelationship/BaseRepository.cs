@@ -59,7 +59,7 @@ namespace KMPBusinessRelationship
         }
 
         /// <summary>
-        ///  Add client assuming the entry is not existent
+        ///  Add client assuming the entry is not existent.
         /// </summary>
         /// <param name="referrer">The referrer to add</param>
         public void AddClientNoCheck(Client client)
@@ -70,7 +70,7 @@ namespace KMPBusinessRelationship
         }
 
         /// <summary>
-        ///  Add referrer assuming the entry is not existent
+        ///  Add referrer assuming the entry is not existent.
         /// </summary>
         /// <param name="referrer">The referrer to add</param>
         public void AddReferrerNoCheck(Referrer referrer)

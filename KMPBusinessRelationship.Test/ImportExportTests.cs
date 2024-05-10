@@ -1,6 +1,8 @@
 ﻿using KMPBusinessRelationship.ImportExport;
+using KMPBusinessRelationship.Objects;
 using KMPBusinessRelationship.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace KMPBusinessRelationship.Test
 {
@@ -93,6 +95,68 @@ namespace KMPBusinessRelationship.Test
                 Assert.That(errors.Count, Is.Zero);
             }
             Utility.AssertsEqual(repo, repoToDoubleImpoort);
+        }
+
+        [Test]
+        public void ImportMergeTest()
+        {
+            var repo = new Repository();
+            {
+                var importExcel = new ImportExcel();
+                var file = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\input\base.xlsx");
+                var errors = importExcel.Import(file, repo).ToList();
+                Assert.That(errors.Count, Is.Zero);
+            }
+
+            var repoRef = new Repository();
+            {
+                var importExcel = new ImportExcel();
+                var file = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\input\base.xlsx");
+                var errors = importExcel.Import(file, repoRef).ToList();
+                Assert.That(errors.Count, Is.Zero);
+            }
+
+            // events to add
+            {
+                var testClient = repo.Clients.First();
+                var lastReferral = repo.GetAllReferrals(testClient).ToList().Last();
+                var newReferral = new Referral
+                {
+                    Time = lastReferral.Time.Value.AddYears(1),
+                    Client = testClient,
+                    ReferrerId = lastReferral.ReferrerId,
+                };
+                var newVisit = new ClaimableService
+                {
+                    Time = newReferral.Time.Value.AddMonths(1),
+                    Client = testClient,
+                    Claimed = false
+                };
+
+                // export the change to excel
+                var repoToExport = new Repository();
+                repoToExport.AddClientNoCheck(testClient);
+                repoToExport.AddReferrerNoCheck(lastReferral.GetReferrer(repo));
+                repoToExport.AddAndExecuteEvent(newReferral);
+                repoToExport.AddAndExecuteEvent(newVisit);
+                var exportExcel = new ExportExcel();
+                var fileEvents = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\events.xlsx");
+                fileEvents.Delete();
+                exportExcel.Export(repoToExport, fileEvents);
+
+                repoRef.AddAndExecuteEvent(newReferral);
+                repoRef.AddAndExecuteEvent(newVisit);
+            }
+
+            // import merge
+            {
+                var importExcel = new ImportExcel();
+                var file = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\events.xlsx");
+                var errors = importExcel.Import(file, repo, true).ToList();
+                Assert.That(errors.Count, Is.Zero);
+            }
+
+            Utility.AssertsEqual(repo, repoRef);
         }
     }
 }
