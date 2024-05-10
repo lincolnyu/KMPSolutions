@@ -38,49 +38,56 @@ namespace KMPBusinessRelationship.ImportExport
             var visits = excelPackage.Workbook.Worksheets["Visits"];
             var referrers = excelPackage.Workbook.Worksheets["Referrers"];
 
-            Referrer? lastReferrer = null;
-            for (var i = 2; i <= referrers.Cells.Rows; i++ )
+            if (referrers != null)
             {
-                var entryId = referrers.Cells[i, ReferrersColumns.Index].Text.Trim(); ;
-
-                var providerNumber = referrers.Cells[i, ReferrersColumns.ProviderNumber].Text.Trim();
-
-                var referrerToAdd = new Referrer { ProviderNumber = providerNumber };
-
-                if (!string.IsNullOrEmpty(entryId))
+                Referrer? lastReferrer = null;
+                for (var i = 2; i <= referrers.Cells.Rows; i++)
                 {
-                    if (string.IsNullOrEmpty(providerNumber))
+                    var entryId = referrers.Cells[i, ReferrersColumns.Index].Text.Trim(); ;
+
+                    var providerNumber = referrers.Cells[i, ReferrersColumns.ProviderNumber].Text.Trim();
+
+                    var referrerToAdd = new Referrer { ProviderNumber = providerNumber };
+
+                    if (!string.IsNullOrEmpty(entryId))
                     {
-                        yield return $"Row {i} introduces a referrer with no provider number.";
+                        if (string.IsNullOrEmpty(providerNumber))
+                        {
+                            yield return $"Row {i} introduces a referrer with no provider number.";
+                        }
+
+                        var found = repo.SearchOrAddReferrer(referrerToAdd, out var referrer, r =>
+                        {
+                            r.Name = referrers.Cells[i, ReferrersColumns.Name].Text.Trim();
+                            r.Phone = referrers.Cells[i, ReferrersColumns.Phone].Text.Trim();
+                            r.Fax = referrers.Cells[i, ReferrersColumns.Fax].Text.Trim();
+                            r.Address = referrers.Cells[i, ReferrersColumns.Address].Text.Trim();
+                            r.PostalAddress = referrers.Cells[i, ReferrersColumns.PostalAddress].Text.Trim();
+                            r.Remarks = referrers.Cells[i, ReferrersColumns.Remarks].Text.Trim();
+                        });
+
+                        if (found && !merge)
+                        {
+                            yield return $"Row {i} introduces a referrer with duplicate provider number.";
+                        }
+
+                        lastReferrer = referrer;
+                    }
+                    else if (lastReferrer != null && !string.IsNullOrEmpty(providerNumber))
+                    {
+                        // Alternative provider number
+                        repo.ReferrerAddOtherIdIfNonExistent(lastReferrer, providerNumber);
                     }
 
-                    var found = repo.SearchOrAddReferrer(referrerToAdd, out var referrer, r =>
+                    if (lastReferrer == null)
                     {
-                        r.Name = referrers.Cells[i, ReferrersColumns.Name].Text.Trim();
-                        r.Phone = referrers.Cells[i, ReferrersColumns.Phone].Text.Trim();
-                        r.Fax = referrers.Cells[i, ReferrersColumns.Fax].Text.Trim();
-                        r.Address = referrers.Cells[i, ReferrersColumns.Address].Text.Trim();
-                        r.PostalAddress = referrers.Cells[i, ReferrersColumns.PostalAddress].Text.Trim();
-                        r.Remarks = referrers.Cells[i, ReferrersColumns.Remarks].Text.Trim();
-                    });
-
-                    if (found && !merge)
-                    {
-                        yield return $"Row {i} introduces a referrer with duplicate provider number.";
+                        yield return $"Row {i} has no preceding referrer to add additional information for.";
                     }
-
-                    lastReferrer = referrer;
                 }
-                else if (lastReferrer != null && !string.IsNullOrEmpty(providerNumber))
-                {
-                    // Alternative provider number
-                    repo.ReferrerAddOtherIdIfNonExistent(lastReferrer, providerNumber);
-                }
-
-                if (lastReferrer == null)
-                {
-                    yield return $"Row {i} has no preceding referrer to add additional information for.";
-                }
+            }
+            else if (!merge)
+            {
+                yield return $"Referrers sheet is missing.";
             }
 
             var existingEvents = repo.EventList.OrderBy(x => x.Time).ToList();

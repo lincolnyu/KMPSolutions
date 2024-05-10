@@ -3,6 +3,8 @@ using KMPBusinessRelationship.Objects;
 using KMPBusinessRelationship.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace KMPBusinessRelationship.Test
 {
@@ -98,7 +100,12 @@ namespace KMPBusinessRelationship.Test
         }
 
         [Test]
-        public void ImportMergeTest()
+        public void ImportMergeTestNormal() => ImportMergeTest(false);
+
+        [Test]
+        public void ImportMergeTestRemoveUnnecessary() => ImportMergeTest(true);
+
+        public void ImportMergeTest(bool removeRedundantColumnsData)
         {
             var repo = new Repository();
             {
@@ -115,6 +122,9 @@ namespace KMPBusinessRelationship.Test
                 var errors = importExcel.Import(file, repoRef).ToList();
                 Assert.That(errors.Count, Is.Zero);
             }
+
+            var fn = removeRedundantColumnsData ? "events_clean.xlsx" : "events.xlsx";
+            var exportFileName = $@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\{fn}";
 
             // events to add
             {
@@ -139,10 +149,31 @@ namespace KMPBusinessRelationship.Test
                 repoToExport.AddReferrerNoCheck(lastReferral.GetReferrer(repo));
                 repoToExport.AddAndExecuteEvent(newReferral);
                 repoToExport.AddAndExecuteEvent(newVisit);
+
                 var exportExcel = new ExportExcel();
-                var fileEvents = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\events.xlsx");
+                var fileEvents = new FileInfo(exportFileName);
                 fileEvents.Delete();
-                exportExcel.Export(repoToExport, fileEvents);
+
+                if (removeRedundantColumnsData)
+                {
+                    exportExcel.Export(repoToExport, fileEvents, null, ep =>
+                    {
+                        // Remove the client detail columns data except the client id.
+                        ep.Workbook.Worksheets.Delete("Referrers");
+                        var visits = ep.Workbook.Worksheets["Visits"];
+                        for (var i = 2; i <= visits.Rows.Count(); i++)
+                        {
+                            for (var j = 3; j <= 8; j++)
+                            {
+                                visits.Cells[i, j].Clear();
+                            }
+                        }
+                    });
+                }
+                else
+                {
+                    exportExcel.Export(repoToExport, fileEvents);
+                }
 
                 repoRef.AddAndExecuteEvent(newReferral);
                 repoRef.AddAndExecuteEvent(newVisit);
@@ -151,7 +182,7 @@ namespace KMPBusinessRelationship.Test
             // import merge
             {
                 var importExcel = new ImportExcel();
-                var file = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\events.xlsx");
+                var file = new FileInfo(exportFileName);
                 var errors = importExcel.Import(file, repo, true).ToList();
                 Assert.That(errors.Count, Is.Zero);
             }

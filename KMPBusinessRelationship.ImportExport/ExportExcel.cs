@@ -13,7 +13,8 @@ namespace KMPBusinessRelationship.ImportExport
         /// <param name="repo">The repo to export</param>
         /// <param name="excelFile">XLSX file to export the repo to</param>
         /// <param name="referralStartDate">When specified export only clients that contain referral date greater than the specified date and only events later than the date.</param>
-        public void Export(BaseRepository repo, FileInfo excelFile, DateTime? referralStartDate = null)
+        /// <param name="preSaveModifier">Custom changes on the spreadsheet prior to saving</param>
+        public void Export(BaseRepository repo, FileInfo excelFile, DateTime? referralStartDate = null, Action<ExcelPackage>? preSaveModifier = null)
         {
             using var excelPackage = new ExcelPackage(excelFile);
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -140,6 +141,8 @@ namespace KMPBusinessRelationship.ImportExport
                     }
                 }
             }
+
+            preSaveModifier?.Invoke(excelPackage);
 
             excelPackage.Save();
         }
