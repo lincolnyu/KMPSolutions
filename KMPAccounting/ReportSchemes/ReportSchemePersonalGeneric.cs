@@ -21,6 +21,13 @@ namespace KMPAccounting.ReportSchemes
             }
 
             public AccountsSetup AccountsSetup { get; }
+
+            public decimal NetIncomeAdjustment { get; set; } = 0m;
+
+            /// <summary>
+            ///  Post income tax calculation adjustent, such as medicare levy etc.
+            /// </summary>
+            public decimal TaxAdjustment { get; internal set; } = 0m;
         }
 
         public ReportSchemePersonalGeneric(PersonalDetails selfDetails, PersonalDetails? partnerDetails = null)
@@ -44,22 +51,26 @@ namespace KMPAccounting.ReportSchemes
             var pnlReport = new PnlReport();
             PnlReport? partnerPnlReport = null;
 
-            SelfDetails.AccountsSetup.FinalizeTaxPeriodPreTaxCalculation(pnlReport);
+            SelfDetails.AccountsSetup.FinalizeTaxPeriodPreTaxCalculation(pnlReport, SelfDetails.NetIncomeAdjustment);
 
             if (PartnerDetails != null)
             {
                 partnerPnlReport = new PnlReport();
 
-                PartnerDetails.AccountsSetup.FinalizeTaxPeriodPreTaxCalculation(partnerPnlReport);
+                PartnerDetails.AccountsSetup.FinalizeTaxPeriodPreTaxCalculation(partnerPnlReport, PartnerDetails.NetIncomeAdjustment);
 
                 var (tax, partnerTax) = GetFamilyTax(pnlReport.TaxableIncome, partnerPnlReport.TaxableIncome);
 
                 pnlReport.Tax = tax;
                 partnerPnlReport.Tax = partnerTax;
+
+                pnlReport.Tax += SelfDetails.TaxAdjustment;
+                partnerPnlReport.Tax += PartnerDetails.TaxAdjustment;
             }
             else
             {
                 pnlReport.Tax = GetPersonalTax(pnlReport.TaxableIncome);
+                pnlReport.Tax += SelfDetails.TaxAdjustment;
             }
 
             SelfDetails.AccountsSetup.FinalizeTaxPeriodPostTaxCalculation(pnlReport);

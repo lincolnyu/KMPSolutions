@@ -84,10 +84,14 @@ namespace KMPAccounting.ReportSchemes
             KOU.GetAccount(accountsSetup.EquityMain)!.Balance += deltaEquity;
         }
 
-        public static void FinalizeTaxPeriodPreTaxCalculation(this AccountsSetup accountsSetup, PnlReport pnlReport)
+        public static void FinalizeTaxPeriodPreTaxCalculation(this AccountsSetup accountsSetup, PnlReport pnlReport, decimal adjustment = 0)
         {
             pnlReport.Income = KOU.GetAccount(accountsSetup.Income)?.Balance ?? 0;
             pnlReport.Deduction = (KOU.GetAccount(accountsSetup.Deduction)?.Balance ?? 0) + (accountsSetup.BusinessLossDeduction.GetValueOrDefault(0));
+
+            if (adjustment > 0) pnlReport.Income += adjustment;
+            else if (adjustment < 0) pnlReport.Deduction -= adjustment;
+
             pnlReport.TaxWithheld = KOU.GetAccount(accountsSetup.TaxWithheld)?.Balance ?? 0;
         }
 
