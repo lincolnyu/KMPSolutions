@@ -40,6 +40,7 @@ namespace KMPAccounting.Test
         {
             foreach (var file in dirTargetFiles.GetFiles())
             {
+                if (file.Extension == ".bak") continue;
                 var fileName = file.Name;
                 var contentTarget = file.OpenText().ReadToEnd();
                 var sourceFile = Path.Combine(dirSourceFiles, fileName);
