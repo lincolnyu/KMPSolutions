@@ -418,7 +418,7 @@ namespace KMPAccounting.Test
 
                 foreach (var (bankRow, invoiceRow) in guessedRows)
                 {
-                    Assert.IsTrue(!string.IsNullOrWhiteSpace(bankRow[bankRow.OwnerTable.RowDescriptor.CounterAccountKey]));
+                    Assert.That(string.IsNullOrWhiteSpace(bankRow[bankRow.OwnerTable.RowDescriptor.CounterAccountKey]), Is.False);
 
                     IEnumerable<string> line;
                     if (invoiceRow != null)
@@ -1040,9 +1040,15 @@ namespace KMPAccounting.Test
 
             var error = Utility.CompareTextFiles(@"c:\temp\", new DirectoryInfo(Path.Combine(StatementsDir,@"results\v2")));
 
-            Assert.IsNull(error, error);
+            Assert.That(error, Is.Null);
 
             Assert.Pass();
+        }
+
+        [Test]
+        public void TestFY24()
+        {
+
         }
 
         [Test]
