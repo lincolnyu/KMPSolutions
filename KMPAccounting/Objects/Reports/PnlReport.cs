@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 namespace KMPAccounting.Objects.Reports
 {
@@ -16,6 +17,8 @@ namespace KMPAccounting.Objects.Reports
 
         public decimal PostTaxIncome => TaxableIncome - Tax;
 
+        public Action<StringBuilder>? CustomizedInfo { get; set; }
+
         public override string ToString()
         {
             var sb = new StringBuilder();
@@ -26,6 +29,11 @@ namespace KMPAccounting.Objects.Reports
             sb.AppendLine($"Tax = {Tax}");
             sb.AppendLine($"TaxReturn = {TaxReturn}");
             sb.AppendLine($"PostTaxIncome = TaxableIncome - Tax = {PostTaxIncome}");
+
+            if (CustomizedInfo != null )
+            {
+                CustomizedInfo(sb);
+            }
 
             return sb.ToString();
         }

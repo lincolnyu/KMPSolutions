@@ -117,11 +117,11 @@ namespace KMPCoreObjects.Test
                 Assert.That(tomPnlReport.Deduction, Is.EqualTo(Deduction));
                 Assert.That(tomPnlReport.TaxableIncome, Is.EqualTo(GrossSalary - Deduction));
 
-                var ExpectedTax = ReportSchemePersonalGeneric.GetPersonalTaxDefault(tomPnlReport.TaxableIncome);
-                Assert.That(tomPnlReport.Tax, Is.EqualTo(ExpectedTax));
+                var expectedTaxOutcome = ReportSchemePersonalGeneric.GetPersonalTaxDefault(tomPnlReport.TaxableIncome);
+                Assert.That(tomPnlReport.Tax, Is.EqualTo(expectedTaxOutcome.Tax));
                 Assert.That(tomPnlReport.TaxWithheld, Is.EqualTo(TaxWithheld));
-                Assert.That(tomPnlReport.TaxReturn, Is.EqualTo(TaxWithheld - ExpectedTax));
-                Assert.That(tomPnlReport.PostTaxIncome, Is.EqualTo(GrossSalary - Deduction - ExpectedTax));
+                Assert.That(tomPnlReport.TaxReturn, Is.EqualTo(TaxWithheld - expectedTaxOutcome.Tax));
+                Assert.That(tomPnlReport.PostTaxIncome, Is.EqualTo(GrossSalary - Deduction - expectedTaxOutcome.Tax));
             });
 
             Assert.Pass();
