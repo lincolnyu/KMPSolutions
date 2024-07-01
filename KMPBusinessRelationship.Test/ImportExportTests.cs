@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using OfficeOpenXml.Style;
 
 namespace KMPBusinessRelationship.Test
 {
@@ -60,6 +61,13 @@ namespace KMPBusinessRelationship.Test
                 var file = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\KMPBusinessExportedThisYear.xlsx");
                 file.Delete();
                 exportExcel.Export(loadedRepo, file, new DateTime(2022,1,1));
+            }
+
+            {
+                var exportGoogleContactsCsv = new ExportGoogleContactsCsv();
+                var file = new FileInfo(@"C:\Users\quanb\OneDrive\tagged\store\2402012306\br-tests\output\ClientContactsGoogle.csv");
+                file.Delete();
+                exportGoogleContactsCsv.ExportSimple(loadedRepo, file);
             }
 
             {

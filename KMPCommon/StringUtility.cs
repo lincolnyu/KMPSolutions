@@ -1,4 +1,7 @@
-﻿namespace KMPCommon
+﻿using System.Linq;
+using System.Text;
+
+namespace KMPCommon
 {
     public static class StringUtility
     {
@@ -41,6 +44,52 @@
                 }
             }
             return false;
+        }
+
+        public static string TrimAndReplaceConsecutiveSpacesWithSingleSpace(this string input)
+        {
+            var segs = input.Split(' ').Where(x => x.Length > 0);
+            var sb = new StringBuilder();
+            foreach (var seg in segs)
+            {
+                sb.Append(seg);
+                sb.Append(' ');
+            }
+            if (sb.Length > 1)
+            {
+                sb.Remove(sb.Length - 1, 1);
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        ///  Extract first name and surname from a name in the form 'surname,given-name' or 'given-name surname'
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static (string /* given name*/, string /* surname */) ParseNameOfPerson(this string name)
+        {
+            name = name.Trim();
+            var segs = name.Split(',');
+            if (segs.Length > 1)
+            {
+                var surname = segs[0].TrimAndReplaceConsecutiveSpacesWithSingleSpace();
+                var firstName = segs[1].TrimAndReplaceConsecutiveSpacesWithSingleSpace();
+                // subsequent segments ignored if any
+                return (firstName, surname);
+            }
+            // Treated as 'FirstName LastName'
+            var space = name.IndexOf(' ');
+            if (space >= 0)
+            {
+                var fn = name.Substring(0, space).TrimAndReplaceConsecutiveSpacesWithSingleSpace();
+                var sn = name.Substring(space + 1).TrimAndReplaceConsecutiveSpacesWithSingleSpace();
+                return (fn, sn);
+            }
+            else
+            {
+                return (name, "");
+            }
         }
     }
 }

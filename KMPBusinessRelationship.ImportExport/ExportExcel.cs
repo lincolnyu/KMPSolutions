@@ -8,7 +8,7 @@ namespace KMPBusinessRelationship.ImportExport
     public class ExportExcel
     {
         /// <summary>
-        ///  Export the repo to the specified file
+        ///  Export the repo to the specified file.
         /// </summary>
         /// <param name="repo">The repo to export</param>
         /// <param name="excelFile">XLSX file to export the repo to</param>
