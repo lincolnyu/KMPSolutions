@@ -3,7 +3,6 @@ using KMPBookingCore.Database;
 using KMPBookingCore.DbObjects;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Data.OleDb;
 
 namespace KMPBookingPlus
